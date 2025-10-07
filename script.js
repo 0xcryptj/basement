@@ -270,9 +270,18 @@ class BasementApp {
         // Close mobile menu when clicking on links
         const mobileNavLinks = document.querySelectorAll('.mobile-nav-link');
         mobileNavLinks.forEach(link => {
-            link.addEventListener('click', () => {
+            link.addEventListener('click', (e) => {
+                e.preventDefault();
                 mobileMenuToggle.classList.remove('active');
                 mobileMenu.classList.add('hidden');
+                
+                // Handle specific mobile navigation
+                const href = link.getAttribute('href');
+                if (href === '#chat') {
+                    this.toggleMobileChat();
+                } else if (href === '#forum') {
+                    this.showForum();
+                }
             });
         });
         
@@ -878,11 +887,13 @@ class BasementApp {
         }
     }
 
-    showForum() {
-        console.log('showForum called');
-        document.getElementById('welcome-section').classList.add('hidden');
-        document.getElementById('forum-section').classList.remove('hidden');
-        this.showForumCategories();
+    toggleMobileChat() {
+        const chatSidebar = document.getElementById('chat-sidebar');
+        if (chatSidebar.classList.contains('mobile-visible')) {
+            chatSidebar.classList.remove('mobile-visible');
+        } else {
+            chatSidebar.classList.add('mobile-visible');
+        }
     }
 
     showForumCategories() {

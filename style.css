@@ -1663,26 +1663,27 @@ body::before {
     display: none;
     flex-direction: column;
     justify-content: space-around;
-    width: 30px;
-    height: 30px;
+    width: 24px;
+    height: 24px;
     background: transparent;
     border: none;
     cursor: pointer;
     padding: 0;
     z-index: 1001;
+    margin-left: 8px;
 }
 
 .hamburger-line {
-    width: 25px;
-    height: 3px;
+    width: 20px;
+    height: 2px;
     background: #00BFFF;
     transition: all 0.3s ease;
-    border-radius: 2px;
-    box-shadow: 0 0 5px rgba(0, 191, 255, 0.5);
+    border-radius: 1px;
+    box-shadow: 0 0 3px rgba(0, 191, 255, 0.5);
 }
 
 .mobile-menu-toggle.active .hamburger-line:nth-child(1) {
-    transform: rotate(45deg) translate(5px, 5px);
+    transform: rotate(45deg) translate(4px, 4px);
 }
 
 .mobile-menu-toggle.active .hamburger-line:nth-child(2) {
@@ -1690,22 +1691,23 @@ body::before {
 }
 
 .mobile-menu-toggle.active .hamburger-line:nth-child(3) {
-    transform: rotate(-45deg) translate(7px, -6px);
+    transform: rotate(-45deg) translate(6px, -5px);
 }
 
 .mobile-menu {
     position: fixed;
     top: 50px;
-    left: 0;
-    width: 100%;
+    right: 0;
+    width: 200px;
     background: rgba(0, 0, 0, 0.95);
     backdrop-filter: blur(20px);
     border-bottom: 2px solid #0052ff99;
+    border-left: 2px solid #0052ff99;
     z-index: 1000;
-    padding: 20px;
+    padding: 16px;
     display: flex;
     flex-direction: column;
-    gap: 15px;
+    gap: 12px;
     box-shadow: 0 10px 30px rgba(0, 82, 255, 0.3);
 }
 
@@ -1713,8 +1715,8 @@ body::before {
     color: #00BFFF;
     text-decoration: none;
     font-family: 'Press Start 2P', monospace;
-    font-size: 0.6rem;
-    padding: 10px 0;
+    font-size: 0.5rem;
+    padding: 8px 0;
     border-bottom: 1px solid rgba(0, 82, 255, 0.3);
     transition: all 0.3s ease;
     text-shadow: 0 0 5px rgba(0, 191, 255, 0.5);
@@ -1723,7 +1725,7 @@ body::before {
 .mobile-nav-link:hover {
     color: #00FF88;
     text-shadow: 0 0 10px rgba(0, 255, 136, 0.8);
-    transform: translateX(5px);
+    transform: translateX(3px);
 }
 /* Responsive Design */
 @media (max-width: 1200px) {
@@ -1760,12 +1762,13 @@ body::before {
     }
     
     .nav-content {
-        padding: 0 12px;
-        gap: 16px;
+        padding: 0 8px;
+        gap: 8px;
+        justify-content: space-between;
     }
     
     .logo-text {
-        font-size: 0.8rem;
+        font-size: 0.7rem;
     }
     
     .nav-links {
@@ -1776,43 +1779,53 @@ body::before {
         display: flex;
     }
     
+    .wallet-section {
+        margin-left: 0;
+        order: 2;
+    }
+    
     .connect-btn {
-        padding: 6px 12px;
-        font-size: 0.4rem;
+        padding: 4px 8px;
+        font-size: 0.35rem;
+    }
+    
+    .disconnect-btn {
+        padding: 4px 8px;
+        font-size: 0.3rem;
+        margin-left: 4px;
+    }
+    
+    .profile-pic-container {
+        width: 20px;
+        height: 20px;
+    }
+    
+    .edit-btn {
+        width: 16px;
+        height: 16px;
+        font-size: 0.35rem;
     }
     
     .chat-sidebar {
-        height: 250px;
+        height: 200px;
+        display: none; /* Hide by default on mobile */
+    }
+    
+    .chat-sidebar.mobile-visible {
+        display: flex;
     }
     
     .forum-section {
-        padding: 6px;
+        padding: 4px;
     }
     
     .forum-categories {
         grid-template-columns: 1fr;
-        gap: 6px;
+        gap: 4px;
     }
     
     .category-card {
-        padding: 6px;
-    }
-    
-    .profile-pic-container {
-        width: 24px;
-        height: 24px;
-    }
-    
-    .upload-btn {
-        width: 12px;
-        height: 12px;
-        font-size: 0.4rem;
-    }
-    
-    .edit-btn {
-        width: 18px;
-        height: 18px;
-        font-size: 0.4rem;
+        padding: 4px;
     }
 }
 
