@@ -1,0 +1,24 @@
+{
+  "name": "basement-arcade",
+  "version": "1.0.0",
+  "description": "3D Web3 Gaming Arcade on Base Network",
+  "type": "module",
+  "scripts": {
+    "dev": "vite",
+    "build": "tsc && vite build",
+    "preview": "vite preview",
+    "type-check": "tsc --noEmit"
+  },
+  "dependencies": {
+    "three": "^0.160.0",
+    "@types/three": "^0.160.0",
+    "ethers": "^6.10.0",
+    "gsap": "^3.12.5"
+  },
+  "devDependencies": {
+    "typescript": "^5.3.3",
+    "vite": "^5.0.11",
+    "@vitejs/plugin-react": "^4.2.1"
+  }
+}
+
