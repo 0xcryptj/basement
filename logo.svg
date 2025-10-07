@@ -1,0 +1,106 @@
+<svg width="200" height="60" viewBox="0 0 200 60" xmlns="http://www.w3.org/2000/svg">
+  <defs>
+    <!-- Neon glow filter -->
+    <filter id="neonGlow" x="-50%" y="-50%" width="200%" height="200%">
+      <feGaussianBlur stdDeviation="3" result="coloredBlur"/>
+      <feMerge> 
+        <feMergeNode in="coloredBlur"/>
+        <feMergeNode in="SourceGraphic"/>
+      </feMerge>
+    </filter>
+    
+    <!-- Stronger glow for hover -->
+    <filter id="neonGlowStrong" x="-50%" y="-50%" width="200%" height="200%">
+      <feGaussianBlur stdDeviation="5" result="coloredBlur"/>
+      <feMerge> 
+        <feMergeNode in="coloredBlur"/>
+        <feMergeNode in="SourceGraphic"/>
+      </feMerge>
+    </filter>
+    
+    <!-- Gradient for text -->
+    <linearGradient id="textGradient" x1="0%" y1="0%" x2="100%" y2="0%">
+      <stop offset="0%" style="stop-color:#0052FF;stop-opacity:1" />
+      <stop offset="50%" style="stop-color:#00BFFF;stop-opacity:1" />
+      <stop offset="100%" style="stop-color:#0052FF;stop-opacity:1" />
+    </linearGradient>
+    
+    <!-- Arcade reflection gradient -->
+    <linearGradient id="reflection" x1="0%" y1="0%" x2="0%" y2="100%">
+      <stop offset="0%" style="stop-color:#FFFFFF;stop-opacity:0.3" />
+      <stop offset="30%" style="stop-color:#FFFFFF;stop-opacity:0.1" />
+      <stop offset="100%" style="stop-color:#FFFFFF;stop-opacity:0" />
+    </linearGradient>
+  </defs>
+  
+  <!-- Background rectangle for better contrast -->
+  <rect x="0" y="0" width="200" height="60" fill="#0A0A0A" rx="8"/>
+  
+  <!-- Main BASEMENT text -->
+  <text x="100" y="40" 
+        font-family="Orbitron, monospace" 
+        font-size="24" 
+        font-weight="900" 
+        text-anchor="middle" 
+        fill="url(#textGradient)"
+        filter="url(#neonGlow)"
+        class="logo-text">
+    BASEMENT
+  </text>
+  
+  <!-- Reflection overlay -->
+  <text x="100" y="40" 
+        font-family="Orbitron, monospace" 
+        font-size="24" 
+        font-weight="900" 
+        text-anchor="middle" 
+        fill="url(#reflection)"
+        opacity="0.6"
+        class="logo-reflection">
+    BASEMENT
+  </text>
+  
+  <!-- Subtle arcade frame -->
+  <rect x="5" y="5" width="190" height="50" 
+        fill="none" 
+        stroke="#0052FF" 
+        stroke-width="1" 
+        stroke-opacity="0.3" 
+        rx="6"/>
+  
+  <!-- Corner accents -->
+  <circle cx="15" cy="15" r="2" fill="#0052FF" opacity="0.6"/>
+  <circle cx="185" cy="15" r="2" fill="#0052FF" opacity="0.6"/>
+  <circle cx="15" cy="45" r="2" fill="#0052FF" opacity="0.6"/>
+  <circle cx="185" cy="45" r="2" fill="#0052FF" opacity="0.6"/>
+  
+  <style>
+    .logo-text {
+      animation: neonPulse 2s ease-in-out infinite alternate;
+    }
+    
+    .logo-reflection {
+      animation: neonPulse 2s ease-in-out infinite alternate;
+    }
+    
+    @keyframes neonPulse {
+      from {
+        filter: url(#neonGlow);
+        opacity: 0.8;
+      }
+      to {
+        filter: url(#neonGlowStrong);
+        opacity: 1;
+      }
+    }
+    
+    /* Hover effect */
+    svg:hover .logo-text {
+      filter: url(#neonGlowStrong);
+    }
+    
+    svg:hover .logo-reflection {
+      opacity: 0.8;
+    }
+  </style>
+</svg>

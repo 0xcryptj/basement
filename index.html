@@ -1,0 +1,330 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>The Basement - Retro Cyberpunk Web3 Arcade</title>
+    <link rel="stylesheet" href="style.css">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Press+Start+2P&display=swap" rel="stylesheet">
+</head>
+<body>
+    <!-- Top Navigation Bar -->
+    <nav class="navbar">
+        <div class="nav-content">
+            <!-- Left Logo -->
+            <div class="logo">
+                <a href="/" class="logo-link" id="home-link">
+                    <span class="logo-text">The Basement</span>
+                </a>
+            </div>
+            
+            <!-- Center Navigation -->
+            <div class="nav-links">
+                <a href="#arcade" class="nav-link">Arcade</a>
+                <a href="#shop" class="nav-link">Shop</a>
+                <a href="#forum" class="nav-link" id="forum-link">Forum</a>
+            </div>
+            
+            <!-- Mobile Hamburger Menu -->
+            <button id="mobile-menu-toggle" class="mobile-menu-toggle">
+                <span class="hamburger-line"></span>
+                <span class="hamburger-line"></span>
+                <span class="hamburger-line"></span>
+            </button>
+            
+            <!-- Mobile Menu -->
+            <div id="mobile-menu" class="mobile-menu hidden">
+                <a href="#arcade" class="mobile-nav-link">Arcade</a>
+                <a href="#shop" class="mobile-nav-link">Shop</a>
+                <a href="#forum" class="mobile-nav-link" id="mobile-forum-link">Forum</a>
+            </div>
+            
+            <!-- Right Wallet Connect -->
+            <div class="wallet-section">
+                <div class="wallet-dropdown">
+                    <button id="connect-wallet" class="connect-btn">
+                        <span class="btn-text">Connect Wallet</span>
+                        <span class="dropdown-arrow">▼</span>
+                    </button>
+                    <div id="wallet-options" class="wallet-options hidden">
+                        <button class="wallet-option" data-wallet="base">Base Wallet</button>
+                        <button class="wallet-option" data-wallet="phantom">Phantom</button>
+                        <button class="wallet-option" data-wallet="metamask">MetaMask</button>
+                    </div>
+                </div>
+                <div id="wallet-info" class="wallet-info hidden">
+                    <div class="user-profile">
+                <div class="profile-pic-container">
+                    <img id="profile-pic" class="profile-pic" src="" alt="Profile" style="display: none;">
+                    <div id="profile-pic-placeholder" class="profile-pic-placeholder">●</div>
+                </div>
+                        <div class="user-details">
+                            <span id="wallet-address" class="wallet-address"></span>
+                            <button id="edit-username" class="edit-btn" title="Edit Username">✎</button>
+                        </div>
+                    </div>
+                    <button id="disconnect-wallet" class="disconnect-btn">Disconnect Wallet</button>
+                </div>
+            </div>
+        </div>
+    </nav>
+
+    <!-- Main Layout -->
+    <div class="main-layout">
+        <!-- Collapsible IRC Chat Sidebar -->
+        <aside id="chat-sidebar" class="chat-sidebar">
+            <div class="sidebar-header">
+                <div class="channel-info">
+                    <h3 class="sidebar-title" id="current-channel">#basement</h3>
+                    <div class="channel-stats" id="channel-stats">
+                        <span class="user-count">0 users</span>
+                    </div>
+                </div>
+                <div class="sidebar-controls">
+                    <button id="create-channel" class="create-channel-btn" title="Create New Channel">+</button>
+                    <button id="toggle-sidebar" class="toggle-btn"><<</button>
+                </div>
+            </div>
+            <div class="channel-list" id="channel-list">
+                <div class="channel-item active" data-channel="#basement">
+                    <span class="channel-name">#basement</span>
+                    <span class="channel-users">0</span>
+                </div>
+            </div>
+            <div class="chat-area">
+                <div class="chat-messages" id="chat-messages">
+                    <div class="system-message">
+                        <span class="timestamp">[00:00]</span>
+                        <span class="system-text">*** Welcome to The Basement IRC</span>
+                    </div>
+                    <div class="system-message">
+                        <span class="timestamp">[00:00]</span>
+                        <span class="system-text">*** Connect your wallet to chat</span>
+                    </div>
+                </div>
+                <div class="chat-input">
+                    <input type="text" id="chat-input-field" placeholder="Type message..." disabled>
+                    <input type="file" id="file-input" accept="image/*" style="display: none;">
+                    <button type="button" id="file-upload-btn" class="file-upload-btn" disabled>📷</button>
+                    <button id="send-btn" disabled>Send</button>
+                </div>
+            </div>
+        </aside>
+
+        <!-- Main Content Area -->
+        <main class="main-content">
+            <div class="content-wrapper">
+                <!-- Welcome Section -->
+                <div class="welcome-section" id="welcome-section">
+                    <h1 class="main-title">Welcome to The Basement</h1>
+                    <p class="main-subtitle">Retro Cyberpunk Web3 Arcade, IRC, and Forum on Basechain!</p>
+                </div>
+                
+                <!-- Forum Section -->
+                <div class="forum-section hidden" id="forum-section">
+                    <div class="forum-header">
+                        <h2 class="forum-title">The Basement Forum</h2>
+                        <p class="forum-subtitle">Discuss Web3, Base Chain, and Retro Gaming</p>
+                        <button id="create-category-btn" class="create-category-btn">+ Create New Category</button>
+                    </div>
+                    
+                    <div class="forum-categories">
+                        <div class="category-card" data-category="general">
+                            <div class="category-icon">💬</div>
+                            <h3 class="category-title">General Discussion</h3>
+                            <p class="category-desc">General chat about Web3 and Base Chain</p>
+                            <div class="category-stats">
+                                <span class="post-count">24 posts</span>
+                                <span class="last-post">2 hours ago</span>
+                            </div>
+                        </div>
+                        
+                        <div class="category-card" data-category="gaming">
+                            <div class="category-icon">🎮</div>
+                            <h3 class="category-title">Gaming</h3>
+                            <p class="category-desc">Retro games and Web3 gaming</p>
+                            <div class="category-stats">
+                                <span class="post-count">18 posts</span>
+                                <span class="last-post">1 day ago</span>
+                            </div>
+                        </div>
+                        
+                        <div class="category-card" data-category="tech">
+                            <div class="category-icon">⚡</div>
+                            <h3 class="category-title">Technology</h3>
+                            <p class="category-desc">Base Chain development and tech</p>
+                            <div class="category-stats">
+                                <span class="post-count">31 posts</span>
+                                <span class="last-post">3 hours ago</span>
+                            </div>
+                        </div>
+                        
+                        <div class="category-card" data-category="nft">
+                            <div class="category-icon">🖼️</div>
+                            <h3 class="category-title">NFTs & Art</h3>
+                            <p class="category-desc">Digital art and NFT discussions</p>
+                            <div class="category-stats">
+                                <span class="post-count">12 posts</span>
+                                <span class="last-post">5 hours ago</span>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="forum-posts hidden" id="forum-posts">
+                        <div class="posts-header">
+                            <button class="back-btn" id="back-to-categories">← Back to Categories</button>
+                            <h3 class="posts-title" id="posts-title">General Discussion</h3>
+                        </div>
+                        <div class="posts-list" id="posts-list">
+                            <!-- Posts will be generated dynamically -->
+                        </div>
+                        <div class="create-post">
+                            <button class="create-post-btn" id="create-post-btn">+ Create New Thread</button>
+                        </div>
+                    </div>
+                    
+                    <div class="thread-view hidden" id="thread-view">
+                        <div class="thread-header">
+                            <button class="back-btn" id="back-to-posts">← Back to Threads</button>
+                            <h3 class="thread-title" id="thread-title">Thread Title</h3>
+                        </div>
+                        <div class="thread-content" id="thread-content">
+                            <!-- Thread posts will be generated dynamically -->
+                        </div>
+                        <div class="thread-reply">
+                            <textarea id="thread-reply" class="thread-reply-input" placeholder="Reply to this thread..." rows="3"></textarea>
+                            <button id="post-reply" class="post-reply-btn">Post Reply</button>
+                        </div>
+                    </div>
+                    
+                    <div class="post-editor hidden" id="post-editor">
+                        <div class="editor-header">
+                            <button class="back-btn" id="back-to-posts">← Back to Posts</button>
+                            <h3 class="editor-title">Create New Post</h3>
+                        </div>
+                        <div class="editor-form">
+                            <input type="text" id="post-title" class="post-title-input" placeholder="Post title..." maxlength="100">
+                            <textarea id="post-content" class="post-content-input" placeholder="Write your post..." rows="10"></textarea>
+                            <div class="editor-actions">
+                                <button class="cancel-btn" id="cancel-post">Cancel</button>
+                                <button class="publish-btn" id="publish-post">Publish Post</button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </main>
+    </div>
+
+    <!-- Floating Particles -->
+    <div class="particles" id="particles-container">
+        <!-- Particles will be generated dynamically -->
+    </div>
+
+    <!-- Category Creation Dialog -->
+    <div id="category-dialog" class="category-dialog hidden">
+        <div class="dialog-content">
+            <h3 class="dialog-title">Create New Category</h3>
+            <div class="category-form">
+                <div class="form-group">
+                    <label class="form-label">Category Name:</label>
+                    <input type="text" id="category-name" class="category-input" placeholder="Enter category name..." maxlength="30">
+                </div>
+                <div class="form-group">
+                    <label class="form-label">Description:</label>
+                    <input type="text" id="category-description" class="category-input" placeholder="What's this category about?" maxlength="100">
+                </div>
+                <div class="form-group">
+                    <label class="form-label">Icon (emoji):</label>
+                    <input type="text" id="category-icon" class="category-input" placeholder="🎮" maxlength="2">
+                </div>
+            </div>
+            <div class="dialog-actions">
+                <button id="cancel-category" class="cancel-btn">Cancel</button>
+                <button id="create-category-submit" class="create-btn">Create Category</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Channel Creation Dialog -->
+    <div id="channel-dialog" class="channel-dialog hidden">
+        <div class="dialog-content">
+            <h3 class="dialog-title">Create New Channel</h3>
+            <div class="channel-form">
+                <div class="form-group">
+                    <label class="form-label">Channel Name:</label>
+                    <input type="text" id="channel-name" class="channel-input" placeholder="#channel-name" maxlength="20">
+                    <div class="form-hint">Channel names must start with # and contain only letters, numbers, and hyphens</div>
+                </div>
+                <div class="form-group">
+                    <label class="form-label">Description (optional):</label>
+                    <input type="text" id="channel-description" class="channel-input" placeholder="What's this channel about?" maxlength="100">
+                </div>
+                <div class="form-group">
+                    <label class="form-checkbox">
+                        <input type="checkbox" id="channel-private">
+                        <span class="checkmark"></span>
+                        Private channel (invite only)
+                    </label>
+                </div>
+            </div>
+            <div class="dialog-actions">
+                <button id="cancel-channel" class="cancel-btn">Cancel</button>
+                <button id="create-channel-btn" class="create-btn">Create Channel</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Profile Setup Dialog -->
+    <div id="profile-dialog" class="profile-dialog hidden">
+        <div class="dialog-content">
+            <h3 class="dialog-title">Complete Your Profile</h3>
+            <div class="profile-setup">
+                <div class="profile-pic-section">
+                    <div class="profile-pic-preview">
+                        <img id="dialog-profile-pic" class="profile-pic-preview-img" src="" alt="Profile" style="display: none;">
+                        <div id="dialog-profile-placeholder" class="profile-pic-preview-placeholder">👤</div>
+                        <button id="dialog-upload-pic" class="upload-pic-btn">📷 Upload Photo</button>
+                    </div>
+                </div>
+                <div class="username-section">
+                    <label class="username-label">Choose your display name:</label>
+                    <div class="username-options-simple">
+                        <div class="username-option" data-type="basename">
+                            <input type="radio" id="basename-radio" name="username-type" value="basename">
+                            <label for="basename-radio">
+                                <span class="option-title">Base Name</span>
+                                <span class="option-subtitle" id="basename-subtitle">Not available</span>
+                            </label>
+                        </div>
+                        <div class="username-option" data-type="custom">
+                            <input type="radio" id="custom-radio" name="username-type" value="custom" checked>
+                            <label for="custom-radio">
+                                <span class="option-title">Custom Username</span>
+                                <input type="text" id="custom-username-simple" placeholder="Enter username..." maxlength="20">
+                            </label>
+                        </div>
+                        <div class="username-option" data-type="wallet">
+                            <input type="radio" id="wallet-radio" name="username-type" value="wallet">
+                            <label for="wallet-radio">
+                                <span class="option-title">Wallet Address</span>
+                                <span class="option-subtitle" id="wallet-subtitle">0x1234...5678</span>
+                            </label>
+                        </div>
+                    </div>
+                </div>
+                <div class="dialog-actions">
+                    <button id="skip-setup" class="skip-btn">Skip for now</button>
+                    <button id="save-profile" class="save-btn">Save Profile</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Base Account SDK -->
+    <script src="https://unpkg.com/@base-org/account/dist/base-account.min.js"></script>
+    <script src="script.js"></script>
+</body>
+</html>
