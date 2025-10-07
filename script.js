@@ -262,10 +262,17 @@ class BasementApp {
         const mobileMenuToggle = document.getElementById('mobile-menu-toggle');
         const mobileMenu = document.getElementById('mobile-menu');
         
-        mobileMenuToggle.addEventListener('click', () => {
-            mobileMenuToggle.classList.toggle('active');
-            mobileMenu.classList.toggle('hidden');
-        });
+        if (mobileMenuToggle && mobileMenu) {
+            mobileMenuToggle.addEventListener('click', (e) => {
+                e.stopPropagation();
+                console.log('Hamburger menu clicked');
+                mobileMenuToggle.classList.toggle('active');
+                mobileMenu.classList.toggle('hidden');
+                console.log('Menu classes:', mobileMenu.classList.toString());
+            });
+        } else {
+            console.error('Mobile menu elements not found:', { mobileMenuToggle, mobileMenu });
+        }
         
         // Close mobile menu when clicking on links
         const mobileNavLinks = document.querySelectorAll('.mobile-nav-link');
@@ -287,7 +294,9 @@ class BasementApp {
         
         // Close mobile menu when clicking outside
         document.addEventListener('click', (e) => {
-            if (!mobileMenuToggle.contains(e.target) && !mobileMenu.contains(e.target)) {
+            if (mobileMenuToggle && mobileMenu && 
+                !mobileMenuToggle.contains(e.target) && 
+                !mobileMenu.contains(e.target)) {
                 mobileMenuToggle.classList.remove('active');
                 mobileMenu.classList.add('hidden');
             }
