@@ -4,6 +4,15 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>The Basement - Retro Cyberpunk Web3 Arcade</title>
+    <link rel="icon" type="image/x-icon" href="assets/icon.ico">
+    <link rel="shortcut icon" type="image/x-icon" href="assets/icon.ico">
+    <link rel="apple-touch-icon" sizes="180x180" href="assets/icon.ico">
+    <link rel="icon" type="image/png" sizes="192x192" href="assets/icon.ico">
+    <link rel="icon" type="image/png" sizes="96x96" href="assets/icon.ico">
+    <link rel="icon" type="image/png" sizes="64x64" href="assets/icon.ico">
+    <link rel="icon" type="image/png" sizes="32x32" href="assets/icon.ico">
+    <link rel="icon" type="image/png" sizes="16x16" href="assets/icon.ico">
+    <link rel="manifest" href="data:application/json,{&quot;icons&quot;:[{&quot;src&quot;:&quot;assets/icon.ico&quot;,&quot;sizes&quot;:&quot;192x192&quot;,&quot;type&quot;:&quot;image/x-icon&quot;}]}">
     <link rel="stylesheet" href="style.css">
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -16,6 +25,7 @@
             <!-- Left Logo -->
             <div class="logo">
                 <a href="/" class="logo-link" id="home-link">
+                    <img src="assets/tsvg.svg" alt="Logo" class="main-logo">
                     <span class="logo-text">The Basement</span>
                 </a>
             </div>
@@ -34,21 +44,20 @@
                         <span class="btn-text">Connect Wallet</span>
                         <span class="dropdown-arrow">▼</span>
                     </button>
-                    <div id="wallet-options" class="wallet-options hidden">
+                    <div id="wallet-options" class="wallet-options">
                         <button class="wallet-option" data-wallet="base">Base Wallet</button>
                         <button class="wallet-option" data-wallet="phantom">Phantom</button>
                         <button class="wallet-option" data-wallet="metamask">MetaMask</button>
                     </div>
                 </div>
-                <div id="wallet-info" class="wallet-info hidden">
+                <div id="wallet-info" class="wallet-info">
                     <div class="user-profile">
-                <div class="profile-pic-container">
+                <div class="profile-pic-container" id="profile-pic-container">
                     <img id="profile-pic" class="profile-pic" src="" alt="Profile" style="display: none;">
                     <div id="profile-pic-placeholder" class="profile-pic-placeholder">●</div>
                 </div>
                         <div class="user-details">
                             <span id="wallet-address" class="wallet-address"></span>
-                            <button id="edit-username" class="edit-btn" title="Edit Username">✎</button>
                         </div>
                     </div>
                     <button id="disconnect-wallet" class="disconnect-btn">Disconnect Wallet</button>
@@ -106,7 +115,7 @@
                     </div>
                 </div>
                 <div class="chat-input">
-                    <input type="text" id="chat-input-field" placeholder="Type message..." disabled>
+                    <input type="text" id="chat-input-field" placeholder="Type message...">
                     <input type="file" id="file-input" accept="image/*" style="display: none;">
                     <button type="button" id="file-upload-btn" class="file-upload-btn" disabled>📷</button>
                     <button id="send-btn" disabled>Send</button>
@@ -285,9 +294,9 @@
             <div class="profile-setup">
                 <div class="profile-pic-section">
                     <div class="profile-pic-preview">
-                        <img id="dialog-profile-pic" class="profile-pic-preview-img" src="" alt="Profile" style="display: none;">
-                        <div id="dialog-profile-placeholder" class="profile-pic-preview-placeholder">👤</div>
-                        <button id="dialog-upload-pic" class="upload-pic-btn">📷 Upload Photo</button>
+                        <img id="dialog-profile-pic" class="profile-pic-preview-img" src="data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iODAiIGhlaWdodD0iODAiIHZpZXdCb3g9IjAgMCA4MCA4MCIgZmlsbD0ibm9uZSIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj4KPHN2ZyB3aWR0aD0iODAiIGhlaWdodD0iODAiIHZpZXdCb3g9IjAgMCA4MCA4MCIgZmlsbD0ibm9uZSIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj4KICA8cmVjdCB3aWR0aD0iODAiIGhlaWdodD0iODAiIGZpbGw9IiMwMDUyZmY5OSIvPgogIDxjaXJjbGUgY3g9IjQwIiBjeT0iMzAiIHI9IjE1IiBmaWxsPSIjZmZmZmZmIi8+CiAgPHBhdGggZD0iTTIwIDYwQzIwIDUwIDMwIDQwIDQwIDQwUzYwIDUwIDYwIDYwVjcwSDIwVjYwWiIgZmlsbD0iI2ZmZmZmZiIvPgo8L3N2Zz4=" alt="Profile">
+                        <button id="edit-profile-pic" class="edit-profile-btn" title="Change Profile Picture">✏️</button>
+                        <input type="file" id="profile-pic-input" accept="image/*" style="display: none;">
                     </div>
                 </div>
                 <div class="username-section">
@@ -311,7 +320,7 @@
                             <input type="radio" id="wallet-radio" name="username-type" value="wallet">
                             <label for="wallet-radio">
                                 <span class="option-title">Wallet Address</span>
-                                <span class="option-subtitle" id="wallet-subtitle">0x1234...5678</span>
+                                <span class="option-subtitle" id="wallet-subtitle">Loading...</span>
                             </label>
                         </div>
                     </div>
@@ -325,7 +334,6 @@
     </div>
 
     <!-- Base Account SDK -->
-    <script src="https://unpkg.com/@base-org/account/dist/base-account.min.js"></script>
     <script src="script.js"></script>
 </body>
 </html>

@@ -37,17 +37,25 @@ class BasementApp {
         try {
             console.log('Initializing Basement App...');
             
+            // Try to restore user session first
+            const sessionRestored = this.restoreUserSession();
+            
             // Set up event listeners
             this.setupEventListeners();
             
-            // Load user preferences
-            this.loadUserPreferences();
+            // Load user preferences (only if session wasn't restored)
+            if (!sessionRestored) {
+                this.loadUserPreferences();
+            }
             
             // Generate floating particles
             this.generateParticles();
             
             // Initialize chat
             this.initializeChat();
+            
+            // Initialize UI state
+            this.updateWalletUI();
             
             console.log('Basement App initialized successfully');
         } catch (error) {
@@ -62,6 +70,9 @@ class BasementApp {
             console.error('Particles container not found');
             return;
         }
+        
+        // Clear existing particles
+        particlesContainer.innerHTML = '';
         
         const particleCount = 200;
         
@@ -88,6 +99,9 @@ class BasementApp {
     initializeChat() {
         console.log('Initializing chat...');
         this.addSystemMessage('Welcome to The Basement! Connect your wallet to start chatting.');
+        
+        // Initialize channel list with default channel
+        this.updateChannelList();
     }
 
     setupEventListeners() {
@@ -125,17 +139,38 @@ class BasementApp {
         }
         
         if (sendBtn) {
-            sendBtn.addEventListener('click', () => this.sendMessage());
+            sendBtn.addEventListener('click', () => {
+                this.sendMessage();
+            });
+        }
+        
+        // File upload functionality
+        const fileUploadBtn = document.getElementById('file-upload-btn');
+        if (fileUploadBtn) {
+            fileUploadBtn.addEventListener('click', () => {
+                const fileInput = document.createElement('input');
+                fileInput.type = 'file';
+                fileInput.accept = 'image/*';
+                fileInput.onchange = (e) => this.handleFileUpload(e.target.files[0]);
+                fileInput.click();
+            });
         }
 
-        // Profile setup dialog
-        const dialogUploadPic = document.getElementById('dialog-upload-pic');
+        // Profile setup dialog - simplified
+        const profilePicInput = document.getElementById('profile-pic-input');
+        const editProfilePic = document.getElementById('edit-profile-pic');
         const skipSetup = document.getElementById('skip-setup');
         const saveProfile = document.getElementById('save-profile');
         const customUsernameSimple = document.getElementById('custom-username-simple');
 
-        if (dialogUploadPic) {
-            dialogUploadPic.addEventListener('change', (e) => {
+        if (editProfilePic && profilePicInput) {
+            editProfilePic.addEventListener('click', () => {
+                profilePicInput.click();
+            });
+        }
+        
+        if (profilePicInput) {
+            profilePicInput.addEventListener('change', (e) => {
                 this.handleDialogProfilePicUpload(e.target.files[0]);
             });
         }
@@ -152,15 +187,24 @@ class BasementApp {
             customUsernameSimple.addEventListener('input', (e) => {
                 const customUsername = e.target.value.trim();
                 if (customUsername) {
-                    document.querySelector('input[name="username-choice"][value="custom"]').checked = true;
+                    const customRadio = document.getElementById('custom-radio');
+                    if (customRadio) {
+                        customRadio.checked = true;
+                    }
                 }
             });
         }
 
-        // Navbar profile elements
-        const editUsername = document.getElementById('edit-username');
-        if (editUsername) {
-            editUsername.addEventListener('click', () => this.showProfileDialog());
+        // Profile photo click functionality
+        const profilePicContainer = document.getElementById('profile-pic-container');
+        if (profilePicContainer) {
+            profilePicContainer.addEventListener('click', () => {
+                if (!this.isConnected) {
+                    alert('Please connect your wallet to access profile settings');
+                    return;
+                }
+                this.showProfileDialog();
+            });
         }
 
         // Forum navigation
@@ -170,6 +214,10 @@ class BasementApp {
         if (forumLink) {
             forumLink.addEventListener('click', (e) => {
                 e.preventDefault();
+                if (!this.isConnected) {
+                    alert('Please connect your wallet to access the forum');
+                    return;
+                }
                 this.showForum();
             });
         }
@@ -177,6 +225,10 @@ class BasementApp {
         if (mobileForumLink) {
             mobileForumLink.addEventListener('click', (e) => {
                 e.preventDefault();
+                if (!this.isConnected) {
+                    alert('Please connect your wallet to access the forum');
+                    return;
+                }
                 this.showForum();
             });
         }
@@ -208,6 +260,10 @@ class BasementApp {
                 if (href === '#chat') {
                     this.showMobileChat();
                 } else if (href === '#forum') {
+                    if (!this.isConnected) {
+                        alert('Please connect your wallet to access the forum');
+                        return;
+                    }
                     this.showMobileForum();
                 } else if (href === '#arcade') {
                     this.showMobileArcade();
@@ -228,7 +284,7 @@ class BasementApp {
         });
 
         // Channel creation
-        const createChannelBtn = document.getElementById('create-channel-btn');
+        const createChannelBtn = document.getElementById('create-channel');
         const cancelChannelBtn = document.getElementById('cancel-channel');
         const createChannelSubmitBtn = document.getElementById('create-channel-submit');
 
@@ -256,6 +312,22 @@ class BasementApp {
             });
         }
 
+        // Chat sidebar toggle
+        const toggleSidebarBtn = document.getElementById('toggle-sidebar');
+        if (toggleSidebarBtn) {
+            toggleSidebarBtn.addEventListener('click', () => this.toggleChatSidebar());
+        }
+
+        // Close wallet dropdown when clicking outside
+        document.addEventListener('click', (e) => {
+            const dropdown = document.querySelector('.wallet-dropdown');
+            const connectBtn = document.getElementById('connect-wallet');
+            
+            if (dropdown && !dropdown.contains(e.target) && !connectBtn.contains(e.target)) {
+                this.closeWalletDropdown();
+            }
+        });
+
         // Forum functionality
         const categoryCards = document.querySelectorAll('.category-card');
         categoryCards.forEach(card => {
@@ -264,6 +336,23 @@ class BasementApp {
                 this.showCategoryPosts(category);
             });
         });
+
+        // Post editor functionality
+        const backToPostsBtn = document.getElementById('back-to-posts');
+        const cancelPostBtn = document.getElementById('cancel-post');
+        const publishPostBtn = document.getElementById('publish-post');
+
+        if (backToPostsBtn) {
+            backToPostsBtn.addEventListener('click', () => this.showCategoryPosts(this.currentCategory));
+        }
+
+        if (cancelPostBtn) {
+            cancelPostBtn.addEventListener('click', () => this.showCategoryPosts(this.currentCategory));
+        }
+
+        if (publishPostBtn) {
+            publishPostBtn.addEventListener('click', () => this.publishPost());
+        }
 
         const backToCategoriesBtn = document.getElementById('back-to-categories');
         if (backToCategoriesBtn) {
@@ -275,14 +364,14 @@ class BasementApp {
             createPostBtn.addEventListener('click', () => this.showPostEditor());
         }
 
-        const cancelPostBtn = document.getElementById('cancel-post-btn');
-        if (cancelPostBtn) {
-            cancelPostBtn.addEventListener('click', () => this.showCategoryPosts(this.currentCategory));
+        const cancelPostBtn2 = document.getElementById('cancel-post-btn');
+        if (cancelPostBtn2) {
+            cancelPostBtn2.addEventListener('click', () => this.showCategoryPosts(this.currentCategory));
         }
 
-        const publishPostBtn = document.getElementById('publish-post-btn');
-        if (publishPostBtn) {
-            publishPostBtn.addEventListener('click', () => this.publishPost());
+        const publishPostBtn2 = document.getElementById('publish-post-btn');
+        if (publishPostBtn2) {
+            publishPostBtn2.addEventListener('click', () => this.publishPost());
         }
 
         // Category creation
@@ -319,6 +408,154 @@ class BasementApp {
         }
     }
 
+    closeWalletDropdown() {
+        const dropdown = document.querySelector('.wallet-dropdown');
+        if (dropdown) {
+            dropdown.classList.remove('active');
+        }
+    }
+
+    toggleChatSidebar() {
+        console.log('toggleChatSidebar called');
+        
+        const chatSidebar = document.getElementById('chat-sidebar');
+        const toggleBtn = document.getElementById('toggle-sidebar');
+        
+        console.log('Elements found:', { chatSidebar: !!chatSidebar, toggleBtn: !!toggleBtn });
+        
+        if (chatSidebar && toggleBtn) {
+            const isCollapsed = chatSidebar.classList.contains('collapsed');
+            console.log('Current state:', isCollapsed ? 'collapsed' : 'expanded');
+            
+            // Toggle the collapsed class
+            chatSidebar.classList.toggle('collapsed');
+            
+            // Update toggle button text - single arrow pointing right when collapsed
+            const newState = chatSidebar.classList.contains('collapsed');
+            toggleBtn.textContent = newState ? '>' : '<<';
+            
+            console.log('New state:', newState ? 'collapsed' : 'expanded');
+            console.log('Toggle button text:', toggleBtn.textContent);
+        } else {
+            console.error('Chat sidebar or toggle button not found');
+        }
+    }
+
+    // Advanced User Management System
+    restoreUserSession() {
+        const savedWalletAddress = localStorage.getItem('basement_walletAddress');
+        const savedUsername = localStorage.getItem('basement_username');
+        const savedProfilePic = localStorage.getItem('basement_profilePic');
+        
+        if (savedWalletAddress && savedUsername) {
+            console.log('Restoring user session:', { username: savedUsername, walletAddress: savedWalletAddress });
+            
+            this.walletAddress = savedWalletAddress;
+            this.username = savedUsername;
+            this.isFirstConnection = false;
+            
+            if (savedProfilePic) {
+                this.profilePic = savedProfilePic;
+            }
+            
+            // Load user addresses mapping
+            const savedUserAddresses = localStorage.getItem('basement_userAddresses');
+            if (savedUserAddresses) {
+                this.userAddresses = JSON.parse(savedUserAddresses);
+            }
+            
+            return true;
+        }
+        
+        return false;
+    }
+
+    clearUserSession() {
+        // Clear all user data
+        localStorage.removeItem('basement_username');
+        localStorage.removeItem('basement_profilePic');
+        localStorage.removeItem('basement_walletAddress');
+        localStorage.removeItem('basement_isConnected');
+        localStorage.removeItem('basement_isFirstConnection');
+        localStorage.removeItem('basement_userAddresses');
+        
+        // Reset app state
+        this.isConnected = false;
+        this.walletAddress = null;
+        this.username = null;
+        this.profilePic = null;
+        this.isFirstConnection = true;
+        this.userAddresses = {};
+        
+        console.log('User session cleared');
+    }
+
+    updateUserActivity(username, activity = 'message') {
+        const userKey = `basement_user_${username}`;
+        const userData = {
+            username: username,
+            walletAddress: this.userAddresses[username] || null,
+            lastActivity: new Date().toISOString(),
+            activityType: activity,
+            messageCount: (this.getUserMessageCount(username) || 0) + 1
+        };
+        
+        localStorage.setItem(userKey, JSON.stringify(userData));
+    }
+
+    getUserMessageCount(username) {
+        const userKey = `basement_user_${username}`;
+        const userData = localStorage.getItem(userKey);
+        
+        if (userData) {
+            try {
+                const parsed = JSON.parse(userData);
+                return parsed.messageCount || 0;
+            } catch (error) {
+                console.error('Failed to parse user data:', error);
+            }
+        }
+        
+        return 0;
+    }
+
+    async switchToBaseNetwork(provider) {
+        const BASE_CHAIN_ID = '0x2105'; // 8453 in hex
+        const BASE_NETWORK = {
+            chainId: BASE_CHAIN_ID,
+            chainName: 'Base Mainnet',
+            nativeCurrency: {
+                name: 'ETH',
+                symbol: 'ETH',
+                decimals: 18
+            },
+            rpcUrls: ['https://mainnet.base.org'],
+            blockExplorerUrls: ['https://basescan.org']
+        };
+
+        try {
+            // Try to switch to Base network
+            await provider.request({
+                method: 'wallet_switchEthereumChain',
+                params: [{ chainId: BASE_CHAIN_ID }],
+            });
+        } catch (switchError) {
+            // If network doesn't exist, add it
+            if (switchError.code === 4902) {
+                try {
+                    await provider.request({
+                        method: 'wallet_addEthereumChain',
+                        params: [BASE_NETWORK],
+                    });
+                } catch (addError) {
+                    throw new Error('Failed to add Base network');
+                }
+            } else {
+                throw new Error('Failed to switch to Base network');
+            }
+        }
+    }
+
     async connectWallet(walletType) {
         try {
             console.log(`Connecting to ${walletType}...`);
@@ -327,21 +564,91 @@ class BasementApp {
             
             if (walletType === 'metamask') {
                 if (typeof window.ethereum !== 'undefined') {
-                    const accounts = await window.ethereum.request({ method: 'eth_requestAccounts' });
+                    // Switch to Base network first
+                    await this.switchToBaseNetwork(window.ethereum);
+                    
+                    // Request account access
+                    const accounts = await window.ethereum.request({ 
+                        method: 'eth_requestAccounts' 
+                    });
                     address = accounts[0];
+                    
+                    // Request signature for verification
+                    const message = `Connect to The Basement\n\nTimestamp: ${Date.now()}`;
+                    const signature = await window.ethereum.request({
+                        method: 'personal_sign',
+                        params: [message, address]
+                    });
+                    
+                    // Verify signature was provided
+                    if (!signature) {
+                        throw new Error('Signature required for connection');
+                    }
+                    
+                    console.log('MetaMask connected to Base:', address);
+                    console.log('Signature verified:', signature.substring(0, 10) + '...');
                 } else {
-                    throw new Error('MetaMask not installed');
+                    throw new Error('MetaMask not installed. Please install MetaMask to continue.');
                 }
             } else if (walletType === 'phantom') {
-                if (typeof window.solana !== 'undefined') {
-                    const response = await window.solana.connect();
-                    address = response.publicKey.toString();
+                // Phantom supports Ethereum/Base - use ethereum provider
+                if (typeof window.phantom !== 'undefined' && window.phantom.ethereum) {
+                    // Switch to Base network first
+                    await this.switchToBaseNetwork(window.phantom.ethereum);
+                    
+                    const accounts = await window.phantom.ethereum.request({ 
+                        method: 'eth_requestAccounts' 
+                    });
+                    address = accounts[0];
+                    
+                    // Request signature for verification
+                    const message = `Connect to The Basement\n\nTimestamp: ${Date.now()}`;
+                    const signature = await window.phantom.ethereum.request({
+                        method: 'personal_sign',
+                        params: [message, address]
+                    });
+                    
+                    // Verify signature was provided
+                    if (!signature) {
+                        throw new Error('Signature required for connection');
+                    }
+                    
+                    console.log('Phantom connected to Base:', address);
+                    console.log('Signature verified:', signature.substring(0, 10) + '...');
                 } else {
-                    throw new Error('Phantom not installed');
+                    throw new Error('Phantom not installed. Please install Phantom to continue.');
                 }
             } else if (walletType === 'base') {
-                // Simulate Base wallet connection
-                address = '0x' + Math.random().toString(16).substr(2, 40);
+                if (typeof window.ethereum !== 'undefined') {
+                    try {
+                        // Switch to Base network first
+                        await this.switchToBaseNetwork(window.ethereum);
+                        
+                        const accounts = await window.ethereum.request({ 
+                            method: 'eth_requestAccounts' 
+                        });
+                        address = accounts[0];
+                        
+                        // Request signature for verification
+                        const message = `Connect to The Basement\n\nTimestamp: ${Date.now()}`;
+                        const signature = await window.ethereum.request({
+                            method: 'personal_sign',
+                            params: [message, address]
+                        });
+                        
+                        // Verify signature was provided
+                        if (!signature) {
+                            throw new Error('Signature required for connection');
+                        }
+                        
+                        console.log('Base Wallet connected to Base:', address);
+                        console.log('Signature verified:', signature.substring(0, 10) + '...');
+                    } catch (error) {
+                        throw new Error('Base wallet not available. Please switch to Base network or install Base wallet.');
+                    }
+                } else {
+                    throw new Error('No Ethereum provider found. Please install a compatible wallet.');
+                }
             }
             
             if (!address) {
@@ -351,56 +658,120 @@ class BasementApp {
             this.walletAddress = address;
             this.isConnected = true;
             
+            console.log('Wallet connected successfully:', address);
+            
+            // Check if this wallet address is already known
+            const savedWalletAddress = localStorage.getItem('basement_walletAddress');
+            const savedUsername = localStorage.getItem('basement_username');
+            
+            if (savedWalletAddress === address && savedUsername) {
+                // This is a returning user
+                this.username = savedUsername;
+                this.isFirstConnection = false;
+                
+                // Load saved profile pic
+                const savedProfilePic = localStorage.getItem('basement_profilePic');
+                if (savedProfilePic) {
+                    this.profilePic = savedProfilePic;
+                }
+                
+                // Load user addresses mapping
+                const savedUserAddresses = localStorage.getItem('basement_userAddresses');
+                if (savedUserAddresses) {
+                    this.userAddresses = JSON.parse(savedUserAddresses);
+                }
+                
+                console.log('Returning user detected:', this.username);
+            } else {
+                // This is a new user
+                this.isFirstConnection = true;
+                console.log('New user detected');
+            }
+            
             // Update UI
             this.updateWalletUI();
             
-            // Show profile setup for first-time users
+            // Show profile setup for first-time users only
             if (this.isFirstConnection) {
                 this.showProfileDialog();
             }
             
-            // Add welcome message to chat
-            this.addSystemMessage(`${this.username || 'User'} joined the chat!`);
+            // Add user to current channel
+            if (this.channels[this.currentChannel]) {
+                this.channels[this.currentChannel].users.add(this.username);
+            }
             
-            console.log('Wallet connected successfully:', address);
+            // Add welcome message to chat
+            this.addJoinMessage(this.username || 'User');
+            
+            // Update channel UI with user count
+            this.updateChannelUI();
+            
+            // Close wallet dropdown
+            this.closeWalletDropdown();
             
         } catch (error) {
             console.error('Wallet connection failed:', error);
             this.showError(`Failed to connect to ${walletType}: ${error.message}`);
+            // Close dropdown on error
+            this.closeWalletDropdown();
         }
     }
 
     disconnectWallet() {
         if (this.isConnected) {
             this.addSystemMessage(`*** ${this.username} left the channel`);
+            
+            // Remove user from current channel
+            if (this.channels[this.currentChannel]) {
+                this.channels[this.currentChannel].users.delete(this.username);
+            }
         }
-        this.isConnected = false;
-        this.walletAddress = null;
-        this.username = null;
-        this.profilePic = null;
-        this.isFirstConnection = false;
         
-        // Clear localStorage
-        localStorage.removeItem('basement_username');
-        localStorage.removeItem('basement_profilePic');
+        // Clear user session completely
+        this.clearUserSession();
         
         // Update UI
         this.updateWalletUI();
+        
+        // Update channel UI to reflect user count
+        this.updateChannelUI();
         
         // Hide wallet dropdown
         this.toggleWalletDropdown();
     }
 
     loadUserPreferences() {
+        // Load username with fallback hierarchy
         const savedUsername = localStorage.getItem('basement_username');
         const savedProfilePic = localStorage.getItem('basement_profilePic');
+        const savedWalletAddress = localStorage.getItem('basement_walletAddress');
         
         if (savedUsername) {
             this.username = savedUsername;
+            console.log('Loaded saved username:', this.username);
         }
         
         if (savedProfilePic) {
             this.profilePic = savedProfilePic;
+            console.log('Loaded saved profile picture');
+        }
+        
+        if (savedWalletAddress) {
+            this.walletAddress = savedWalletAddress;
+            console.log('Loaded saved wallet address:', this.walletAddress);
+        }
+        
+        // Load user address mappings
+        const savedUserAddresses = localStorage.getItem('basement_userAddresses');
+        if (savedUserAddresses) {
+            try {
+                this.userAddresses = JSON.parse(savedUserAddresses);
+                console.log('Loaded user address mappings:', Object.keys(this.userAddresses).length, 'users');
+            } catch (error) {
+                console.error('Failed to parse user address mappings:', error);
+                this.userAddresses = {};
+            }
         }
     }
 
@@ -408,25 +779,45 @@ class BasementApp {
         const connectBtn = document.getElementById('connect-wallet');
         const walletInfo = document.getElementById('wallet-info');
         const walletAddress = document.getElementById('wallet-address');
+        const chatInput = document.getElementById('chat-input-field');
+        const sendBtn = document.getElementById('send-btn');
+        const fileUploadBtn = document.getElementById('file-upload-btn');
         
         if (this.isConnected) {
+            // Hide connect button, show wallet info
             if (connectBtn) connectBtn.style.display = 'none';
             if (walletInfo) walletInfo.style.display = 'flex';
             
-            const displayText = this.username || this.walletAddress;
-            walletAddress.innerHTML = `
-                <span class="wallet-display">${displayText}</span>
-                <a href="https://basescan.org/address/${this.walletAddress}" target="_blank" class="wallet-address-link" title="View on BaseScan: ${this.walletAddress}">
-                    <span class="basescan-icon">📋</span>
-                </a>
-            `;
-            walletAddress.classList.add('connected');
+            // Enable chat functionality
+            if (chatInput) chatInput.disabled = false;
+            if (sendBtn) sendBtn.disabled = false;
+            if (fileUploadBtn) fileUploadBtn.disabled = false;
+            
+            // Update wallet address display
+            if (walletAddress) {
+                const displayText = this.username || this.walletAddress;
+                walletAddress.innerHTML = `
+                    <span class="wallet-display">${displayText}</span>
+                `;
+                walletAddress.classList.add('connected');
+            }
             
             this.updateProfilePic();
         } else {
+            // Show connect button, hide wallet info
             if (connectBtn) connectBtn.style.display = 'block';
             if (walletInfo) walletInfo.style.display = 'none';
-            if (walletAddress) walletAddress.classList.remove('connected');
+            
+            // Disable chat functionality
+            if (chatInput) chatInput.disabled = true;
+            if (sendBtn) sendBtn.disabled = true;
+            if (fileUploadBtn) fileUploadBtn.disabled = true;
+            
+            // Clear wallet address
+            if (walletAddress) {
+                walletAddress.innerHTML = '';
+                walletAddress.classList.remove('connected');
+            }
         }
     }
 
@@ -439,8 +830,10 @@ class BasementApp {
             profilePic.style.display = 'block';
             profilePicPlaceholder.style.display = 'none';
         } else {
-            profilePic.style.display = 'none';
-            profilePicPlaceholder.style.display = 'block';
+            // Use generic default profile image (square)
+            profilePic.src = 'data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iNDAiIGhlaWdodD0iNDAiIHZpZXdCb3g9IjAgMCA0MCA0MCIgZmlsbD0ibm9uZSIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj4KICA8cmVjdCB3aWR0aD0iNDAiIGhlaWdodD0iNDAiIGZpbGw9IiMwMDUyZmY5OSIvPgogIDxjaXJjbGUgY3g9IjIwIiBjeT0iMTUiIHI9IjciIGZpbGw9IiNmZmZmZmYiLz4KICA8cGF0aCBkPSJNMTAgMzBDMTAgMjUgMTMgMjAgMjAgMjBTMzAgMjUgMzAgMzBWMzVIMTBWMzBaIiBmaWxsPSIjZmZmZmZmIi8+Cjwvc3ZnPgo=';
+            profilePic.style.display = 'block';
+            profilePicPlaceholder.style.display = 'none';
         }
     }
 
@@ -449,17 +842,28 @@ class BasementApp {
         if (dialog) {
             dialog.classList.remove('hidden');
             
+            // Update wallet address display with real address
+            const walletSubtitle = document.getElementById('wallet-subtitle');
+            if (walletSubtitle && this.walletAddress) {
+                walletSubtitle.textContent = this.abbreviateAddress(this.walletAddress);
+            }
+            
             // Check for Base Name
             this.checkBaseName(this.walletAddress).then(basename => {
                 if (basename) {
-                    document.querySelector('input[name="username-choice"][value="basename"]').checked = true;
-                    document.getElementById('basename-display').textContent = basename;
+                    const basenameRadio = document.getElementById('basename-radio');
+                    const basenameSubtitle = document.getElementById('basename-subtitle');
+                    if (basenameRadio && basenameSubtitle) {
+                        basenameRadio.checked = true;
+                        basenameSubtitle.textContent = basename;
+                    }
                 } else {
-                    document.querySelector('input[name="username-choice"][value="wallet"]').checked = true;
+                    const customRadio = document.getElementById('custom-radio');
+                    if (customRadio) {
+                        customRadio.checked = true;
+                    }
                 }
             });
-            
-            document.getElementById('wallet-display').textContent = this.walletAddress;
         }
     }
 
@@ -471,18 +875,15 @@ class BasementApp {
     }
 
     async checkBaseName(address) {
-        // Simulate Base Name API call
-        return new Promise((resolve) => {
-            setTimeout(() => {
-                // Randomly return a Base Name for demo
-                const basenames = ['cyberpunk', 'basement', 'retro', 'arcade', 'web3'];
-                if (Math.random() > 0.7) {
-                    resolve(basenames[Math.floor(Math.random() * basenames.length)]);
-                } else {
-                    resolve(null);
-                }
-            }, 500);
-        });
+        // Real Base Name API call - remove mock data
+        try {
+            // For now, return null since we don't have a real Base Name API endpoint
+            // In production, this would make an actual API call to Base Name service
+            return null;
+        } catch (error) {
+            console.log('Base Name check failed:', error);
+            return null;
+        }
     }
 
     handleDialogProfilePicUpload(file) {
@@ -490,10 +891,9 @@ class BasementApp {
             const reader = new FileReader();
             reader.onload = (e) => {
                 this.tempProfilePic = e.target.result;
-                const preview = document.getElementById('profile-preview');
+                const preview = document.getElementById('dialog-profile-pic');
                 if (preview) {
                     preview.src = e.target.result;
-                    preview.style.display = 'block';
                 }
             };
             reader.readAsDataURL(file);
@@ -501,12 +901,13 @@ class BasementApp {
     }
 
     saveProfileSetup() {
-        const selectedChoice = document.querySelector('input[name="username-choice"]:checked');
+        const selectedChoice = document.querySelector('input[name="username-type"]:checked');
         const customUsername = document.getElementById('custom-username-simple').value.trim();
         
         if (selectedChoice) {
             if (selectedChoice.value === 'basename') {
-                this.username = document.getElementById('basename-display').textContent;
+                const basenameSubtitle = document.getElementById('basename-subtitle');
+                this.username = basenameSubtitle ? basenameSubtitle.textContent : this.abbreviateAddress(this.walletAddress);
             } else if (selectedChoice.value === 'custom' && customUsername) {
                 this.username = customUsername;
             } else {
@@ -520,14 +921,28 @@ class BasementApp {
             this.profilePic = this.tempProfilePic;
         }
         
-        // Save to localStorage
+        // Save to localStorage with enhanced persistence
         localStorage.setItem('basement_username', this.username);
+        localStorage.setItem('basement_walletAddress', this.walletAddress);
+        
         if (this.profilePic) {
             localStorage.setItem('basement_profilePic', this.profilePic);
         }
         
         // Store username to address mapping
         this.userAddresses[this.username] = this.walletAddress;
+        localStorage.setItem('basement_userAddresses', JSON.stringify(this.userAddresses));
+        
+        // Save connection state
+        localStorage.setItem('basement_isConnected', 'true');
+        localStorage.setItem('basement_isFirstConnection', 'false');
+        
+        console.log('Profile saved:', {
+            username: this.username,
+            walletAddress: this.walletAddress,
+            hasProfilePic: !!this.profilePic,
+            userAddressesCount: Object.keys(this.userAddresses).length
+        });
         
         this.hideProfileDialog();
         this.updateWalletUI();
@@ -541,35 +956,98 @@ class BasementApp {
         this.isFirstConnection = false;
     }
 
+    handleFileUpload(file) {
+        if (!file) return;
+        
+        if (!this.isConnected) {
+            alert('Please connect your wallet to send images');
+            return;
+        }
+        
+        // Check file size (limit to 5MB)
+        if (file.size > 5 * 1024 * 1024) {
+            alert('File size must be less than 5MB');
+            return;
+        }
+        
+        // Check file type
+        if (!file.type.startsWith('image/')) {
+            alert('Please select an image file');
+            return;
+        }
+        
+        const reader = new FileReader();
+        reader.onload = (e) => {
+            const imageData = e.target.result;
+            this.addImageMessage(this.username, imageData, file.name);
+        };
+        reader.readAsDataURL(file);
+    }
+
+    addImageMessage(username, imageData, fileName) {
+        if (!this.isConnected) return;
+        
+        const chatMessages = document.getElementById('chat-messages');
+        const timestamp = new Date().toLocaleTimeString('en-US', { 
+            hour12: false, 
+            hour: '2-digit', 
+            minute: '2-digit' 
+        });
+        
+        const messageDiv = document.createElement('div');
+        messageDiv.className = 'user-message image-message';
+        
+        // Make username clickable if we have their address
+        let usernameDisplay = username;
+        const userAddress = this.userAddresses[username] || (username === this.username ? this.walletAddress : null);
+        
+        if (userAddress) {
+            usernameDisplay = `<a href="https://basescan.org/address/${userAddress}" target="_blank" class="username-link">${username}</a>`;
+        }
+        
+        messageDiv.innerHTML = `
+            <span class="timestamp">[${timestamp}]</span>
+            <span class="username">&lt;${usernameDisplay}&gt;</span>
+            <span class="message-text">📷 ${fileName}</span>
+            <div class="image-container">
+                <img src="${imageData}" alt="${fileName}" class="chat-image" onclick="this.classList.toggle('expanded')">
+            </div>
+        `;
+        
+        chatMessages.appendChild(messageDiv);
+        chatMessages.scrollTop = chatMessages.scrollHeight;
+        
+        // Store message in current channel
+        this.channels[this.currentChannel].messages.push({
+            author: username,
+            text: `📷 ${fileName}`,
+            image: imageData,
+            timestamp: timestamp
+        });
+    }
+
     abbreviateAddress(address) {
         if (!address) return '';
         return `${address.slice(0, 6)}...${address.slice(-4)}`;
     }
 
     sendMessage() {
-        if (!this.isConnected) return;
+        if (!this.isConnected) {
+            console.log('User not connected, cannot send message');
+            return;
+        }
         
         const chatInput = document.getElementById('chat-input-field');
+        if (!chatInput || chatInput.disabled) {
+            console.log('Chat input not available or disabled');
+            return;
+        }
+        
         const message = chatInput.value.trim();
         
         if (message) {
             this.addUserMessage(this.username, message);
             chatInput.value = '';
-            
-            // Simulate other users responding
-            setTimeout(() => {
-                const responses = [
-                    'Welcome to the basement!',
-                    'Nice to see another Base user here',
-                    'Anyone up for some arcade games?',
-                    'The voxel graphics here are sick!',
-                    'Base chain is the future!',
-                    'Check out this sick meme!'
-                ];
-                const randomResponse = responses[Math.floor(Math.random() * responses.length)];
-                const botUsername = 'BasementBot';
-                this.addUserMessage(botUsername, randomResponse);
-            }, 1000 + Math.random() * 2000);
         }
     }
 
@@ -586,12 +1064,15 @@ class BasementApp {
         const messageDiv = document.createElement('div');
         messageDiv.className = 'user-message';
         
-        // Make username clickable if we have their address
+        // Make username clickable to BaseScan
         let usernameDisplay = username;
         const userAddress = this.userAddresses[username] || (username === this.username ? this.walletAddress : null);
         
         if (userAddress) {
-            usernameDisplay = `<a href="https://basescan.org/address/${userAddress}" target="_blank" class="username-link">${username}</a>`;
+            usernameDisplay = `<a href="https://basescan.org/address/${userAddress}" target="_blank" class="username-link" title="View ${username} on BaseScan">${username}</a>`;
+        } else {
+            // For users without known addresses, still make it clickable but show a message
+            usernameDisplay = `<span class="username-link" title="Address not available">${username}</span>`;
         }
         
         messageDiv.innerHTML = `
@@ -609,6 +1090,15 @@ class BasementApp {
             text: message,
             timestamp: timestamp
         });
+        
+        // Store user address mapping if not already stored
+        if (username === this.username && !this.userAddresses[username]) {
+            this.userAddresses[username] = this.walletAddress;
+            localStorage.setItem('basement_userAddresses', JSON.stringify(this.userAddresses));
+        }
+        
+        // Track user activity
+        this.updateUserActivity(username, 'message');
     }
 
     addSystemMessage(message) {
@@ -637,9 +1127,53 @@ class BasementApp {
         });
     }
 
+    addJoinMessage(username) {
+        const chatMessages = document.getElementById('chat-messages');
+        const timestamp = new Date().toLocaleTimeString('en-US', { 
+            hour12: false, 
+            hour: '2-digit', 
+            minute: '2-digit' 
+        });
+        
+        const messageDiv = document.createElement('div');
+        messageDiv.className = 'system-message';
+        
+        // Get wallet address for this user
+        const userAddress = this.userAddresses[username] || (username === this.username ? this.walletAddress : null);
+        
+        if (userAddress) {
+            // Make username clickable to BaseScan
+            messageDiv.innerHTML = `
+                <span class="timestamp">[${timestamp}]</span>
+                <span class="message-text"><a href="https://basescan.org/address/${userAddress}" target="_blank" class="username-link" title="View ${username} on BaseScan">${username}</a> joined the chat!</span>
+            `;
+        } else {
+            // Fallback for users without known addresses
+            messageDiv.innerHTML = `
+                <span class="timestamp">[${timestamp}]</span>
+                <span class="message-text">${username} joined the chat!</span>
+            `;
+        }
+        
+        chatMessages.appendChild(messageDiv);
+        chatMessages.scrollTop = chatMessages.scrollHeight;
+        
+        // Store message in current channel
+        this.channels[this.currentChannel].messages.push({
+            author: 'system',
+            text: `${username} joined the chat!`,
+            timestamp: timestamp
+        });
+    }
+
     showError(message) {
         console.error(message);
         alert(message);
+    }
+
+    // Mobile detection
+    isMobile() {
+        return window.innerWidth <= 768;
     }
 
     // Mobile navigation methods
@@ -661,7 +1195,11 @@ class BasementApp {
 
     showMobileForum() {
         document.getElementById('welcome-section').classList.add('hidden');
-        document.getElementById('chat-sidebar').classList.add('hidden');
+        
+        // Only hide chat sidebar on mobile
+        if (this.isMobile()) {
+            document.getElementById('chat-sidebar').classList.add('hidden');
+        }
         
         const forumSection = document.getElementById('forum-section');
         forumSection.classList.add('mobile-fullscreen');
@@ -679,7 +1217,11 @@ class BasementApp {
     showMobileArcade() {
         document.getElementById('welcome-section').classList.add('hidden');
         document.getElementById('forum-section').classList.add('hidden');
-        document.getElementById('chat-sidebar').classList.add('hidden');
+        
+        // Only hide chat sidebar on mobile
+        if (this.isMobile()) {
+            document.getElementById('chat-sidebar').classList.add('hidden');
+        }
         
         const welcomeSection = document.getElementById('welcome-section');
         welcomeSection.classList.add('mobile-fullscreen');
@@ -696,7 +1238,11 @@ class BasementApp {
     showMobileShop() {
         document.getElementById('welcome-section').classList.add('hidden');
         document.getElementById('forum-section').classList.add('hidden');
-        document.getElementById('chat-sidebar').classList.add('hidden');
+        
+        // Only hide chat sidebar on mobile
+        if (this.isMobile()) {
+            document.getElementById('chat-sidebar').classList.add('hidden');
+        }
         
         alert('Shop section coming soon!');
         
@@ -736,7 +1282,14 @@ class BasementApp {
         
         document.getElementById('welcome-section').classList.add('hidden');
         document.getElementById('forum-section').classList.add('hidden');
-        document.getElementById('chat-sidebar').classList.add('hidden');
+        
+        // Only hide chat sidebar on mobile clients
+        if (this.isMobile()) {
+            document.getElementById('chat-sidebar').classList.add('hidden');
+        } else {
+            // On desktop, ensure chat sidebar is visible
+            document.getElementById('chat-sidebar').classList.remove('hidden');
+        }
         
         document.getElementById('welcome-section').classList.remove('mobile-fullscreen');
         document.getElementById('forum-section').classList.remove('mobile-fullscreen');
@@ -777,6 +1330,40 @@ class BasementApp {
         document.getElementById('post-editor').classList.remove('hidden');
     }
 
+    publishPost() {
+        const title = document.getElementById('post-title').value.trim();
+        const content = document.getElementById('post-content').value.trim();
+        
+        if (!title || !content) {
+            alert('Please fill in both title and content');
+            return;
+        }
+        
+        if (!this.isConnected) {
+            alert('Please connect your wallet to post');
+            return;
+        }
+        
+        const post = {
+            title: title,
+            content: content,
+            author: this.username || this.abbreviateAddress(this.walletAddress),
+            date: new Date().toLocaleDateString(),
+            replies: 0
+        };
+        
+        this.forumPosts[this.currentCategory].push(post);
+        
+        // Clear form
+        document.getElementById('post-title').value = '';
+        document.getElementById('post-content').value = '';
+        
+        // Go back to posts
+        this.showCategoryPosts(this.currentCategory);
+        
+        console.log('Post published:', post);
+    }
+
     renderPosts(category) {
         const postsList = document.getElementById('posts-list');
         const posts = this.forumPosts[category] || [];
@@ -809,39 +1396,6 @@ class BasementApp {
             postItem.addEventListener('click', () => this.showThread(post.id));
             postsList.appendChild(postItem);
         });
-    }
-
-    publishPost() {
-        const title = document.getElementById('post-title-input').value.trim();
-        const content = document.getElementById('post-content-input').value.trim();
-        
-        if (!title || !content) {
-            alert('Please fill in both title and content');
-            return;
-        }
-        
-        const post = {
-            id: Date.now(),
-            title: title,
-            content: content,
-            author: this.username || 'Anonymous',
-            date: new Date().toLocaleDateString(),
-            replies: 0,
-            views: 0
-        };
-        
-        if (!this.forumPosts[this.currentCategory]) {
-            this.forumPosts[this.currentCategory] = [];
-        }
-        
-        this.forumPosts[this.currentCategory].push(post);
-        
-        // Clear form
-        document.getElementById('post-title-input').value = '';
-        document.getElementById('post-content-input').value = '';
-        
-        // Show posts
-        this.showCategoryPosts(this.currentCategory);
     }
 
     showThread(postId) {
@@ -967,6 +1521,19 @@ class BasementApp {
         document.getElementById('channel-private-checkbox').checked = false;
     }
 
+    updateChannelList() {
+        const channelList = document.getElementById('channel-list');
+        if (!channelList) return;
+        
+        // Clear existing channels
+        channelList.innerHTML = '';
+        
+        // Add all channels
+        Object.keys(this.channels).forEach(channelName => {
+            this.addChannelToList(channelName);
+        });
+    }
+
     addChannelToList(channelName) {
         const channelList = document.getElementById('channel-list');
         const channelItem = document.createElement('div');
@@ -976,6 +1543,12 @@ class BasementApp {
             <span class="channel-name">${channelName}</span>
             <span class="channel-users">${this.channels[channelName].users.size}</span>
         `;
+        
+        // Add click handler for channel switching
+        channelItem.addEventListener('click', () => {
+            this.switchChannel(channelName);
+        });
+        
         channelList.appendChild(channelItem);
     }
 
@@ -1004,9 +1577,10 @@ class BasementApp {
     updateChannelUI() {
         const channelInfo = document.querySelector('.channel-info');
         if (channelInfo) {
+            const userCount = this.channels[this.currentChannel] ? this.channels[this.currentChannel].users.size : 0;
             channelInfo.innerHTML = `
                 <span class="current-channel">${this.currentChannel}</span>
-                <span class="user-count">${this.channels[this.currentChannel].users.size} users</span>
+                <span class="user-count">${userCount} users</span>
             `;
         }
         
@@ -1016,7 +1590,8 @@ class BasementApp {
             const channelName = item.dataset.channel;
             const userCount = item.querySelector('.channel-users');
             if (userCount && this.channels[channelName]) {
-                userCount.textContent = this.channels[channelName].users.size;
+                const count = this.channels[channelName].users.size;
+                userCount.textContent = count;
             }
         });
     }
@@ -1085,7 +1660,14 @@ class BasementApp {
     showWelcome() {
         document.getElementById('welcome-section').classList.remove('hidden');
         document.getElementById('forum-section').classList.add('hidden');
-        document.getElementById('chat-sidebar').classList.add('hidden');
+        
+        // Only hide chat sidebar on mobile clients
+        if (this.isMobile()) {
+            document.getElementById('chat-sidebar').classList.add('hidden');
+        } else {
+            // On desktop, ensure chat sidebar is visible
+            document.getElementById('chat-sidebar').classList.remove('hidden');
+        }
         
         const mainContent = document.querySelector('.main-content');
         if (mainContent) {
