@@ -1738,74 +1738,74 @@ body::before {
 @media (max-width: 768px) {
     .mobile-fullscreen {
         position: fixed !important;
-        top: 60px !important;
+        top: 0 !important;
         left: 0 !important;
         right: 0 !important;
         bottom: 0 !important;
         width: 100vw !important;
-        height: calc(100vh - 60px) !important;
+        height: 100vh !important;
         z-index: 999 !important;
         margin: 0 !important;
-        padding: 20px !important;
+        padding: 0 !important;
         overflow-y: auto !important;
         background: rgba(0, 0, 0, 0.95) !important;
         backdrop-filter: blur(20px) !important;
-        border: 2px solid #0052ff99 !important;
+        border: none !important;
         border-radius: 0 !important;
     }
     
     .chat-sidebar.mobile-fullscreen {
         position: fixed !important;
-        top: 60px !important;
+        top: 0 !important;
         left: 0 !important;
         right: 0 !important;
         bottom: 0 !important;
         width: 100vw !important;
-        height: calc(100vh - 60px) !important;
+        height: 100vh !important;
         z-index: 999 !important;
         margin: 0 !important;
-        padding: 20px !important;
+        padding: 0 !important;
         overflow-y: auto !important;
         background: rgba(0, 0, 0, 0.95) !important;
         backdrop-filter: blur(20px) !important;
-        border: 2px solid #0052ff99 !important;
+        border: none !important;
         border-radius: 0 !important;
         flex-direction: column !important;
     }
     
     .forum-section.mobile-fullscreen {
         position: fixed !important;
-        top: 60px !important;
+        top: 0 !important;
         left: 0 !important;
         right: 0 !important;
         bottom: 0 !important;
         width: 100vw !important;
-        height: calc(100vh - 60px) !important;
+        height: 100vh !important;
         z-index: 999 !important;
         margin: 0 !important;
-        padding: 20px !important;
+        padding: 0 !important;
         overflow-y: auto !important;
         background: rgba(0, 0, 0, 0.95) !important;
         backdrop-filter: blur(20px) !important;
-        border: 2px solid #0052ff99 !important;
+        border: none !important;
         border-radius: 0 !important;
     }
     
     .welcome-section.mobile-fullscreen {
         position: fixed !important;
-        top: 60px !important;
+        top: 0 !important;
         left: 0 !important;
         right: 0 !important;
         bottom: 0 !important;
         width: 100vw !important;
-        height: calc(100vh - 60px) !important;
+        height: 100vh !important;
         z-index: 999 !important;
         margin: 0 !important;
-        padding: 20px !important;
+        padding: 0 !important;
         overflow-y: auto !important;
         background: rgba(0, 0, 0, 0.95) !important;
         backdrop-filter: blur(20px) !important;
-        border: 2px solid #0052ff99 !important;
+        border: none !important;
         border-radius: 0 !important;
         display: flex !important;
         flex-direction: column !important;
@@ -1816,20 +1816,41 @@ body::before {
     
     .mobile-back-btn {
         position: absolute;
-        left: 20px;
+        left: 12px;
         top: 50%;
         transform: translateY(-50%);
         background: linear-gradient(135deg, #0052ff99, #0038CC);
         color: #ffffff;
         border: 1px solid #0052ff99;
-        padding: 8px 16px;
+        padding: 6px 12px;
         font-family: 'Press Start 2P', monospace;
-        font-size: 0.5rem;
+        font-size: 0.4rem;
         cursor: pointer;
         transition: all 0.3s ease;
         border-radius: 4px;
         box-shadow: 0 0 15px rgba(0, 82, 255, 0.3);
         z-index: 1001;
+        max-width: 80px;
+        white-space: nowrap;
+        overflow: hidden;
+        text-overflow: ellipsis;
+    }
+    
+    /* Mobile fullscreen content padding */
+    .mobile-fullscreen .chat-sidebar-header,
+    .mobile-fullscreen .forum-header,
+    .mobile-fullscreen .main-title,
+    .mobile-fullscreen .main-subtitle {
+        padding-top: 80px !important;
+    }
+    
+    .mobile-fullscreen .chat-messages {
+        padding-top: 20px !important;
+    }
+    
+    .mobile-fullscreen .forum-categories,
+    .mobile-fullscreen .forum-posts {
+        padding-top: 20px !important;
     }
     
     .mobile-back-btn:hover {
@@ -1875,16 +1896,21 @@ body::before {
 @media (max-width: 768px) {
     .navbar {
         height: 60px;
+        position: relative;
+        z-index: 1000;
     }
     
     .nav-content {
-        padding: 0 12px;
-        gap: 12px;
+        padding: 0 8px;
+        gap: 8px;
         justify-content: space-between;
+        align-items: center;
     }
     
     .logo-text {
-        font-size: 1rem;
+        font-size: 0.8rem;
+        margin-left: 4px;
+        flex-shrink: 0;
     }
     
     .nav-links {
@@ -1893,11 +1919,24 @@ body::before {
     
     .mobile-menu-toggle {
         display: flex;
+        flex-direction: column;
+        justify-content: space-around;
+        width: 28px;
+        height: 28px;
+        background: transparent;
+        border: none;
+        cursor: pointer;
+        padding: 0;
+        z-index: 1001;
+        margin-left: 8px;
     }
     
     .wallet-section {
         margin-left: 0;
         order: 2;
+        display: flex;
+        align-items: center;
+        gap: 8px;
     }
     
     .connect-btn {
