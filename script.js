@@ -285,9 +285,13 @@ class BasementApp {
                 // Handle specific mobile navigation
                 const href = link.getAttribute('href');
                 if (href === '#chat') {
-                    this.toggleMobileChat();
+                    this.showMobileChat();
                 } else if (href === '#forum') {
-                    this.showForum();
+                    this.showMobileForum();
+                } else if (href === '#arcade') {
+                    this.showMobileArcade();
+                } else if (href === '#shop') {
+                    this.showMobileShop();
                 }
             });
         });
@@ -894,6 +898,139 @@ class BasementApp {
         if (mainContent) {
             mainContent.scrollIntoView({ behavior: 'smooth' });
         }
+    }
+
+    showMobileChat() {
+        // Hide all other sections
+        document.getElementById('welcome-section').classList.add('hidden');
+        document.getElementById('forum-section').classList.add('hidden');
+        
+        // Show chat sidebar in full-screen mode on mobile
+        const chatSidebar = document.getElementById('chat-sidebar');
+        chatSidebar.classList.add('mobile-fullscreen');
+        chatSidebar.classList.remove('hidden');
+        
+        // Hide main content
+        const mainContent = document.querySelector('.main-content');
+        if (mainContent) {
+            mainContent.classList.add('hidden');
+        }
+        
+        // Add back button
+        this.addMobileBackButton('chat');
+    }
+
+    showMobileForum() {
+        // Hide all other sections
+        document.getElementById('welcome-section').classList.add('hidden');
+        document.getElementById('chat-sidebar').classList.add('hidden');
+        
+        // Show forum in full-screen mode
+        const forumSection = document.getElementById('forum-section');
+        forumSection.classList.add('mobile-fullscreen');
+        forumSection.classList.remove('hidden');
+        
+        // Hide main content
+        const mainContent = document.querySelector('.main-content');
+        if (mainContent) {
+            mainContent.classList.add('hidden');
+        }
+        
+        this.showForumCategories();
+        
+        // Add back button
+        this.addMobileBackButton('forum');
+    }
+
+    showMobileArcade() {
+        // Hide all other sections
+        document.getElementById('welcome-section').classList.add('hidden');
+        document.getElementById('forum-section').classList.add('hidden');
+        document.getElementById('chat-sidebar').classList.add('hidden');
+        
+        // Show welcome section (arcade) in full-screen mode
+        const welcomeSection = document.getElementById('welcome-section');
+        welcomeSection.classList.add('mobile-fullscreen');
+        welcomeSection.classList.remove('hidden');
+        
+        // Hide main content
+        const mainContent = document.querySelector('.main-content');
+        if (mainContent) {
+            mainContent.classList.add('hidden');
+        }
+        
+        // Add back button
+        this.addMobileBackButton('arcade');
+    }
+
+    showMobileShop() {
+        // Hide all other sections
+        document.getElementById('welcome-section').classList.add('hidden');
+        document.getElementById('forum-section').classList.add('hidden');
+        document.getElementById('chat-sidebar').classList.add('hidden');
+        
+        // Show shop section (placeholder for now)
+        alert('Shop section coming soon!');
+        
+        // Show welcome section as fallback
+        const welcomeSection = document.getElementById('welcome-section');
+        welcomeSection.classList.add('mobile-fullscreen');
+        welcomeSection.classList.remove('hidden');
+        
+        // Hide main content
+        const mainContent = document.querySelector('.main-content');
+        if (mainContent) {
+            mainContent.classList.add('hidden');
+        }
+        
+        // Add back button
+        this.addMobileBackButton('shop');
+    }
+
+    addMobileBackButton(section) {
+        // Remove existing back button if any
+        const existingBackBtn = document.getElementById('mobile-back-btn');
+        if (existingBackBtn) {
+            existingBackBtn.remove();
+        }
+        
+        // Create back button
+        const backBtn = document.createElement('button');
+        backBtn.id = 'mobile-back-btn';
+        backBtn.className = 'mobile-back-btn';
+        backBtn.innerHTML = '← Back';
+        backBtn.onclick = () => this.hideMobileSection(section);
+        
+        // Add to navbar
+        const navbar = document.querySelector('.navbar');
+        navbar.appendChild(backBtn);
+    }
+
+    hideMobileSection(section) {
+        // Remove back button
+        const backBtn = document.getElementById('mobile-back-btn');
+        if (backBtn) {
+            backBtn.remove();
+        }
+        
+        // Hide all sections
+        document.getElementById('welcome-section').classList.add('hidden');
+        document.getElementById('forum-section').classList.add('hidden');
+        document.getElementById('chat-sidebar').classList.add('hidden');
+        
+        // Remove mobile-fullscreen classes
+        document.getElementById('welcome-section').classList.remove('mobile-fullscreen');
+        document.getElementById('forum-section').classList.remove('mobile-fullscreen');
+        document.getElementById('chat-sidebar').classList.remove('mobile-fullscreen');
+        
+        // Show main content
+        const mainContent = document.querySelector('.main-content');
+        if (mainContent) {
+            mainContent.classList.remove('hidden');
+        }
+        
+        // Show welcome section as default
+        document.getElementById('welcome-section').classList.remove('hidden');
     }
 
     toggleMobileChat() {
