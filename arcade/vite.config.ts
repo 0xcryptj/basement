@@ -1,5 +1,5 @@
 import { defineConfig } from 'vite';
-import path from 'path';
+import { resolve } from 'path';
 
 export default defineConfig({
   root: '.',
@@ -10,8 +10,8 @@ export default defineConfig({
   },
   resolve: {
     alias: {
-      '@': path.resolve(__dirname, './src'),
-      '@assets': path.resolve(__dirname, '../assets')
+      '@': resolve(__dirname, './src'),
+      '@assets': resolve(__dirname, '../assets')
     }
   },
   build: {
@@ -19,9 +19,12 @@ export default defineConfig({
     sourcemap: true,
     rollupOptions: {
       input: {
-        main: path.resolve(__dirname, 'arcade.html')
+        main: resolve(__dirname, 'arcade.html')
       }
     }
+  },
+  optimizeDeps: {
+    include: ['three', 'gsap', 'ethers']
   }
 });
 

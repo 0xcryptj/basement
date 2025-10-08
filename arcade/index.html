@@ -1,0 +1,145 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>The Basement Arcade - Development</title>
+    <style>
+        body {
+            margin: 0;
+            padding: 20px;
+            background: #0a0a1a;
+            color: #fff;
+            font-family: Arial, sans-serif;
+        }
+        .container {
+            max-width: 800px;
+            margin: 0 auto;
+        }
+        h1 {
+            color: #0052ff;
+            text-align: center;
+        }
+        .status {
+            background: rgba(0, 82, 255, 0.1);
+            border: 2px solid #0052ff;
+            padding: 20px;
+            border-radius: 10px;
+            margin: 20px 0;
+        }
+        .button {
+            background: #0052ff;
+            color: white;
+            border: none;
+            padding: 15px 30px;
+            font-size: 16px;
+            border-radius: 5px;
+            cursor: pointer;
+            margin: 10px;
+            transition: all 0.3s;
+        }
+        .button:hover {
+            background: #0066ff;
+            transform: translateY(-2px);
+        }
+        a {
+            color: #0052ff;
+            text-decoration: none;
+        }
+        a:hover {
+            text-decoration: underline;
+        }
+        pre {
+            background: rgba(0, 0, 0, 0.5);
+            padding: 15px;
+            border-radius: 5px;
+            overflow-x: auto;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>🎮 The Basement Arcade - Dev Server</h1>
+        
+        <div class="status">
+            <h2>✅ Vite Development Server Running</h2>
+            <p>TypeScript + Three.js 3D Environment</p>
+        </div>
+
+        <div class="status">
+            <h3>🎯 Quick Links:</h3>
+            <button class="button" onclick="window.location.href='arcade.html'">
+                Open Arcade (3D Version)
+            </button>
+            <button class="button" onclick="window.location.href='../index.html'">
+                Open Main Site
+            </button>
+        </div>
+
+        <div class="status">
+            <h3>📦 Tech Stack:</h3>
+            <ul>
+                <li>TypeScript 5.3+</li>
+                <li>Three.js 0.160 (3D Graphics)</li>
+                <li>Vite (Build Tool)</li>
+                <li>Ethers.js 6.10 (Web3)</li>
+                <li>GSAP (Animations)</li>
+            </ul>
+        </div>
+
+        <div class="status">
+            <h3>🎮 Available 3D Games:</h3>
+            <ul>
+                <li>✅ <strong>Coin Toss</strong> - Fully functional 3D environment</li>
+                <li>✅ <strong>Connect 4</strong> - Interactive 3D board</li>
+                <li>🔄 <strong>War</strong> - Coming soon</li>
+                <li>🔄 <strong>Rock Paper Scissors</strong> - Coming soon</li>
+            </ul>
+        </div>
+
+        <div class="status">
+            <h3>🛠️ Development Commands:</h3>
+            <pre>
+# Start dev server
+npm run dev
+
+# Type check
+npm run type-check
+
+# Build for production
+npm run build
+
+# Preview production build
+npm run preview
+            </pre>
+        </div>
+
+        <div class="status">
+            <h3>📚 Documentation:</h3>
+            <ul>
+                <li><a href="README.md" target="_blank">Arcade README</a></li>
+                <li><a href="../TYPESCRIPT_3D_UPGRADE.md" target="_blank">Upgrade Guide</a></li>
+                <li><a href="../DEMO_MODE_GUIDE.md" target="_blank">Demo Mode Guide</a></li>
+            </ul>
+        </div>
+
+        <div class="status">
+            <h3>⚠️ Troubleshooting:</h3>
+            <p>If you see errors in the console:</p>
+            <ol>
+                <li>Make sure all dependencies are installed: <code>npm install</code></li>
+                <li>Check that TypeScript is compiling: <code>npm run type-check</code></li>
+                <li>Clear browser cache and hard reload (Ctrl+Shift+R)</li>
+                <li>Check console for specific errors</li>
+            </ol>
+        </div>
+    </div>
+
+    <script>
+        console.log('🎮 Basement Arcade Dev Server');
+        console.log('📍 Location:', window.location.href);
+        console.log('✅ Ready to test 3D games!');
+    </script>
+</body>
+</html>
+
