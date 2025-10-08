@@ -4,8 +4,8 @@
   "description": "Retro Cyberpunk Web3 Arcade on Base Network",
   "main": "index.html",
   "scripts": {
-    "dev": "python -m http.server 8000",
-    "start": "python -m http.server 8000"
+    "dev": "npx http-server -p 8000 -o -c-1",
+    "start": "npx http-server -p 8000 -o -c-1"
   },
   "keywords": [
     "base",

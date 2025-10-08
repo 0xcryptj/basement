@@ -1,0 +1,412 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Coin Toss - The Basement Arcade</title>
+    <link rel="stylesheet" href="arcade.css">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Press+Start+2P&display=swap" rel="stylesheet">
+    <link rel="icon" href="../assets/icon.ico" type="image/x-icon">
+    <style>
+        body {
+            overflow-x: hidden;
+            scrollbar-width: none;
+            -ms-overflow-style: none;
+        }
+        
+        body::-webkit-scrollbar {
+            display: none;
+        }
+        
+        .cointoss-game-screen {
+            min-height: 100vh;
+            width: 100%;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            padding: 80px 20px 20px;
+            gap: 1.5rem;
+        }
+        
+        .game-header-main {
+            text-align: center;
+        }
+        
+        .game-header-main h1 {
+            font-size: 2rem;
+            margin-bottom: 0.5rem;
+        }
+        
+        .game-header-main p {
+            font-size: 0.75rem !important;
+            margin-top: 0.5rem !important;
+        }
+        
+        .choice-selection {
+            display: flex;
+            gap: 2rem;
+            margin: 0.5rem 0;
+            flex-wrap: wrap;
+            justify-content: center;
+        }
+        
+        .choice-card {
+            width: 140px;
+            height: 180px;
+            background: linear-gradient(145deg, #0052ff, #003399);
+            border: 8px solid #00ffff;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            gap: 1rem;
+            box-shadow: 
+                0 10px 0 #001a4d,
+                0 15px 40px rgba(0, 0, 0, 0.8),
+                inset 3px 3px 10px rgba(255, 255, 255, 0.3),
+                inset -3px -3px 10px rgba(0, 0, 0, 0.5);
+            filter: drop-shadow(0 0 15px rgba(0, 255, 255, 0.5));
+        }
+        
+        .choice-card img {
+            width: 90px;
+            height: 90px;
+            border-radius: 50%;
+            border: 4px solid #ffd700;
+        }
+        
+        .choice-card span {
+            font-size: 1rem;
+            color: #ffffff;
+            text-shadow: 
+                0 0 15px rgba(0, 255, 255, 0.8),
+                3px 3px 0 rgba(0, 0, 0, 0.8);
+        }
+        
+        .choice-card:hover {
+            transform: translateY(-10px) scale(1.05);
+            box-shadow: 
+                0 15px 0 #001a4d,
+                0 20px 50px rgba(0, 0, 0, 0.9);
+            filter: drop-shadow(0 0 30px rgba(0, 255, 255, 0.9));
+            border-color: #ffff00;
+        }
+        
+        .choice-card.selected {
+            border-color: #00ff00;
+            background: linear-gradient(145deg, #00aa00, #006600);
+            box-shadow: 
+                0 10px 0 #003300,
+                0 15px 40px rgba(0, 255, 0, 0.5);
+            filter: drop-shadow(0 0 30px rgba(0, 255, 0, 0.8));
+        }
+        
+        .stake-input-container {
+            text-align: center;
+            margin: 1rem 0;
+        }
+        
+        .stake-input-container label {
+            font-size: 0.8rem !important;
+            margin-bottom: 0.5rem !important;
+        }
+        
+        .stake-input-container input {
+            font-size: 1rem;
+            padding: 0.7rem 1.2rem;
+            background: linear-gradient(145deg, #0a0a1e, #1a1a3e);
+            border: 4px solid #0052ff;
+            color: #00ffff;
+            font-family: 'Press Start 2P', monospace;
+            text-align: center;
+            box-shadow: 
+                inset 3px 3px 8px rgba(0, 0, 0, 0.8),
+                inset -3px -3px 8px rgba(0, 255, 255, 0.2),
+                0 5px 0 #001a4d;
+            width: 200px;
+        }
+        
+        .play-button {
+            background: linear-gradient(145deg, #00ff00, #00aa00);
+            color: #000;
+            border: 5px solid #00ff00;
+            padding: 0.9rem 2.5rem;
+            font-family: 'Press Start 2P', monospace;
+            font-size: 0.9rem;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            box-shadow: 
+                0 10px 0 #006600,
+                0 15px 40px rgba(0, 0, 0, 0.8),
+                inset 3px 3px 10px rgba(255, 255, 255, 0.5),
+                inset -3px -3px 10px rgba(0, 100, 0, 0.5);
+            text-shadow: 2px 2px 0 rgba(0, 0, 0, 0.3);
+            letter-spacing: 3px;
+        }
+        
+        .play-button:hover:not(:disabled) {
+            transform: translateY(-8px);
+            box-shadow: 
+                0 18px 0 #006600,
+                0 23px 50px rgba(0, 0, 0, 0.9);
+            filter: drop-shadow(0 0 30px rgba(0, 255, 0, 0.8));
+        }
+        
+        .play-button:active:not(:disabled) {
+            transform: translateY(-2px);
+            box-shadow: 
+                0 6px 0 #006600,
+                0 10px 30px rgba(0, 0, 0, 0.8);
+        }
+        
+        .play-button:disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+            filter: grayscale(0.8);
+        }
+        
+        .back-to-arcade {
+            position: fixed;
+            top: 80px;
+            left: 20px;
+            background: linear-gradient(145deg, #ff0052, #cc0040);
+            color: #ffffff;
+            border: 5px solid #ff0052;
+            padding: 1rem 2rem;
+            font-family: 'Press Start 2P', monospace;
+            font-size: 0.8rem;
+            cursor: pointer;
+            text-decoration: none;
+            display: inline-block;
+            box-shadow: 
+                0 6px 0 #660020,
+                0 10px 25px rgba(0, 0, 0, 0.8);
+            transition: all 0.2s ease;
+        }
+        
+        .back-to-arcade:hover {
+            transform: translateY(-4px);
+            box-shadow: 
+                0 10px 0 #660020,
+                0 14px 35px rgba(0, 0, 0, 0.9);
+        }
+        
+        /* Responsive Design */
+        @media (max-width: 768px) {
+            .game-header-main h1 {
+                font-size: 1.5rem;
+            }
+            .choice-selection {
+                gap: 1rem;
+            }
+            .choice-card {
+                width: 120px;
+                height: 150px;
+            }
+            .choice-card img {
+                width: 70px;
+                height: 70px;
+            }
+            .choice-card span {
+                font-size: 0.8rem;
+            }
+            .play-button {
+                font-size: 0.7rem;
+                padding: 0.7rem 1.5rem;
+            }
+            .back-to-arcade {
+                font-size: 0.6rem;
+                padding: 0.7rem 1.2rem;
+            }
+        }
+    </style>
+</head>
+<body>
+    <a href="arcade.html" class="back-to-arcade">← BACK TO ARCADE</a>
+
+    <div class="cointoss-game-screen">
+        <div class="game-header-main">
+            <h1 class="neon">🪙 COIN TOSS 🪙</h1>
+            <p style="font-size: 1rem; color: #00ffff; margin-top: 1rem;">Choose Heads or Tails - Winner Takes All!</p>
+        </div>
+
+        <div class="stake-input-container">
+            <label for="stake" style="font-size: 1rem; color: #ffd700; margin-bottom: 1rem; display: block;">Stake Amount (ETH):</label>
+            <input type="number" id="stake" step="0.001" min="0.001" value="0.01" class="stake-input">
+        </div>
+
+        <div class="choice-selection">
+            <div class="choice-card" id="heads-card" onclick="selectCoinChoice('heads')">
+                <img src="../assets/heads.png" alt="Heads">
+                <span>HEADS</span>
+            </div>
+            <div class="choice-card" id="tails-card" onclick="selectCoinChoice('tails')">
+                <img src="../assets/tails.png" alt="Tails">
+                <span>TAILS</span>
+            </div>
+        </div>
+
+        <button class="play-button" id="play-btn" onclick="playCoinToss()" disabled>SELECT YOUR CHOICE</button>
+        
+        <div id="status-message" style="font-size: 1rem; color: #00ffff; text-align: center; min-height: 30px;"></div>
+    </div>
+
+    <script src="../security.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/ethers@6.10.0/dist/ethers.umd.min.js"></script>
+    <script>
+        let selectedChoice = null;
+        
+        // Sound Effects
+        const SOUNDS = {
+            win: new Audio('../assets/win.mp3'),
+            loss: new Audio('../assets/loss.mp3'),
+            cointoss: new Audio('../assets/cointoss.mp3')
+        };
+        
+        Object.values(SOUNDS).forEach(sound => {
+            sound.volume = 0.5;
+            sound.load();
+        });
+        
+        function playSound(soundName) {
+            if (SOUNDS[soundName]) {
+                SOUNDS[soundName].currentTime = 0;
+                SOUNDS[soundName].play().catch(err => console.log('Sound play failed:', err));
+            }
+        }
+        
+        function selectCoinChoice(choice) {
+            selectedChoice = choice;
+            
+            // Update UI
+            document.getElementById('heads-card').classList.remove('selected');
+            document.getElementById('tails-card').classList.remove('selected');
+            
+            if (choice === 'heads') {
+                document.getElementById('heads-card').classList.add('selected');
+            } else {
+                document.getElementById('tails-card').classList.add('selected');
+            }
+            
+            document.getElementById('play-btn').disabled = false;
+            document.getElementById('play-btn').textContent = 'FLIP THE COIN!';
+        }
+        
+        function playCoinToss() {
+            if (!selectedChoice) {
+                alert('Please select Heads or Tails first!');
+                return;
+            }
+            
+            const stake = parseFloat(document.getElementById('stake').value) || 0.01;
+            
+            // Disable button
+            document.getElementById('play-btn').disabled = true;
+            document.getElementById('status-message').textContent = 'Preparing coin flip...';
+            
+            // Show coin flip animation
+            showCoinFlipAnimation();
+            
+            // Play coin toss sound
+            playSound('cointoss');
+            
+            // Determine result after 2 seconds
+            setTimeout(() => {
+                const cpuChoice = Math.random() > 0.5 ? 'heads' : 'tails';
+                const userWins = selectedChoice === cpuChoice;
+                
+                showCoinResult(cpuChoice, userWins, stake);
+            }, 2000);
+        }
+        
+        function showCoinFlipAnimation() {
+            const overlay = document.createElement('div');
+            overlay.id = 'coin-flip-animation';
+            overlay.innerHTML = `
+                <div class="coin-flip-fullscreen">
+                    <div class="coin-3d-container">
+                        <div class="coin-3d flipping">
+                            <div class="coin-side front">
+                                <img src="../assets/heads.png" alt="Heads">
+                            </div>
+                            <div class="coin-side back">
+                                <img src="../assets/tails.png" alt="Tails">
+                            </div>
+                        </div>
+                    </div>
+                    <div class="flip-status">FLIPPING COIN...</div>
+                </div>
+            `;
+            document.body.appendChild(overlay);
+        }
+        
+        function showCoinResult(result, userWins, stake) {
+            const overlay = document.getElementById('coin-flip-animation');
+            
+            if (overlay) {
+                overlay.innerHTML = `
+                    <div class="coin-flip-fullscreen">
+                        <div class="coin-3d-container">
+                            <div class="coin-3d landed ${result}">
+                                <div class="coin-side final">
+                                    <img src="../assets/${result}.png" alt="${result}">
+                                </div>
+                            </div>
+                        </div>
+                        <div class="flip-status result">It's ${result.toUpperCase()}!</div>
+                        <div class="flip-result ${userWins ? 'victory' : 'defeat'}">
+                            ${userWins ? '🎉 YOU WON!' : '😔 YOU LOST!'}
+                        </div>
+                        <div class="flip-result-sub">
+                            ${userWins ? `You won ${(stake * 2).toFixed(3)} ETH!` : 'Better luck next time!'}
+                        </div>
+                    </div>
+                `;
+                
+                if (userWins) {
+                    playSound('win');
+                    createConfetti();
+                } else {
+                    playSound('loss');
+                }
+                
+                setTimeout(() => {
+                    overlay.remove();
+                    resetGame();
+                }, 5000);
+            }
+        }
+        
+        function createConfetti() {
+            const colors = ['#00ff00', '#00ffff', '#ffff00', '#ff00ff', '#ff0000', '#0052ff'];
+            const confettiCount = 100;
+            
+            for (let i = 0; i < confettiCount; i++) {
+                const confetti = document.createElement('div');
+                confetti.className = 'confetti';
+                confetti.style.left = Math.random() * 100 + '%';
+                confetti.style.animationDelay = Math.random() * 3 + 's';
+                confetti.style.backgroundColor = colors[Math.floor(Math.random() * colors.length)];
+                document.body.appendChild(confetti);
+                
+                setTimeout(() => confetti.remove(), 5000);
+            }
+        }
+        
+        function resetGame() {
+            selectedChoice = null;
+            document.getElementById('heads-card').classList.remove('selected');
+            document.getElementById('tails-card').classList.remove('selected');
+            document.getElementById('play-btn').disabled = true;
+            document.getElementById('play-btn').textContent = 'SELECT YOUR CHOICE';
+            document.getElementById('status-message').textContent = '';
+        }
+    </script>
+</body>
+</html>
+

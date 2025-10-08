@@ -593,28 +593,34 @@ class BasementApp {
             } else if (walletType === 'phantom') {
                 // Phantom supports Ethereum/Base - use ethereum provider
                 if (typeof window.phantom !== 'undefined' && window.phantom.ethereum) {
-                    // Switch to Base network first
-                    await this.switchToBaseNetwork(window.phantom.ethereum);
+                    // Try to switch to Base network, but don't fail if user rejects
+                    try {
+                        await this.switchToBaseNetwork(window.phantom.ethereum);
+                        console.log('✅ Switched to Base network');
+                    } catch (networkError) {
+                        console.warn('⚠️ Could not switch to Base network:', networkError.message);
+                        console.log('Continuing with current network...');
+                        // Continue anyway - user can switch manually
+                    }
                     
                     const accounts = await window.phantom.ethereum.request({ 
                         method: 'eth_requestAccounts' 
                     });
                     address = accounts[0];
                     
-                    // Request signature for verification
-                    const message = `Connect to The Basement\n\nTimestamp: ${Date.now()}`;
-                    const signature = await window.phantom.ethereum.request({
-                        method: 'personal_sign',
-                        params: [message, address]
-                    });
-                    
-                    // Verify signature was provided
-                    if (!signature) {
-                        throw new Error('Signature required for connection');
+                    // Request signature for verification (optional for better UX)
+                    try {
+                        const message = `Connect to The Basement\n\nTimestamp: ${Date.now()}`;
+                        const signature = await window.phantom.ethereum.request({
+                            method: 'personal_sign',
+                            params: [message, address]
+                        });
+                        console.log('Phantom connected with signature:', address);
+                        console.log('Signature verified:', signature.substring(0, 10) + '...');
+                    } catch (signError) {
+                        console.warn('⚠️ Signature rejected, but continuing connection');
+                        console.log('Phantom connected:', address);
                     }
-                    
-                    console.log('Phantom connected to Base:', address);
-                    console.log('Signature verified:', signature.substring(0, 10) + '...');
                 } else {
                     throw new Error('Phantom not installed. Please install Phantom to continue.');
                 }
@@ -1043,9 +1049,26 @@ class BasementApp {
             return;
         }
         
+        // SECURITY: Check rate limit
+        if (window.SecurityManager) {
+            const rateCheck = window.SecurityManager.checkRateLimit('chat');
+            if (!rateCheck.allowed) {
+                alert(rateCheck.message);
+                return;
+            }
+        }
+        
         const message = chatInput.value.trim();
         
         if (message) {
+            // SECURITY: Check for suspicious patterns
+            if (window.SecurityManager && window.SecurityManager.isSuspiciousInput(message)) {
+                alert('Message contains suspicious content and was blocked');
+                window.SecurityManager.logSecurityEvent('suspicious_chat_message', { message: message.substring(0, 50) });
+                chatInput.value = '';
+                return;
+            }
+            
             this.addUserMessage(this.username, message);
             chatInput.value = '';
         }
@@ -1061,33 +1084,58 @@ class BasementApp {
             minute: '2-digit' 
         });
         
+        // SECURITY: Sanitize all inputs
+        const sanitizedUsername = window.SecurityManager ? 
+            window.SecurityManager.sanitizeHTML(username) : this.escapeHTML(username);
+        const sanitizedMessage = window.SecurityManager ? 
+            window.SecurityManager.sanitizeHTML(message) : this.escapeHTML(message);
+        
         const messageDiv = document.createElement('div');
         messageDiv.className = 'user-message';
         
-        // Make username clickable to BaseScan
-        let usernameDisplay = username;
+        // Make username clickable to BaseScan (safely)
         const userAddress = this.userAddresses[username] || (username === this.username ? this.walletAddress : null);
         
-        if (userAddress) {
-            usernameDisplay = `<a href="https://basescan.org/address/${userAddress}" target="_blank" class="username-link" title="View ${username} on BaseScan">${username}</a>`;
+        // Create elements safely without innerHTML
+        const timestampSpan = document.createElement('span');
+        timestampSpan.className = 'timestamp';
+        timestampSpan.textContent = `[${timestamp}]`;
+        
+        const usernameSpan = document.createElement('span');
+        usernameSpan.className = 'username';
+        
+        if (userAddress && this.isValidAddress(userAddress)) {
+            const link = document.createElement('a');
+            link.href = `https://basescan.org/address/${userAddress}`;
+            link.target = '_blank';
+            link.rel = 'noopener noreferrer'; // Security: prevent window.opener access
+            link.className = 'username-link';
+            link.textContent = sanitizedUsername;
+            link.title = `View ${sanitizedUsername} on BaseScan`;
+            usernameSpan.textContent = '<';
+            usernameSpan.appendChild(link);
+            usernameSpan.appendChild(document.createTextNode('>'));
         } else {
-            // For users without known addresses, still make it clickable but show a message
-            usernameDisplay = `<span class="username-link" title="Address not available">${username}</span>`;
+            usernameSpan.textContent = `<${sanitizedUsername}>`;
         }
         
-        messageDiv.innerHTML = `
-            <span class="timestamp">[${timestamp}]</span>
-            <span class="username">&lt;${usernameDisplay}&gt;</span>
-            <span class="message-text">${message}</span>
-        `;
+        const messageSpan = document.createElement('span');
+        messageSpan.className = 'message-text';
+        messageSpan.textContent = sanitizedMessage;
+        
+        messageDiv.appendChild(timestampSpan);
+        messageDiv.appendChild(document.createTextNode(' '));
+        messageDiv.appendChild(usernameSpan);
+        messageDiv.appendChild(document.createTextNode(' '));
+        messageDiv.appendChild(messageSpan);
         
         chatMessages.appendChild(messageDiv);
         chatMessages.scrollTop = chatMessages.scrollHeight;
         
         // Store message in current channel
         this.channels[this.currentChannel].messages.push({
-            author: username,
-            text: message,
+            author: sanitizedUsername,
+            text: sanitizedMessage,
             timestamp: timestamp
         });
         
@@ -1099,6 +1147,18 @@ class BasementApp {
         
         // Track user activity
         this.updateUserActivity(username, 'message');
+    }
+
+    // Security helper methods
+    escapeHTML(text) {
+        const div = document.createElement('div');
+        div.textContent = text;
+        return div.innerHTML;
+    }
+
+    isValidAddress(address) {
+        if (!address || typeof address !== 'string') return false;
+        return /^0x[a-fA-F0-9]{40}$/.test(address);
     }
 
     addSystemMessage(message) {

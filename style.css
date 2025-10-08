@@ -14,6 +14,34 @@ body {
     text-shadow: 0 0 8px #0052ff99;
 }
 
+/* Hide scrollbars site-wide */
+body::-webkit-scrollbar,
+*::-webkit-scrollbar {
+    width: 8px;
+    height: 8px;
+}
+
+body::-webkit-scrollbar-track,
+*::-webkit-scrollbar-track {
+    background: rgba(0, 0, 0, 0.3);
+}
+
+body::-webkit-scrollbar-thumb,
+*::-webkit-scrollbar-thumb {
+    background: rgba(0, 82, 255, 0.5);
+    border-radius: 4px;
+}
+
+body::-webkit-scrollbar-thumb:hover,
+*::-webkit-scrollbar-thumb:hover {
+    background: rgba(0, 82, 255, 0.8);
+}
+
+body {
+    scrollbar-width: thin;
+    scrollbar-color: rgba(0, 82, 255, 0.5) rgba(0, 0, 0, 0.3);
+}
+
 /* Background Image */
 body::before {
     content: '';
@@ -173,9 +201,10 @@ body::before {
     min-height: calc(100vh - 60px);
 }
 
-/* IRC Chat Sidebar */
+/* IRC Chat Sidebar - Responsive width using relative units */
 .chat-sidebar {
-    width: 350px;
+    width: clamp(300px, 25vw, 350px);
+    max-width: 350px;
     background: rgba(0, 0, 0, 0.3);
     border-right: 2px solid #0052ff99;
     backdrop-filter: blur(15px);
@@ -2040,7 +2069,9 @@ body::before {
         box-shadow: 0 0 10px rgba(0, 82, 255, 0.3);
     }
 }
-/* Responsive Design */
+/* Responsive Design - Improved Layout Scaling */
+
+/* Tablet and Small Desktop */
 @media (max-width: 1200px) {
     .main-layout {
         flex-direction: column;
@@ -2048,7 +2079,7 @@ body::before {
     
     .chat-sidebar {
         width: 100%;
-        height: 300px;
+        height: clamp(250px, 30vh, 300px);
         position: relative;
         border-right: none;
         border-top: 2px solid #0052ff99;
@@ -2057,18 +2088,23 @@ body::before {
     .forum-section {
         max-width: 100%;
         margin: 0;
-        padding: 8px;
+        padding: clamp(0.5rem, 2vw, 1rem);
     }
     
     .nav-content {
-        padding: 0 16px;
+        padding: 0 clamp(0.75rem, 2vw, 1rem);
     }
     
     .nav-links {
-        gap: 20px;
+        gap: clamp(1rem, 3vw, 1.5rem);
+    }
+    
+    .nav-link {
+        font-size: clamp(0.6rem, 1.5vw, 0.7rem);
     }
 }
 
+/* Mobile Devices - Hide sidebar by default, show as overlay when needed */
 @media (max-width: 768px) {
     .navbar {
         height: 60px;
@@ -2077,40 +2113,40 @@ body::before {
     }
     
     .nav-content {
-        padding: 0 8px;
-        gap: 8px;
+        padding: 0 clamp(0.5rem, 2vw, 0.75rem);
+        gap: clamp(0.25rem, 1vw, 0.5rem);
         justify-content: flex-start;
         align-items: center;
     }
     
     .logo-text {
-        font-size: 0.8rem;
-        margin-left: 4px;
+        font-size: clamp(0.7rem, 2vw, 0.8rem);
+        margin-left: clamp(2px, 1vw, 4px);
         flex-shrink: 0;
     }
     
     .main-logo {
-        height: 42px;
+        height: clamp(38px, 6vh, 42px);
         width: auto;
-        margin-right: 12px;
+        margin-right: clamp(8px, 2vw, 12px);
     }
     
     .nav-links {
-        display: none;
+        display: none; /* Hide nav links on mobile - use hamburger menu instead */
     }
     
     .mobile-menu-toggle {
         display: flex;
         flex-direction: column;
         justify-content: space-around;
-        width: 28px;
-        height: 28px;
+        width: clamp(24px, 5vw, 28px);
+        height: clamp(24px, 5vw, 28px);
         background: transparent;
         border: none;
         cursor: pointer;
         padding: 0;
         z-index: 1001;
-        margin-left: 8px;
+        margin-left: auto;
     }
     
     .wallet-section {
@@ -2118,45 +2154,47 @@ body::before {
         order: 2;
         display: flex;
         align-items: center;
-        gap: 8px;
+        gap: clamp(0.25rem, 1vw, 0.5rem);
     }
     
     .connect-btn {
-        padding: 8px 16px;
-        font-size: 0.6rem;
+        padding: clamp(6px, 2vw, 8px) clamp(12px, 3vw, 16px);
+        font-size: clamp(0.5rem, 1.5vw, 0.6rem);
         background: linear-gradient(135deg, #0052ff99, #0038CC);
         border: 2px solid #0052ff99;
         box-shadow: 0 0 15px rgba(0, 82, 255, 0.5);
     }
     
     .disconnect-btn {
-        padding: 6px 12px;
-        font-size: 0.5rem;
-        margin-left: 8px;
+        padding: clamp(4px, 1.5vw, 6px) clamp(8px, 2vw, 12px);
+        font-size: clamp(0.4rem, 1.2vw, 0.5rem);
+        margin-left: clamp(4px, 1vw, 8px);
     }
     
     .profile-pic-container {
-        width: 28px;
-        height: 28px;
+        width: clamp(24px, 5vw, 28px);
+        height: clamp(24px, 5vw, 28px);
     }
     
     .edit-btn {
-        width: 20px;
-        height: 20px;
-        font-size: 0.5rem;
+        width: clamp(18px, 4vw, 20px);
+        height: clamp(18px, 4vw, 20px);
+        font-size: clamp(0.4rem, 1.2vw, 0.5rem);
     }
     
+    /* Hide sidebar on mobile by default */
     .chat-sidebar {
+        display: none;
         height: 250px;
-        /* Don't hide by default - let mobile-visible class control visibility */
     }
     
+    /* Show sidebar as overlay when mobile-visible class is added */
     .chat-sidebar.mobile-visible {
         display: flex;
         position: fixed;
         top: 60px;
         right: 0;
-        width: 300px;
+        width: clamp(280px, 75vw, 320px);
         height: calc(100vh - 60px);
         z-index: 998;
         background: rgba(0, 0, 0, 0.95);
@@ -2166,105 +2204,122 @@ body::before {
     }
     
     .forum-section {
-        padding: 8px;
+        padding: clamp(0.5rem, 2vw, 1rem);
+        max-width: 100%;
     }
     
     .forum-categories {
         grid-template-columns: 1fr;
-        gap: 8px;
+        gap: clamp(0.5rem, 2vw, 1rem);
     }
     
     .category-card {
-        padding: 8px;
+        padding: clamp(0.5rem, 2vw, 1rem);
     }
     
     .main-subtitle {
-        font-size: 1rem;
-        padding: 12px;
+        font-size: clamp(0.8rem, 2.5vw, 1rem);
+        padding: clamp(0.75rem, 2vw, 1rem);
+    }
+    
+    /* Make main content full width on mobile */
+    .main-content {
+        padding: clamp(1rem, 3vw, 2rem);
+        width: 100%;
     }
 }
 
+/* Small Mobile Devices - Further optimizations */
 @media (max-width: 480px) {
     .navbar {
-        height: 55px;
+        height: clamp(50px, 8vh, 55px);
     }
     
     .nav-content {
-        padding: 0 8px;
-        gap: 8px;
+        padding: 0 clamp(0.25rem, 1.5vw, 0.5rem);
+        gap: clamp(0.25rem, 1vw, 0.5rem);
     }
     
     .logo-text {
-        font-size: 0.8rem;
+        font-size: clamp(0.6rem, 2vw, 0.75rem);
     }
     
     .nav-links {
-        gap: 8px;
+        gap: clamp(0.25rem, 1vw, 0.5rem);
     }
     
     .nav-link {
-        font-size: 0.4rem;
+        font-size: clamp(0.35rem, 1vw, 0.4rem);
+        padding: clamp(0.25rem, 1vw, 0.4rem) clamp(0.4rem, 1.5vw, 0.6rem);
     }
     
     .connect-btn {
-        padding: 6px 12px;
-        font-size: 0.5rem;
+        padding: clamp(4px, 1.5vw, 6px) clamp(8px, 2.5vw, 12px);
+        font-size: clamp(0.4rem, 1.2vw, 0.5rem);
     }
     
     .disconnect-btn {
-        padding: 4px 8px;
-        font-size: 0.4rem;
+        padding: clamp(3px, 1vw, 4px) clamp(6px, 2vw, 8px);
+        font-size: clamp(0.35rem, 1vw, 0.4rem);
     }
     
     .mobile-menu-toggle {
-        width: 28px;
-        height: 28px;
-        margin-left: 8px;
+        width: clamp(22px, 5vw, 26px);
+        height: clamp(22px, 5vw, 26px);
+        margin-left: auto;
     }
     
     .hamburger-line {
-        width: 20px;
+        width: clamp(18px, 4vw, 20px);
         height: 2px;
     }
     
     .chat-sidebar {
-        height: 200px;
+        height: clamp(180px, 25vh, 200px);
+    }
+    
+    .chat-sidebar.mobile-visible {
+        width: min(90vw, 300px);
     }
     
     .forum-section {
-        padding: 6px;
+        padding: clamp(0.25rem, 1.5vw, 0.5rem);
     }
     
     .forum-title {
-        font-size: 0.5rem;
+        font-size: clamp(0.4rem, 1.5vw, 0.5rem);
     }
     
     .forum-subtitle {
-        font-size: 0.4rem;
+        font-size: clamp(0.3rem, 1vw, 0.4rem);
     }
     
     .category-title {
-        font-size: 0.4rem;
+        font-size: clamp(0.35rem, 1.2vw, 0.4rem);
     }
     
     .category-desc {
-        font-size: 0.3rem;
+        font-size: clamp(0.25rem, 0.8vw, 0.3rem);
     }
     
     .profile-pic-container {
-        width: 24px;
-        height: 24px;
+        width: clamp(20px, 4vw, 24px);
+        height: clamp(20px, 4vw, 24px);
     }
     
     .edit-btn {
-        width: 18px;
-        height: 18px;
-        font-size: 0.4rem;
+        width: clamp(16px, 3.5vw, 18px);
+        height: clamp(16px, 3.5vw, 18px);
+        font-size: clamp(0.35rem, 1vw, 0.4rem);
     }
     
     .main-subtitle {
-        font-size: 0.8rem;
-        padding: 8px;
+        font-size: clamp(0.7rem, 2vw, 0.8rem);
+        padding: clamp(0.5rem, 1.5vw, 0.75rem);
+    }
+    
+    .main-content {
+        padding: clamp(0.75rem, 2vw, 1rem);
     }
 }
 

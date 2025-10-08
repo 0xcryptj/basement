@@ -1,0 +1,100 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>War - The Basement Arcade</title>
+    <link rel="stylesheet" href="arcade.css">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Press+Start+2P&display=swap" rel="stylesheet">
+    <link rel="icon" href="../assets/icon.ico" type="image/x-icon">
+    <style>
+        body {
+            overflow-x: hidden;
+            scrollbar-width: none;
+            -ms-overflow-style: none;
+        }
+        body::-webkit-scrollbar {
+            display: none;
+        }
+        #game-container {
+            padding: 20px;
+        }
+        .game-board-container {
+            max-width: 95vw;
+            max-height: 90vh;
+            overflow-y: auto;
+        }
+        @media (max-width: 768px) {
+            .war-card {
+                width: 120px !important;
+                height: 180px !important;
+            }
+            .war-card-value {
+                font-size: 3rem !important;
+            }
+            .war-board {
+                min-width: auto !important;
+            }
+        }
+    </style>
+</head>
+<body>
+    <a href="arcade.html" class="back-to-arcade" style="position: fixed; top: 20px; left: 20px; background: linear-gradient(145deg, #ff0052, #cc0040); color: #ffffff; border: 5px solid #ff0052; padding: 1rem 2rem; font-family: 'Press Start 2P', monospace; font-size: 0.8rem; cursor: pointer; text-decoration: none; box-shadow: 0 6px 0 #660020, 0 10px 25px rgba(0, 0, 0, 0.8); z-index: 1000;">← BACK</a>
+
+    <div id="game-container" style="min-height: 100vh; width: 100%; display: flex; align-items: center; justify-content: center;">
+        <div class="game-board-container" style="position: relative; z-index: 1;">
+            <div class="game-board-header">
+                <h3 class="neon">🃏 WAR - CARD BATTLE 🃏</h3>
+                <div class="game-players">
+                    <span class="player-indicator p1">👤 YOU</span>
+                    <span class="vs">VS</span>
+                    <span class="player-indicator p2">🤖 CPU</span>
+                </div>
+                <div class="rps-score">
+                    <div class="rps-score-item">You: <span id="war-player-score">0</span></div>
+                    <div class="rps-score-item">Round: <span id="war-round">0</span>/10</div>
+                    <div class="rps-score-item">CPU: <span id="war-cpu-score">0</span></div>
+                </div>
+            </div>
+            <div class="war-board">
+                <div id="war-status" class="turn-indicator">Click 'Draw Cards' to start!</div>
+                <div class="war-cards">
+                    <div id="player-card" class="war-card">
+                        <div class="war-card-value">?</div>
+                        <div class="war-card-suit"></div>
+                    </div>
+                    <div class="war-vs">VS</div>
+                    <div id="cpu-card" class="war-card">
+                        <div class="war-card-value">?</div>
+                        <div class="war-card-suit"></div>
+                    </div>
+                </div>
+                <button id="war-draw-btn" class="war-flip-btn" onclick="warDrawCards()">DRAW CARDS</button>
+            </div>
+        </div>
+    </div>
+
+    <script src="../security.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/ethers@6.10.0/dist/ethers.umd.min.js"></script>
+    <script src="arcade.js"></script>
+    <script>
+        // Auto-start War game when page loads
+        document.addEventListener('DOMContentLoaded', () => {
+            setTimeout(() => {
+                activeWarGame = {
+                    stake: '0.01',
+                    pot: '0.02',
+                    player: { name: 'You', score: 0, card: null },
+                    cpu: { name: 'CPU Player', score: 0, card: null },
+                    round: 0,
+                    maxRounds: 10,
+                    winner: null
+                };
+            }, 100);
+        });
+    </script>
+</body>
+</html>
+

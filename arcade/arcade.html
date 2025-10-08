@@ -30,6 +30,30 @@
                 <a href="../index.html#forum" class="nav-link">Forum</a>
             </div>
             
+            <!-- Mobile Menu Toggle -->
+            <button id="mobile-menu-toggle" class="mobile-menu-toggle">
+                <span class="hamburger-line"></span>
+                <span class="hamburger-line"></span>
+                <span class="hamburger-line"></span>
+            </button>
+            
+            <!-- Mobile Menu -->
+            <div id="mobile-menu" class="mobile-menu hidden">
+                <a href="arcade.html" class="mobile-nav-link">🎮 Arcade</a>
+                <a href="../tokenomics.html" class="mobile-nav-link">💰 Tokenomics</a>
+                <a href="../index.html#shop" class="mobile-nav-link">🛒 Shop</a>
+                <a href="../index.html#forum" class="mobile-nav-link">💬 Forum</a>
+            </div>
+            
+            <!-- Demo Mode Toggle -->
+            <div class="demo-toggle-container">
+                <label class="demo-toggle">
+                    <input type="checkbox" id="demo-mode-toggle" checked>
+                    <span class="demo-toggle-slider"></span>
+                </label>
+                <span class="demo-toggle-label">Demo Mode</span>
+            </div>
+            
             <!-- Right Wallet Section (matches homepage) -->
             <div class="wallet-section">
                 <div id="wallet-connected-display" class="wallet-info" style="display: none;">
@@ -65,7 +89,7 @@
                 <h3 class="game-title">Coin Toss</h3>
                 <p class="game-description">PvP Heads or Tails</p>
                 <p class="game-description">Winner takes all</p>
-                <button class="btn-play" onclick="openCoinTossModal()">Play Now</button>
+                <a href="cointoss.html" class="btn-play" style="text-decoration: none; display: inline-block; text-align: center; line-height: 1.5;">Play Now</a>
             </div>
 
             <!-- Connect 4 Game -->
@@ -76,7 +100,7 @@
                 <h3 class="game-title">Connect 4</h3>
                 <p class="game-description">Classic Strategy PvP</p>
                 <p class="game-description">Winner takes all</p>
-                <button class="btn-play" onclick="openConnect4Modal()">Play Now</button>
+                <a href="connect4-game.html" class="btn-play" style="text-decoration: none; display: inline-block; text-align: center; line-height: 1.5;">Play Now</a>
             </div>
 
             <!-- War Card Game -->
@@ -87,7 +111,7 @@
                 <h3 class="game-title">War</h3>
                 <p class="game-description">Classic Card Battle</p>
                 <p class="game-description">Winner takes all</p>
-                <button class="btn-play" onclick="openWarModal()">Play Now</button>
+                <a href="war-game.html" class="btn-play" style="text-decoration: none; display: inline-block; text-align: center; line-height: 1.5;">Play Now</a>
             </div>
 
             <!-- Rock Paper Scissors Game -->
@@ -98,7 +122,7 @@
                 <h3 class="game-title">Rock Paper Scissors</h3>
                 <p class="game-description">Best of 3 battles</p>
                 <p class="game-description">Winner takes all</p>
-                <button class="btn-play" onclick="openRPSModal()">Play Now</button>
+                <a href="rps-game.html" class="btn-play" style="text-decoration: none; display: inline-block; text-align: center; line-height: 1.5;">Play Now</a>
             </div>
 
             <div class="game-tile placeholder">
@@ -302,7 +326,10 @@
     </div>
 
     <!-- Scripts -->
-    <script type="module" src="/src/main.ts"></script>
+    <!-- Security Module - MUST load first -->
+    <script src="../security.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/ethers@6.10.0/dist/ethers.umd.min.js"></script>
+    <script src="arcade.js"></script>
 </body>
 </html>
 

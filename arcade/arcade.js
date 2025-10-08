@@ -139,7 +139,7 @@ class ArcadeApp {
 }
 
 // Demo Mode Configuration
-const DEMO_MODE = true; // Set to false when contracts are deployed
+let DEMO_MODE = true; // Toggleable in UI
 let demoGames = [];
 let demoGameIdCounter = 0;
 let botInterval = null;
@@ -172,10 +172,79 @@ let selectedJoinChoice = null;
 let currentJoinGameId = null;
 let refreshInterval = null;
 
+// Sound Effects Manager
+const SOUNDS = {
+    win: new Audio('../assets/win.mp3'),
+    loss: new Audio('../assets/loss.mp3'),
+    flipcard: new Audio('../assets/flipcard.mp3'),
+    c4drop: new Audio('../assets/c4.mp3'),
+    cointoss: new Audio('../assets/cointoss.mp3')
+};
+
+// Preload sounds
+Object.values(SOUNDS).forEach(sound => {
+    sound.volume = 0.5; // Set default volume
+    sound.load();
+});
+
+function playSound(soundName) {
+    if (SOUNDS[soundName]) {
+        SOUNDS[soundName].currentTime = 0; // Reset to start
+        SOUNDS[soundName].play().catch(err => console.log('Sound play failed:', err));
+    }
+}
+
 // Initialize app
 let arcadeApp;
 document.addEventListener('DOMContentLoaded', () => {
     arcadeApp = new ArcadeApp();
+    
+    // Setup demo mode toggle
+    const demoToggle = document.getElementById('demo-mode-toggle');
+    if (demoToggle) {
+        demoToggle.checked = DEMO_MODE;
+        demoToggle.addEventListener('change', (e) => {
+            DEMO_MODE = e.target.checked;
+            console.log(`Demo Mode: ${DEMO_MODE ? 'ON' : 'OFF'}`);
+            
+            if (DEMO_MODE) {
+                initDemoMode();
+            } else {
+                stopBotActivity();
+            }
+            
+            // Refresh all game lists
+            refreshGamesList();
+        });
+    }
+    
+    // Setup mobile menu toggle
+    const mobileMenuToggle = document.getElementById('mobile-menu-toggle');
+    const mobileMenu = document.getElementById('mobile-menu');
+    
+    if (mobileMenuToggle && mobileMenu) {
+        mobileMenuToggle.addEventListener('click', () => {
+            mobileMenuToggle.classList.toggle('active');
+            mobileMenu.classList.toggle('hidden');
+        });
+        
+        // Close menu when clicking a link
+        const mobileLinks = mobileMenu.querySelectorAll('.mobile-nav-link');
+        mobileLinks.forEach(link => {
+            link.addEventListener('click', () => {
+                mobileMenuToggle.classList.remove('active');
+                mobileMenu.classList.add('hidden');
+            });
+        });
+        
+        // Close menu when clicking outside
+        document.addEventListener('click', (e) => {
+            if (!mobileMenuToggle.contains(e.target) && !mobileMenu.contains(e.target)) {
+                mobileMenuToggle.classList.remove('active');
+                mobileMenu.classList.add('hidden');
+            }
+        });
+    }
 });
 
 // ========== DEMO MODE FUNCTIONS ==========
@@ -226,6 +295,9 @@ function createInitialDemoGames() {
 }
 
 function startBotActivity() {
+    // Clear any existing interval
+    if (botInterval) clearInterval(botInterval);
+    
     // Bots perform actions every 10-30 seconds
     botInterval = setInterval(() => {
         const action = Math.random();
@@ -244,6 +316,14 @@ function startBotActivity() {
         // Refresh UI
         refreshGamesList();
     }, 15000 + Math.random() * 15000); // 15-30 seconds
+}
+
+function stopBotActivity() {
+    if (botInterval) {
+        clearInterval(botInterval);
+        botInterval = null;
+        console.log('🛑 Bot activity stopped');
+    }
 }
 
 function botCreateGame() {
@@ -306,6 +386,8 @@ function botRevealSpecificGame(gameId) {
     const game = demoGames.find(g => g.id === gameId);
     if (!game || game.state !== 1) return;
     
+    // Don't play sound for bot games - only for user games
+    
     // Determine winner
     if (game.p1Choice === game.p2Choice) {
         // Same choice - random winner
@@ -319,12 +401,12 @@ function botRevealSpecificGame(gameId) {
     saveDemoGames();
     console.log(`🎉 Game #${game.id} settled! Winner: ${game.winner === game.p1 ? game.p1Name : game.p2Name}`);
     
-    // Remove settled games after 30 seconds
+    // Remove settled games after 10 seconds (reduced from 30)
     setTimeout(() => {
         demoGames = demoGames.filter(g => g.id !== gameId);
         saveDemoGames();
         refreshGamesList();
-    }, 30000);
+    }, 10000);
 }
 
 function generateBotAddress() {
@@ -338,6 +420,101 @@ function saveDemoGames() {
 }
 
 // User actions in demo mode
+// Confetti Animation
+function createConfetti() {
+    const colors = ['#00ff00', '#00ffff', '#ffff00', '#ff00ff', '#ff0000', '#0052ff'];
+    const confettiCount = 100;
+    
+    for (let i = 0; i < confettiCount; i++) {
+        const confetti = document.createElement('div');
+        confetti.className = 'confetti';
+        confetti.style.left = Math.random() * 100 + '%';
+        confetti.style.animationDelay = Math.random() * 3 + 's';
+        confetti.style.backgroundColor = colors[Math.floor(Math.random() * colors.length)];
+        document.body.appendChild(confetti);
+        
+        setTimeout(() => confetti.remove(), 5000);
+    }
+}
+
+function showCoinFlipAnimation(game) {
+    const existingAnimation = document.getElementById('coin-flip-animation');
+    if (existingAnimation) existingAnimation.remove();
+    
+    const animationDiv = document.createElement('div');
+    animationDiv.id = 'coin-flip-animation';
+    animationDiv.innerHTML = `
+        <div class="coin-flip-fullscreen">
+            <div class="coin-3d-container">
+                <div class="coin-3d flipping">
+                    <div class="coin-side front">
+                        <img src="../assets/heads.png" alt="Heads">
+                    </div>
+                    <div class="coin-side back">
+                        <img src="../assets/tails.png" alt="Tails">
+                    </div>
+                </div>
+            </div>
+            <div class="flip-status">FLIPPING COIN...</div>
+        </div>
+    `;
+    document.body.appendChild(animationDiv);
+}
+
+function revealCoinTossResult(game) {
+    // Determine winner
+    if (game.p1Choice === game.p2Choice) {
+        game.winner = Math.random() > 0.5 ? game.p1 : game.p2;
+    } else {
+        game.winner = Math.random() > 0.5 ? game.p1 : game.p2;
+    }
+    
+    game.state = 3;
+    saveDemoGames();
+    
+    const animationDiv = document.getElementById('coin-flip-animation');
+    const video = document.getElementById('coin-flip-video');
+    
+    if (animationDiv) {
+        const isUserWinner = game.winner === game.p2;
+        const result = Math.random() > 0.5 ? 'heads' : 'tails';
+        
+        // Stop video and show result with image
+        setTimeout(() => {
+            if (video) {
+                video.pause();
+                video.style.display = 'none';
+            }
+            
+            animationDiv.innerHTML = `
+                <div class="coin-flip-fullscreen">
+                    <div class="coin-result-container">
+                        <img src="../assets/${result}.png" class="coin-result-image landed" alt="${result}">
+                    </div>
+                    <div class="flip-status result">It's ${result.toUpperCase()}!</div>
+                    <div class="flip-result ${isUserWinner ? 'victory' : 'defeat'}">
+                        ${isUserWinner ? '🎉 YOU WON!' : '😔 YOU LOST!'}
+                    </div>
+                    <div class="flip-result-sub">
+                        ${isUserWinner ? `You won ${game.pot} ETH!` : 'Better luck next time!'}
+                    </div>
+                </div>
+            `;
+            
+            if (isUserWinner) {
+                playSound('win');
+                createConfetti();
+            } else {
+                playSound('loss');
+            }
+            
+            setTimeout(() => {
+                if (animationDiv) animationDiv.remove();
+            }, 4000);
+        }, 2000);
+    }
+}
+
 function demoCreateGame(stake, choice) {
     const userAddress = arcadeApp.walletAddress || generateBotAddress();
     const userName = arcadeApp.username || 'You';
@@ -360,14 +537,14 @@ function demoCreateGame(stake, choice) {
     saveDemoGames();
     showStatus('create-status', `Demo: Game #${demoGameIdCounter - 1} created! Bots will join soon.`, 'success');
     
-    // Bot joins after 5-10 seconds
+    // Bot joins after 2-3 seconds
     setTimeout(() => {
         const game = demoGames.find(g => g.id === demoGameIdCounter - 1);
         if (game && game.state === 0) {
             botJoinGame();
             refreshGamesList();
         }
-    }, 5000 + Math.random() * 5000);
+    }, 2000 + Math.random() * 1000);
 }
 
 function demoJoinGame(gameId, choice) {
@@ -388,11 +565,16 @@ function demoJoinGame(gameId, choice) {
     game.filledAt = Date.now();
     
     saveDemoGames();
-    showStatus('join-status', `Demo: Joined game #${gameId}! Revealing...`, 'success');
     
-    // Auto-reveal after 2 seconds
+    // Play coin toss sound for user games
+    playSound('cointoss');
+    
+    // Show animated coin flip
+    showCoinFlipAnimation(game);
+    
+    // Auto-reveal immediately
     setTimeout(() => {
-        botRevealSpecificGame(gameId);
+        revealCoinTossResult(game);
         refreshGamesList();
     }, 2000);
 }
@@ -441,7 +623,7 @@ function setupContractListeners() {
 // Modal Controls
 function openCoinTossModal() {
     document.getElementById('coin-toss-modal').style.display = 'flex';
-    switchCoinTossTab('create');
+    switchTab('create');
     loadOpenGames();
 }
 
@@ -449,7 +631,7 @@ function closeCoinTossModal() {
     document.getElementById('coin-toss-modal').style.display = 'none';
 }
 
-function switchCoinTossTab(tab) {
+function switchTab(tab) {
     // Hide all tabs
     document.querySelectorAll('#coin-toss-modal .tab-content').forEach(t => t.classList.remove('active'));
     document.querySelectorAll('#coin-toss-modal .tab-btn').forEach(b => b.classList.remove('active'));
@@ -470,22 +652,23 @@ function switchCoinTossTab(tab) {
 }
 
 // Choice Selection
-function selectCreateChoice(choice) {
+function selectChoice(button, type) {
+    const choice = button.getAttribute('data-choice') === '0' ? 'Heads' : 'Tails';
+    
+    if (type === 'create') {
     selectedCreateChoice = choice;
-    document.querySelectorAll('.choice-btn').forEach(btn => btn.classList.remove('selected'));
-    event.target.classList.add('selected');
-}
-
-function selectJoinChoice(choice) {
-    selectedJoinChoice = choice;
-    const buttons = document.querySelectorAll('#join-choice-buttons .choice-btn');
-    buttons.forEach(btn => btn.classList.remove('selected'));
-    event.target.classList.add('selected');
+        document.querySelectorAll('#create-tab .choice-btn').forEach(btn => btn.classList.remove('selected'));
+    } else if (type === 'join') {
+        selectedJoinChoice = choice;
+        document.querySelectorAll('#join-game-modal .choice-btn').forEach(btn => btn.classList.remove('selected'));
+    }
+    
+    button.classList.add('selected');
 }
 
 // Create Game
 async function createGame() {
-    const stakeInput = document.getElementById('stake-input');
+    const stakeInput = document.getElementById('create-stake');
     const stake = stakeInput.value;
     
     if (!stake || parseFloat(stake) <= 0) {
@@ -546,7 +729,7 @@ async function createGame() {
         document.querySelectorAll('.choice-btn').forEach(btn => btn.classList.remove('selected'));
         
         setTimeout(() => {
-            switchCoinTossTab('my-games');
+            switchTab('my-games');
         }, 2000);
         
     } catch (error) {
@@ -625,7 +808,7 @@ async function confirmJoinGame() {
         cancelJoinGame();
         
         setTimeout(() => {
-            switchCoinTossTab('my-games');
+            switchTab('my-games');
         }, 2000);
         
     } catch (error) {
@@ -926,79 +1109,917 @@ function showStatus(elementId, message, type) {
     }
 }
 
-// ========== CONNECT 4 PLACEHOLDER FUNCTIONS ==========
+// ========== CONNECT 4 GAME FUNCTIONS ==========
+let connect4Games = [];
+let connect4GameIdCounter = 0;
+let activeConnect4Game = null;
+
 function openConnect4Modal() {
-    alert('Connect 4 coming soon! Smart contract under development.');
+    if (!DEMO_MODE) {
+        alert('Connect 4 requires Demo Mode or deployed smart contract. Please enable Demo Mode.');
+        return;
+    }
+    
+    document.getElementById('connect4-modal').style.display = 'flex';
+    switchConnect4Tab('create');
 }
 
 function closeConnect4Modal() {
     document.getElementById('connect4-modal').style.display = 'none';
+    activeConnect4Game = null;
 }
 
-function switchConnect4Tab() {
-    // Placeholder
+function switchConnect4Tab(tab) {
+    document.querySelectorAll('#connect4-modal .tab-content').forEach(t => t.classList.remove('active'));
+    document.querySelectorAll('#connect4-modal .tab-btn').forEach(b => b.classList.remove('active'));
+    
+    if (tab === 'create') {
+        document.getElementById('connect4-create-tab').classList.add('active');
+        document.querySelectorAll('#connect4-modal .tab-btn')[0].classList.add('active');
+    } else if (tab === 'join') {
+        document.getElementById('connect4-join-tab').classList.add('active');
+        document.querySelectorAll('#connect4-modal .tab-btn')[1].classList.add('active');
+        loadConnect4Games();
+    } else if (tab === 'my-games') {
+        document.getElementById('connect4-my-games-tab').classList.add('active');
+        document.querySelectorAll('#connect4-modal .tab-btn')[2].classList.add('active');
+        loadMyConnect4Games();
+    }
 }
 
 function createConnect4Game() {
-    alert('Connect 4 coming soon!');
+    if (!DEMO_MODE) {
+        alert('Demo mode required');
+        return;
+    }
+    
+    const stakeInput = document.getElementById('connect4-stake');
+    const stake = parseFloat(stakeInput.value) || 0.01;
+    
+    const userAddress = arcadeApp.walletAddress || generateBotAddress();
+    const userName = arcadeApp.username || 'You';
+    
+    // Create game vs CPU
+    const gameId = connect4GameIdCounter++;
+    const cpuName = 'CPU Player';
+    
+    const game = {
+        id: gameId,
+        p1: userAddress,
+        p1Name: userName,
+        p2: 'CPU',
+        p2Name: cpuName,
+        stake: stake.toFixed(3),
+        pot: (stake * 2).toFixed(3),
+        state: 1, // Active
+        board: Array(6).fill(null).map(() => Array(7).fill(0)),
+        currentPlayer: 1, // 1 = user (red), 2 = CPU (yellow)
+        winner: null,
+        createdAt: Date.now()
+    };
+    
+    connect4Games.push(game);
+    activeConnect4Game = game;
+    
+    showStatus('connect4-create-status', `Game #${gameId} created! You start first (RED).`, 'success');
+    
+    // Launch game board
+    setTimeout(() => {
+        closeConnect4Modal();
+        launchConnect4Board(game);
+    }, 1500);
+}
+
+function launchConnect4Board(game) {
+    // Create game board overlay
+    const overlay = document.createElement('div');
+    overlay.id = 'connect4-game-overlay';
+    overlay.innerHTML = `
+        <div class="game-board-container">
+            <div class="game-board-header">
+                <h3 class="neon">Connect 4 - Game #${game.id}</h3>
+                <div class="game-players">
+                    <span class="player-indicator p1">🔴 ${game.p1Name}</span>
+                    <span class="vs">VS</span>
+                    <span class="player-indicator p2">🟡 ${game.p2Name}</span>
+                </div>
+                <div id="connect4-turn" class="turn-indicator">🔴 Your Turn</div>
+                <button onclick="closeConnect4Game()" class="close-game-btn">Exit Game</button>
+            </div>
+            <div id="connect4-board" class="connect4-board">
+                ${generateConnect4BoardHTML(game.board)}
+            </div>
+            <div id="connect4-game-status" class="game-status-msg"></div>
+        </div>
+    `;
+    
+    document.body.appendChild(overlay);
+    
+    // Add click handlers to columns
+    document.querySelectorAll('.connect4-column').forEach((col, index) => {
+        col.addEventListener('click', () => makeConnect4Move(game, index));
+    });
+}
+
+function generateConnect4BoardHTML(board) {
+    let html = '<div class="connect4-grid">';
+    
+    for (let row = 0; row < 6; row++) {
+        for (let col = 0; col < 7; col++) {
+            const cell = board[row][col];
+            let cellClass = 'connect4-cell';
+            let cellContent = '⚪';
+            
+            if (cell === 1) {
+                cellClass += ' player1';
+                cellContent = '🔴';
+            } else if (cell === 2) {
+                cellClass += ' player2';
+                cellContent = '🟡';
+            }
+            
+            html += `<div class="${cellClass}" data-row="${row}" data-col="${col}">${cellContent}</div>`;
+        }
+    }
+    
+    // Column click indicators
+    html += '</div><div class="connect4-columns">';
+    for (let i = 0; i < 7; i++) {
+        html += `<div class="connect4-column" data-col="${i}">▼</div>`;
+    }
+    html += '</div>';
+    
+    return html;
+}
+
+function makeConnect4Move(game, col) {
+    if (game.currentPlayer !== 1 || game.winner) return;
+    
+    // Find lowest empty row in column
+    let row = -1;
+    for (let r = 5; r >= 0; r--) {
+        if (game.board[r][col] === 0) {
+            row = r;
+            break;
+        }
+    }
+    
+    if (row === -1) {
+        showConnect4Status('Column full!', 'error');
+        return;
+    }
+    
+    // Make move
+    game.board[row][col] = 1;
+    game.currentPlayer = 2;
+    
+    // Play sound and update board together
+    playSound('c4drop');
+    updateConnect4Board(game, row, col);
+    
+    // Check win
+    const winningCells = checkConnect4Win(game.board, 1);
+    if (winningCells) {
+        highlightWinningCells(winningCells);
+        endConnect4Game(game, 1);
+        return;
+    }
+    
+    // Check draw
+    if (checkConnect4Draw(game.board)) {
+        endConnect4Game(game, 0);
+        return;
+    }
+    
+    // CPU turn with slight delay
+    setTimeout(() => cpuConnect4Move(game), 300);
+}
+
+function cpuConnect4Move(game) {
+    if (game.winner) return;
+    
+    showConnect4Status('CPU thinking...', 'info');
+    
+    // Simple AI: Try to win, block player, or random
+    let col = findConnect4WinningMove(game.board, 2);
+    if (col === -1) col = findConnect4WinningMove(game.board, 1);
+    if (col === -1) col = findRandomConnect4Column(game.board);
+    
+    if (col === -1) {
+        endConnect4Game(game, 0);
+        return;
+    }
+    
+    // Find row
+    let row = -1;
+    for (let r = 5; r >= 0; r--) {
+        if (game.board[r][col] === 0) {
+            row = r;
+            break;
+        }
+    }
+    
+    game.board[row][col] = 2;
+    game.currentPlayer = 1;
+    
+    // Play sound and update board together - NO DOUBLE SOUND
+    playSound('c4drop');
+    updateConnect4Board(game, row, col);
+    
+    const winningCells = checkConnect4Win(game.board, 2);
+    if (winningCells) {
+        highlightWinningCells(winningCells);
+        endConnect4Game(game, 2);
+    } else if (checkConnect4Draw(game.board)) {
+        endConnect4Game(game, 0);
+    } else {
+        showConnect4Status('Your turn!', 'info');
+    }
+}
+
+function findConnect4WinningMove(board, player) {
+    for (let col = 0; col < 7; col++) {
+        let row = -1;
+        for (let r = 5; r >= 0; r--) {
+            if (board[r][col] === 0) {
+                row = r;
+                break;
+            }
+        }
+        
+        if (row !== -1) {
+            board[row][col] = player;
+            const winningCells = checkConnect4Win(board, player);
+            board[row][col] = 0;
+            if (winningCells) return col;
+        }
+    }
+    return -1;
+}
+
+function findRandomConnect4Column(board) {
+    const available = [];
+    for (let col = 0; col < 7; col++) {
+        if (board[0][col] === 0) available.push(col);
+    }
+    return available.length > 0 ? available[Math.floor(Math.random() * available.length)] : -1;
+}
+
+function highlightWinningCells(winningCells) {
+    // Add winner-chip class to winning cells for extra pulse effect
+    winningCells.forEach(([row, col]) => {
+        const cell = document.querySelector(`.connect4-cell[data-row="${row}"][data-col="${col}"]`);
+        if (cell) {
+            cell.classList.add('winner-chip');
+        }
+    });
+}
+
+function checkConnect4Win(board, player) {
+    // Check horizontal
+    for (let r = 0; r < 6; r++) {
+        for (let c = 0; c < 4; c++) {
+            if (board[r][c] === player && board[r][c+1] === player && 
+                board[r][c+2] === player && board[r][c+3] === player) {
+                return [[r,c], [r,c+1], [r,c+2], [r,c+3]];
+            }
+        }
+    }
+    
+    // Check vertical
+    for (let r = 0; r < 3; r++) {
+        for (let c = 0; c < 7; c++) {
+            if (board[r][c] === player && board[r+1][c] === player && 
+                board[r+2][c] === player && board[r+3][c] === player) {
+                return [[r,c], [r+1,c], [r+2,c], [r+3,c]];
+            }
+        }
+    }
+    
+    // Check diagonal /
+    for (let r = 3; r < 6; r++) {
+        for (let c = 0; c < 4; c++) {
+            if (board[r][c] === player && board[r-1][c+1] === player && 
+                board[r-2][c+2] === player && board[r-3][c+3] === player) {
+                return [[r,c], [r-1,c+1], [r-2,c+2], [r-3,c+3]];
+            }
+        }
+    }
+    
+    // Check diagonal \
+    for (let r = 0; r < 3; r++) {
+        for (let c = 0; c < 4; c++) {
+            if (board[r][c] === player && board[r+1][c+1] === player && 
+                board[r+2][c+2] === player && board[r+3][c+3] === player) {
+                return [[r,c], [r+1,c+1], [r+2,c+2], [r+3,c+3]];
+            }
+        }
+    }
+    
+    return false;
+}
+
+function checkConnect4Draw(board) {
+    return board[0].every(cell => cell !== 0);
+}
+
+function updateConnect4Board(game, animateRow = -1, animateCol = -1) {
+    const boardElement = document.getElementById('connect4-board');
+    if (boardElement) {
+        boardElement.innerHTML = generateConnect4BoardHTML(game.board);
+        
+        // Add dropping animation to the newly placed piece
+        if (animateRow >= 0 && animateCol >= 0) {
+            setTimeout(() => {
+                const cell = document.querySelector(`.connect4-cell[data-row="${animateRow}"][data-col="${animateCol}"]`);
+                if (cell) {
+                    cell.classList.add('dropping');
+                    setTimeout(() => cell.classList.remove('dropping'), 500);
+                }
+            }, 10);
+        }
+        
+        // Re-add click handlers
+        document.querySelectorAll('.connect4-column').forEach((col, index) => {
+            col.addEventListener('click', () => makeConnect4Move(game, index));
+        });
+    }
+    
+    const turnIndicator = document.getElementById('connect4-turn');
+    if (turnIndicator && !game.winner) {
+        turnIndicator.textContent = game.currentPlayer === 1 ? '🔴 Your Turn' : '🟡 CPU Turn';
+    }
+}
+
+function showConnect4Status(message, type) {
+    const statusElement = document.getElementById('connect4-game-status');
+    if (statusElement) {
+        statusElement.textContent = message;
+        statusElement.className = `game-status-msg ${type}`;
+    }
+}
+
+function endConnect4Game(game, winner) {
+    game.winner = winner;
+    game.state = 3; // Completed
+    
+    const turnIndicator = document.getElementById('connect4-turn');
+    if (turnIndicator) {
+        if (winner === 1) {
+            playSound('win');
+            createConfetti();
+            turnIndicator.textContent = '🎉 YOU WON!';
+            turnIndicator.style.color = '#00ff00';
+            turnIndicator.classList.add('victory');
+            showConnect4Status(`You won ${game.pot} ETH!`, 'success');
+        } else if (winner === 2) {
+            playSound('loss');
+            turnIndicator.textContent = '😔 YOU LOST!';
+            turnIndicator.style.color = '#ff0000';
+            turnIndicator.classList.add('defeat');
+            showConnect4Status('Better luck next time!', 'error');
+        } else {
+            turnIndicator.textContent = '🤝 DRAW!';
+            turnIndicator.style.color = '#ffaa00';
+            showConnect4Status('It\'s a draw! Stake returned.', 'info');
+        }
+    }
+}
+
+function closeConnect4Game() {
+    const overlay = document.getElementById('connect4-game-overlay');
+    if (overlay) overlay.remove();
+    activeConnect4Game = null;
 }
 
 function loadConnect4Games() {
-    // Placeholder
+    const listElement = document.getElementById('connect4-games-list');
+    listElement.innerHTML = '<p class="loading-text">Demo mode: Click Create Game to play vs CPU!</p>';
 }
 
 function loadMyConnect4Games() {
-    // Placeholder
+    const listElement = document.getElementById('connect4-my-games-list');
+    listElement.innerHTML = '<p class="loading-text">Create games to see your history here.</p>';
 }
 
-// ========== WAR PLACEHOLDER FUNCTIONS ==========
+// ========== WAR CARD GAME FUNCTIONS ==========
+let activeWarGame = null;
+
+const CARD_VALUES = ['2', '3', '4', '5', '6', '7', '8', '9', '10', 'J', 'Q', 'K', 'A'];
+const CARD_SUITS = ['♠', '♣', '♥', '♦'];
+
 function openWarModal() {
-    alert('War card game coming soon! Smart contract under development.');
+    if (!DEMO_MODE) {
+        alert('War requires Demo Mode or deployed smart contract. Please enable Demo Mode.');
+        return;
+    }
+    
+    document.getElementById('war-modal').style.display = 'flex';
+    switchWarTab('create');
 }
 
 function closeWarModal() {
     document.getElementById('war-modal').style.display = 'none';
 }
 
-function switchWarTab() {
-    // Placeholder
+function switchWarTab(tab) {
+    document.querySelectorAll('#war-modal .tab-content').forEach(t => t.classList.remove('active'));
+    document.querySelectorAll('#war-modal .tab-btn').forEach(b => b.classList.remove('active'));
+    
+    if (tab === 'create') {
+        document.getElementById('war-create-tab').classList.add('active');
+        document.querySelectorAll('#war-modal .tab-btn')[0].classList.add('active');
+    } else if (tab === 'join') {
+        document.getElementById('war-join-tab').classList.add('active');
+        document.querySelectorAll('#war-modal .tab-btn')[1].classList.add('active');
+        loadWarGames();
+    } else if (tab === 'my-games') {
+        document.getElementById('war-my-games-tab').classList.add('active');
+        document.querySelectorAll('#war-modal .tab-btn')[2].classList.add('active');
+        loadMyWarGames();
+    }
 }
 
 function createWarGame() {
-    alert('War coming soon!');
+    if (!DEMO_MODE) {
+        alert('Demo mode required');
+        return;
+    }
+    
+    const stakeInput = document.getElementById('war-stake');
+    const stake = parseFloat(stakeInput.value) || 0.01;
+    
+    const userAddress = arcadeApp.walletAddress || generateBotAddress();
+    const userName = arcadeApp.username || 'You';
+    
+    // Create game vs CPU
+    const game = {
+        stake: stake.toFixed(3),
+        pot: (stake * 2).toFixed(3),
+        player: { name: userName, score: 0, card: null },
+        cpu: { name: 'CPU Player', score: 0, card: null },
+        round: 0,
+        maxRounds: 10,
+        winner: null
+    };
+    
+    activeWarGame = game;
+    
+    showStatus('war-create-status', 'Game created! Get ready to battle!', 'success');
+    
+    setTimeout(() => {
+        closeWarModal();
+        launchWarBoard(game);
+    }, 1000);
+}
+
+function launchWarBoard(game) {
+    const overlay = document.createElement('div');
+    overlay.id = 'war-game-overlay';
+    overlay.innerHTML = `
+        <div class="game-board-container">
+            <div class="game-board-header">
+                <h3 class="neon">War - Card Battle</h3>
+                <div class="game-players">
+                    <span class="player-indicator p1">👤 ${game.player.name}</span>
+                    <span class="vs">VS</span>
+                    <span class="player-indicator p2">🤖 ${game.cpu.name}</span>
+                </div>
+                <div class="rps-score">
+                    <div class="rps-score-item">You: <span id="war-player-score">0</span></div>
+                    <div class="rps-score-item">Round: <span id="war-round">0</span>/${game.maxRounds}</div>
+                    <div class="rps-score-item">CPU: <span id="war-cpu-score">0</span></div>
+                </div>
+                <button onclick="closeWarGame()" class="close-game-btn">Exit Game</button>
+            </div>
+            <div class="war-board">
+                <div id="war-status" class="turn-indicator">Click 'Draw Cards' to start!</div>
+                <div class="war-cards">
+                    <div id="player-card" class="war-card">
+                        <div class="war-card-value">?</div>
+                        <div class="war-card-suit"></div>
+                    </div>
+                    <div class="war-vs">VS</div>
+                    <div id="cpu-card" class="war-card">
+                        <div class="war-card-value">?</div>
+                        <div class="war-card-suit"></div>
+                    </div>
+                </div>
+                <button id="war-draw-btn" class="war-flip-btn" onclick="warDrawCards()">Draw Cards</button>
+            </div>
+        </div>
+    `;
+    
+    document.body.appendChild(overlay);
+}
+
+function warDrawCards() {
+    if (activeWarGame.round >= activeWarGame.maxRounds) {
+        endWarGame();
+        return;
+    }
+    
+    document.getElementById('war-draw-btn').disabled = true;
+    document.getElementById('war-status').textContent = 'Drawing cards...';
+    
+    // Draw random cards
+    const playerCard = {
+        value: CARD_VALUES[Math.floor(Math.random() * CARD_VALUES.length)],
+        suit: CARD_SUITS[Math.floor(Math.random() * CARD_SUITS.length)]
+    };
+    
+    const cpuCard = {
+        value: CARD_VALUES[Math.floor(Math.random() * CARD_VALUES.length)],
+        suit: CARD_SUITS[Math.floor(Math.random() * CARD_SUITS.length)]
+    };
+    
+    activeWarGame.player.card = playerCard;
+    activeWarGame.cpu.card = cpuCard;
+    activeWarGame.round++;
+    
+    setTimeout(() => {
+        displayWarCards(playerCard, cpuCard);
+        setTimeout(() => {
+            evaluateWarRound(playerCard, cpuCard);
+        }, 1000);
+    }, 500);
+}
+
+function displayWarCards(playerCard, cpuCard) {
+    const playerCardEl = document.getElementById('player-card');
+    const cpuCardEl = document.getElementById('cpu-card');
+    
+    const playerColor = (playerCard.suit === '♥' || playerCard.suit === '♦') ? 'red' : 'black';
+    const cpuColor = (cpuCard.suit === '♥' || cpuCard.suit === '♦') ? 'red' : 'black';
+    
+    // Play card flip sound
+    playSound('flipcard');
+    
+    // Add flipping animation
+    playerCardEl.classList.add('flipping');
+    cpuCardEl.classList.add('flipping');
+    
+    setTimeout(() => {
+        playerCardEl.className = `war-card ${playerColor}`;
+        playerCardEl.innerHTML = `
+            <div class="war-card-value">${playerCard.value}</div>
+            <div class="war-card-suit">${playerCard.suit}</div>
+        `;
+        
+        cpuCardEl.className = `war-card ${cpuColor}`;
+        cpuCardEl.innerHTML = `
+            <div class="war-card-value">${cpuCard.value}</div>
+            <div class="war-card-suit">${cpuCard.suit}</div>
+        `;
+    }, 300);
+    
+    setTimeout(() => {
+        playerCardEl.classList.remove('flipping');
+        cpuCardEl.classList.remove('flipping');
+    }, 600);
+}
+
+function evaluateWarRound(playerCard, cpuCard) {
+    const playerValue = CARD_VALUES.indexOf(playerCard.value);
+    const cpuValue = CARD_VALUES.indexOf(cpuCard.value);
+    
+    let result = '';
+    
+    if (playerValue > cpuValue) {
+        activeWarGame.player.score++;
+        result = '🎉 You won this round!';
+    } else if (cpuValue > playerValue) {
+        activeWarGame.cpu.score++;
+        result = '😔 CPU won this round!';
+    } else {
+        result = '🤝 It\'s a tie!';
+    }
+    
+    document.getElementById('war-status').textContent = result;
+    document.getElementById('war-player-score').textContent = activeWarGame.player.score;
+    document.getElementById('war-cpu-score').textContent = activeWarGame.cpu.score;
+    document.getElementById('war-round').textContent = activeWarGame.round;
+    
+    if (activeWarGame.round < activeWarGame.maxRounds) {
+        document.getElementById('war-draw-btn').disabled = false;
+        document.getElementById('war-draw-btn').textContent = 'Draw Next Cards';
+    } else {
+        endWarGame();
+    }
+}
+
+function endWarGame() {
+    const game = activeWarGame;
+    
+    setTimeout(() => {
+        let finalMessage = '';
+        const statusEl = document.getElementById('war-status');
+        
+        if (game.player.score > game.cpu.score) {
+            playSound('win');
+            createConfetti();
+            finalMessage = `🎉 YOU WON!`;
+            game.winner = 'player';
+            if (statusEl) {
+                statusEl.classList.add('victory');
+                statusEl.style.color = '#00ff00';
+                statusEl.style.fontSize = '1.4rem';
+            }
+        } else if (game.cpu.score > game.player.score) {
+            playSound('loss');
+            finalMessage = `😔 YOU LOST!`;
+            game.winner = 'cpu';
+            if (statusEl) {
+                statusEl.classList.add('defeat');
+                statusEl.style.color = '#ff0000';
+                statusEl.style.fontSize = '1.4rem';
+            }
+        } else {
+            finalMessage = `🤝 IT'S A DRAW!`;
+            game.winner = 'draw';
+            if (statusEl) {
+                statusEl.style.color = '#ffaa00';
+                statusEl.style.fontSize = '1.2rem';
+            }
+        }
+        
+        if (statusEl) statusEl.textContent = finalMessage;
+        document.getElementById('war-draw-btn').textContent = 'Game Over - Close to Exit';
+    }, 500);
+}
+
+function closeWarGame() {
+    const overlay = document.getElementById('war-game-overlay');
+    if (overlay) overlay.remove();
+    activeWarGame = null;
 }
 
 function loadWarGames() {
-    // Placeholder
+    const listElement = document.getElementById('war-games-list');
+    listElement.innerHTML = '<p class="loading-text">Demo mode: Click Create Game to play vs CPU!</p>';
 }
 
 function loadMyWarGames() {
-    // Placeholder
+    const listElement = document.getElementById('war-my-games-list');
+    listElement.innerHTML = '<p class="loading-text">Create games to see your history here.</p>';
 }
 
-// ========== ROCK PAPER SCISSORS PLACEHOLDER FUNCTIONS ==========
+// ========== ROCK PAPER SCISSORS FUNCTIONS ==========
+let activeRPSGame = null;
+
+const RPS_CHOICES = {
+    ROCK: '✊',
+    PAPER: '✋',
+    SCISSORS: '✌️'
+};
+
 function openRPSModal() {
-    alert('Rock Paper Scissors coming soon! Smart contract under development.');
+    if (!DEMO_MODE) {
+        alert('RPS requires Demo Mode or deployed smart contract. Please enable Demo Mode.');
+        return;
+    }
+    
+    document.getElementById('rps-modal').style.display = 'flex';
+    switchRPSTab('create');
 }
 
 function closeRPSModal() {
     document.getElementById('rps-modal').style.display = 'none';
 }
 
-function switchRPSTab() {
-    // Placeholder
+function switchRPSTab(tab) {
+    document.querySelectorAll('#rps-modal .tab-content').forEach(t => t.classList.remove('active'));
+    document.querySelectorAll('#rps-modal .tab-btn').forEach(b => b.classList.remove('active'));
+    
+    if (tab === 'create') {
+        document.getElementById('rps-create-tab').classList.add('active');
+        document.querySelectorAll('#rps-modal .tab-btn')[0].classList.add('active');
+    } else if (tab === 'join') {
+        document.getElementById('rps-join-tab').classList.add('active');
+        document.querySelectorAll('#rps-modal .tab-btn')[1].classList.add('active');
+        loadRPSGames();
+    } else if (tab === 'my-games') {
+        document.getElementById('rps-my-games-tab').classList.add('active');
+        document.querySelectorAll('#rps-modal .tab-btn')[2].classList.add('active');
+        loadMyRPSGames();
+    }
 }
 
 function createRPSGame() {
-    alert('RPS coming soon!');
+    if (!DEMO_MODE) {
+        alert('Demo mode required');
+        return;
+    }
+    
+    const stakeInput = document.getElementById('rps-stake');
+    const stake = parseFloat(stakeInput.value) || 0.01;
+    
+    const userAddress = arcadeApp.walletAddress || generateBotAddress();
+    const userName = arcadeApp.username || 'You';
+    
+    // Create Best of 3 game vs CPU
+    const game = {
+        stake: stake.toFixed(3),
+        pot: (stake * 2).toFixed(3),
+        player: { name: userName, score: 0, choice: null },
+        cpu: { name: 'CPU Player', score: 0, choice: null },
+        round: 0,
+        maxRounds: 3,
+        winner: null,
+        roundResult: ''
+    };
+    
+    activeRPSGame = game;
+    
+    showStatus('rps-create-status', 'Game created! Best of 3 rounds!', 'success');
+    
+    setTimeout(() => {
+        closeRPSModal();
+        launchRPSBoard(game);
+    }, 1000);
+}
+
+function launchRPSBoard(game) {
+    const overlay = document.createElement('div');
+    overlay.id = 'rps-game-overlay';
+    overlay.innerHTML = `
+        <div class="game-board-container">
+            <div class="game-board-header">
+                <h3 class="neon">Rock Paper Scissors</h3>
+                <div class="game-players">
+                    <span class="player-indicator p1">👤 ${game.player.name}</span>
+                    <span class="vs">VS</span>
+                    <span class="player-indicator p2">🤖 ${game.cpu.name}</span>
+                </div>
+                <div class="rps-score">
+                    <div class="rps-score-item">You: <span id="rps-player-score">0</span></div>
+                    <div class="rps-score-item">Round: <span id="rps-current-round">1</span>/${game.maxRounds}</div>
+                    <div class="rps-score-item">CPU: <span id="rps-cpu-score">0</span></div>
+                </div>
+                <button onclick="closeRPSGame()" class="close-game-btn">Exit Game</button>
+            </div>
+            <div class="rps-board">
+                <div id="rps-status" class="turn-indicator">Choose your weapon!</div>
+                <div class="rps-choices">
+                    <button class="rps-choice-btn" onclick="makeRPSChoice('ROCK')">✊</button>
+                    <button class="rps-choice-btn" onclick="makeRPSChoice('PAPER')">✋</button>
+                    <button class="rps-choice-btn" onclick="makeRPSChoice('SCISSORS')">✌️</button>
+                </div>
+                <div id="rps-result" class="rps-result" style="display: none;">
+                    <div class="rps-player-choice">
+                        <div class="emoji" id="player-choice-emoji"></div>
+                        <div>${game.player.name}</div>
+                    </div>
+                    <div class="vs">VS</div>
+                    <div class="rps-player-choice">
+                        <div class="emoji" id="cpu-choice-emoji"></div>
+                        <div>${game.cpu.name}</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    `;
+    
+    document.body.appendChild(overlay);
+}
+
+function makeRPSChoice(choice) {
+    const game = activeRPSGame;
+    
+    // Add shake animation to selected button
+    const buttons = document.querySelectorAll('.rps-choice-btn');
+    buttons.forEach((btn, index) => {
+        if ((choice === 'ROCK' && index === 0) || 
+            (choice === 'PAPER' && index === 1) || 
+            (choice === 'SCISSORS' && index === 2)) {
+            btn.classList.add('selecting');
+            setTimeout(() => btn.classList.remove('selecting'), 500);
+        }
+    });
+    
+    // Disable buttons during round
+    setTimeout(() => {
+        buttons.forEach(btn => btn.disabled = true);
+    }, 500);
+    
+    game.player.choice = choice;
+    
+    // CPU makes random choice
+    const choices = Object.keys(RPS_CHOICES);
+    game.cpu.choice = choices[Math.floor(Math.random() * choices.length)];
+    
+    game.round++;
+    
+    // Show choices
+    document.getElementById('rps-status').textContent = 'Revealing choices...';
+    
+    setTimeout(() => {
+        showRPSChoices(game);
+        setTimeout(() => {
+            evaluateRPSRound(game);
+        }, 1000);
+    }, 1000);
+}
+
+function showRPSChoices(game) {
+    playSound('flipcard');
+    document.getElementById('player-choice-emoji').textContent = RPS_CHOICES[game.player.choice];
+    document.getElementById('cpu-choice-emoji').textContent = RPS_CHOICES[game.cpu.choice];
+    document.getElementById('rps-result').style.display = 'flex';
+}
+
+function evaluateRPSRound(game) {
+    const player = game.player.choice;
+    const cpu = game.cpu.choice;
+    
+    let result = '';
+    
+    if (player === cpu) {
+        result = '🤝 This round is a tie!';
+        game.round--; // Tie doesn't count
+    } else if (
+        (player === 'ROCK' && cpu === 'SCISSORS') ||
+        (player === 'PAPER' && cpu === 'ROCK') ||
+        (player === 'SCISSORS' && cpu === 'PAPER')
+    ) {
+        game.player.score++;
+        result = '🎉 You won this round!';
+    } else {
+        game.cpu.score++;
+        result = '😔 CPU won this round!';
+    }
+    
+    game.roundResult = result;
+    
+    document.getElementById('rps-status').textContent = result;
+    document.getElementById('rps-player-score').textContent = game.player.score;
+    document.getElementById('rps-cpu-score').textContent = game.cpu.score;
+    document.getElementById('rps-current-round').textContent = game.round;
+    
+    // Check if game is over
+    if (game.player.score === 2 || game.cpu.score === 2 || game.round >= game.maxRounds) {
+        setTimeout(() => endRPSGame(game), 2000);
+    } else {
+        setTimeout(() => resetRPSRound(), 2000);
+    }
+}
+
+function resetRPSRound() {
+    document.getElementById('rps-result').style.display = 'none';
+    document.getElementById('rps-status').textContent = 'Choose your weapon!';
+    document.querySelectorAll('.rps-choice-btn').forEach(btn => btn.disabled = false);
+}
+
+function endRPSGame(game) {
+    let finalMessage = '';
+    const statusEl = document.getElementById('rps-status');
+    
+    if (game.player.score > game.cpu.score) {
+        playSound('win');
+        createConfetti();
+        finalMessage = `🎉 YOU WON!`;
+        game.winner = 'player';
+        if (statusEl) {
+            statusEl.classList.add('victory');
+            statusEl.style.color = '#00ff00';
+            statusEl.style.fontSize = '1.4rem';
+        }
+    } else if (game.cpu.score > game.player.score) {
+        playSound('loss');
+        finalMessage = `😔 YOU LOST!`;
+        game.winner = 'cpu';
+        if (statusEl) {
+            statusEl.classList.add('defeat');
+            statusEl.style.color = '#ff0000';
+            statusEl.style.fontSize = '1.4rem';
+        }
+    } else {
+        finalMessage = `🤝 IT'S A DRAW!`;
+        game.winner = 'draw';
+        if (statusEl) {
+            statusEl.style.color = '#ffaa00';
+            statusEl.style.fontSize = '1.2rem';
+        }
+    }
+    
+    if (statusEl) statusEl.textContent = finalMessage;
+    document.querySelectorAll('.rps-choice-btn').forEach(btn => btn.disabled = true);
+}
+
+function closeRPSGame() {
+    const overlay = document.getElementById('rps-game-overlay');
+    if (overlay) overlay.remove();
+    activeRPSGame = null;
 }
 
 function loadRPSGames() {
-    // Placeholder
+    const listElement = document.getElementById('rps-games-list');
+    listElement.innerHTML = '<p class="loading-text">Demo mode: Click Create Game to play vs CPU!</p>';
 }
 
 function loadMyRPSGames() {
-    // Placeholder
+    const listElement = document.getElementById('rps-my-games-list');
+    listElement.innerHTML = '<p class="loading-text">Create games to see your history here.</p>';
 }
 
 // Close modals when clicking outside

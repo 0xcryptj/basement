@@ -1,0 +1,463 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Connect 4 - The Basement Arcade</title>
+    <link rel="stylesheet" href="arcade.css">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Press+Start+2P&display=swap" rel="stylesheet">
+    <link rel="icon" href="../assets/icon.ico" type="image/x-icon">
+    <style>
+        /* Remove all scrollbars and overflow */
+        html, body {
+            overflow: hidden;
+            margin: 0;
+            padding: 0;
+            height: 100vh;
+            width: 100vw;
+        }
+        
+        body::-webkit-scrollbar {
+            display: none;
+        }
+        
+        /* CRT Scanline Overlay Effect */
+        .crt-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: repeating-linear-gradient(
+                to bottom,
+                rgba(255, 255, 255, 0.03) 0px,
+                rgba(255, 255, 255, 0.03) 1px,
+                transparent 1px,
+                transparent 2px
+            );
+            pointer-events: none;
+            z-index: 9999;
+            mix-blend-mode: overlay;
+            animation: scanlines 8s linear infinite;
+        }
+        
+        @keyframes scanlines {
+            0% { transform: translateY(0); }
+            100% { transform: translateY(4px); }
+        }
+        
+        /* Pixel Grain Overlay */
+        .grain-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background-image: url('data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHdpZHRoPSIzMDAiIGhlaWdodD0iMzAwIj48ZmlsdGVyIGlkPSJhIiB4PSIwIiB5PSIwIj48ZmVUdXJidWxlbmNlIGJhc2VGcmVxdWVuY3k9Ii43NSIgc3RpdGNoVGlsZXM9InN0aXRjaCIgdHlwZT0iZnJhY3RhbE5vaXNlIi8+PGZlQ29sb3JNYXRyaXggdHlwZT0ic2F0dXJhdGUiIHZhbHVlcz0iMCIvPjwvZmlsdGVyPjxwYXRoIGQ9Ik0wIDBoMzAwdjMwMEgweiIgZmlsdGVyPSJ1cmwoI2EpIiBvcGFjaXR5PSIuMDUiLz48L3N2Zz4=');
+            pointer-events: none;
+            z-index: 9998;
+            opacity: 0.08;
+        }
+        
+        /* Game Container - Perfect Centering */
+        #game-container {
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 20px;
+            overflow: hidden;
+        }
+        
+        /* Enhanced Game Board Container */
+        .game-board-container {
+            background: linear-gradient(145deg, #0a0a1e 0%, #1a1a3e 50%, #0a0a1e 100%);
+            border: 6px solid #0052ff99;
+            border-radius: 16px;
+            padding: 2.5rem;
+            max-width: 95vw;
+            max-height: 90vh;
+            position: relative;
+            overflow: visible;
+            box-shadow: 
+                0 0 0 4px #000,
+                0 0 30px rgba(0, 82, 255, 0.8),
+                0 0 60px rgba(0, 82, 255, 0.5),
+                0 20px 0 #001a4d,
+                0 25px 50px rgba(0, 0, 0, 0.9),
+                inset 0 0 100px rgba(0, 82, 255, 0.15);
+        }
+        
+        /* Inner neon frame */
+        .game-board-container::before {
+            content: '';
+            position: absolute;
+            top: 12px;
+            left: 12px;
+            right: 12px;
+            bottom: 12px;
+            border: 2px solid rgba(0, 255, 255, 0.3);
+            border-radius: 12px;
+            pointer-events: none;
+            box-shadow: 0 0 20px rgba(0, 191, 255, 0.4);
+        }
+        
+        /* Glow pulse animation for board */
+        @keyframes boardGlow {
+            0%, 100% {
+                box-shadow: 
+                    0 0 0 4px #000,
+                    0 0 30px rgba(0, 82, 255, 0.8),
+                    0 0 60px rgba(0, 82, 255, 0.5),
+                    0 20px 0 #001a4d,
+                    0 25px 50px rgba(0, 0, 0, 0.9),
+                    inset 0 0 100px rgba(0, 82, 255, 0.15);
+            }
+            50% {
+                box-shadow: 
+                    0 0 0 4px #000,
+                    0 0 40px rgba(0, 82, 255, 1),
+                    0 0 80px rgba(0, 82, 255, 0.7),
+                    0 20px 0 #001a4d,
+                    0 25px 50px rgba(0, 0, 0, 0.9),
+                    inset 0 0 120px rgba(0, 82, 255, 0.2);
+            }
+        }
+        
+        .game-board-container {
+            animation: boardGlow 4s ease-in-out infinite;
+        }
+        
+        /* Enhanced Connect 4 Grid */
+        .connect4-grid {
+            background: linear-gradient(145deg, #0a0a1e, #050510) !important;
+            border: 8px solid #0052ff !important;
+            box-shadow: 
+                inset 4px 4px 12px rgba(0, 0, 0, 0.9),
+                inset -4px -4px 12px rgba(0, 191, 255, 0.1),
+                0 8px 0 #001a4d,
+                0 12px 30px rgba(0, 0, 0, 0.8),
+                0 0 40px rgba(0, 82, 255, 0.6) !important;
+        }
+        
+        /* Enhanced Connect 4 Cells */
+        .connect4-cell {
+            background: linear-gradient(145deg, #0f0f1e 0%, #050510 100%) !important;
+            border: 4px solid #0052ff99 !important;
+            box-shadow: 
+                inset 3px 3px 8px rgba(0, 0, 0, 0.9),
+                inset -3px -3px 8px rgba(0, 82, 255, 0.2),
+                0 0 15px rgba(0, 82, 255, 0.4),
+                0 4px 0 rgba(0, 0, 0, 0.5) !important;
+            transition: all 0.3s ease !important;
+        }
+        
+        /* Player 1 - Red Chip with Neon Glow */
+        .connect4-cell.player1 {
+            background: 
+                radial-gradient(circle at 30% 30%, #ff6666, #ff0000),
+                linear-gradient(145deg, #cc0000, #990000) !important;
+            border-color: #ff0000 !important;
+            box-shadow: 
+                inset 3px 3px 10px rgba(255, 100, 100, 0.5),
+                inset -3px -3px 10px rgba(0, 0, 0, 0.7),
+                0 4px 0 #660000,
+                0 0 30px rgba(255, 0, 68, 0.9),
+                0 0 50px rgba(255, 0, 68, 0.6),
+                0 0 70px rgba(255, 0, 68, 0.3) !important;
+            animation: chipGlowRed 2s ease-in-out infinite;
+        }
+        
+        @keyframes chipGlowRed {
+            0%, 100% {
+                box-shadow: 
+                    inset 3px 3px 10px rgba(255, 100, 100, 0.5),
+                    inset -3px -3px 10px rgba(0, 0, 0, 0.7),
+                    0 4px 0 #660000,
+                    0 0 30px rgba(255, 0, 68, 0.9),
+                    0 0 50px rgba(255, 0, 68, 0.6),
+                    0 0 70px rgba(255, 0, 68, 0.3);
+            }
+            50% {
+                box-shadow: 
+                    inset 3px 3px 10px rgba(255, 100, 100, 0.5),
+                    inset -3px -3px 10px rgba(0, 0, 0, 0.7),
+                    0 4px 0 #660000,
+                    0 0 40px rgba(255, 0, 68, 1),
+                    0 0 60px rgba(255, 0, 68, 0.8),
+                    0 0 90px rgba(255, 0, 68, 0.5);
+            }
+        }
+        
+        /* Player 2 - Yellow Chip with Neon Glow */
+        .connect4-cell.player2 {
+            background: 
+                radial-gradient(circle at 30% 30%, #ffff66, #ffdd00),
+                linear-gradient(145deg, #ccaa00, #998800) !important;
+            border-color: #ffdd00 !important;
+            box-shadow: 
+                inset 3px 3px 10px rgba(255, 255, 100, 0.5),
+                inset -3px -3px 10px rgba(0, 0, 0, 0.7),
+                0 4px 0 #665500,
+                0 0 30px rgba(255, 221, 0, 0.9),
+                0 0 50px rgba(255, 221, 0, 0.6),
+                0 0 70px rgba(255, 221, 0, 0.3) !important;
+            animation: chipGlowYellow 2s ease-in-out infinite;
+        }
+        
+        @keyframes chipGlowYellow {
+            0%, 100% {
+                box-shadow: 
+                    inset 3px 3px 10px rgba(255, 255, 100, 0.5),
+                    inset -3px -3px 10px rgba(0, 0, 0, 0.7),
+                    0 4px 0 #665500,
+                    0 0 30px rgba(255, 221, 0, 0.9),
+                    0 0 50px rgba(255, 221, 0, 0.6),
+                    0 0 70px rgba(255, 221, 0, 0.3);
+            }
+            50% {
+                box-shadow: 
+                    inset 3px 3px 10px rgba(255, 255, 100, 0.5),
+                    inset -3px -3px 10px rgba(0, 0, 0, 0.7),
+                    0 4px 0 #665500,
+                    0 0 40px rgba(255, 221, 0, 1),
+                    0 0 60px rgba(255, 221, 0, 0.8),
+                    0 0 90px rgba(255, 221, 0, 0.5);
+            }
+        }
+        
+        /* Winner chip extra pulse */
+        .connect4-cell.winner-chip {
+            animation: winnerPulse 1s ease-in-out infinite !important;
+        }
+        
+        @keyframes winnerPulse {
+            0%, 100% { 
+                transform: scale(1);
+                opacity: 1;
+            }
+            50% { 
+                transform: scale(1.15);
+                opacity: 0.85;
+            }
+        }
+        
+        /* Enhanced Column Arrows */
+        .connect4-column {
+            cursor: pointer !important;
+            transition: all 0.2s ease !important;
+            background: linear-gradient(145deg, #0052ff, #003399) !important;
+            border: 4px solid #00ffff !important;
+            box-shadow: 
+                0 6px 0 #001a4d,
+                0 8px 20px rgba(0, 0, 0, 0.7),
+                0 0 15px rgba(0, 255, 255, 0.5) !important;
+        }
+        
+        .connect4-column:hover {
+            transform: scale(1.2) translateY(-8px) !important;
+            box-shadow: 
+                0 10px 0 #001a4d,
+                0 14px 30px rgba(0, 0, 0, 0.9),
+                0 0 30px rgba(0, 255, 255, 1),
+                0 0 50px rgba(0, 255, 255, 0.6) !important;
+            color: #ffffff !important;
+            text-shadow: 0 0 20px rgba(0, 255, 255, 1) !important;
+        }
+        
+        .connect4-column:active {
+            transform: scale(1.1) translateY(-2px) !important;
+            box-shadow: 
+                0 3px 0 #001a4d,
+                0 6px 15px rgba(0, 0, 0, 0.7),
+                0 0 20px rgba(0, 255, 255, 0.8) !important;
+        }
+        
+        /* Enhanced Turn Indicator with Tilt */
+        .turn-indicator {
+            position: relative;
+            text-shadow: 
+                0 0 15px currentColor,
+                0 0 30px currentColor,
+                4px 4px 0 rgba(0, 0, 0, 0.8) !important;
+            animation: textPulse 2s ease-in-out infinite !important;
+        }
+        
+        .turn-indicator.victory {
+            transform: rotate(-1deg) !important;
+            animation: victoryPulse 0.8s ease-in-out infinite, victoryTilt 3s ease-in-out infinite !important;
+        }
+        
+        .turn-indicator.defeat {
+            transform: rotate(1deg) !important;
+            animation: defeatShake 0.6s ease-in-out 3, defeatTilt 3s ease-in-out infinite !important;
+        }
+        
+        @keyframes victoryTilt {
+            0%, 100% { transform: rotate(-1deg) scale(1); }
+            50% { transform: rotate(1deg) scale(1.05); }
+        }
+        
+        @keyframes defeatTilt {
+            0%, 100% { transform: rotate(1deg) scale(1); }
+            50% { transform: rotate(-1deg) scale(0.98); }
+        }
+        
+        /* Back button enhancement */
+        .back-to-arcade {
+            position: fixed !important;
+            top: 20px !important;
+            left: 20px !important;
+            background: linear-gradient(145deg, #ff0052, #cc0040) !important;
+            color: #ffffff !important;
+            border: 5px solid #ff0052 !important;
+            padding: 0.8rem 1.5rem !important;
+            font-family: 'Press Start 2P', monospace !important;
+            font-size: 0.7rem !important;
+            cursor: pointer !important;
+            text-decoration: none !important;
+            box-shadow: 
+                0 6px 0 #660020,
+                0 10px 25px rgba(0, 0, 0, 0.8),
+                0 0 20px rgba(255, 0, 82, 0.5) !important;
+            z-index: 10000 !important;
+            transition: all 0.2s ease !important;
+        }
+        
+        .back-to-arcade:hover {
+            transform: translateY(-4px) !important;
+            box-shadow: 
+                0 10px 0 #660020,
+                0 14px 35px rgba(0, 0, 0, 0.9),
+                0 0 30px rgba(255, 0, 82, 0.8),
+                0 0 50px rgba(255, 0, 82, 0.5) !important;
+        }
+        
+        .back-to-arcade:active {
+            transform: translateY(-1px) !important;
+            box-shadow: 
+                0 3px 0 #660020,
+                0 6px 15px rgba(0, 0, 0, 0.7),
+                0 0 15px rgba(255, 0, 82, 0.6) !important;
+        }
+        
+        /* Responsive adjustments */
+        @media (max-width: 768px) {
+            .game-board-container {
+                padding: 1.5rem !important;
+                border-width: 4px !important;
+            }
+            
+            .connect4-grid {
+                grid-template-columns: repeat(7, 50px) !important;
+                grid-template-rows: repeat(6, 50px) !important;
+                gap: 4px !important;
+                padding: 15px !important;
+            }
+            
+            .connect4-cell {
+                width: 50px !important;
+                height: 50px !important;
+                font-size: 2rem !important;
+            }
+            
+            .connect4-column {
+                width: 50px !important;
+                font-size: 1.5rem !important;
+                padding: 0.5rem !important;
+            }
+            
+            .back-to-arcade {
+                padding: 0.5rem 1rem !important;
+                font-size: 0.5rem !important;
+            }
+        }
+        
+        @media (max-width: 480px) {
+            .connect4-grid {
+                grid-template-columns: repeat(7, 42px) !important;
+                grid-template-rows: repeat(6, 42px) !important;
+                gap: 3px !important;
+            }
+            
+            .connect4-cell {
+                width: 42px !important;
+                height: 42px !important;
+                font-size: 1.5rem !important;
+            }
+            
+            .connect4-column {
+                width: 42px !important;
+                font-size: 1.2rem !important;
+            }
+        }
+    </style>
+</head>
+<body>
+    <!-- CRT Scanline Overlay -->
+    <div class="crt-overlay"></div>
+    
+    <!-- Pixel Grain Overlay -->
+    <div class="grain-overlay"></div>
+    
+    <!-- Back Button -->
+    <a href="arcade.html" class="back-to-arcade">← BACK</a>
+
+    <!-- Game Container -->
+    <div id="game-container">
+        <div class="game-board-container">
+            <div class="game-board-header">
+                <h3 class="neon">🔴 CONNECT 4 🟡</h3>
+                <div class="game-players">
+                    <span class="player-indicator p1">🔴 YOU</span>
+                    <span class="vs">VS</span>
+                    <span class="player-indicator p2">🟡 CPU</span>
+                </div>
+                <div id="connect4-turn" class="turn-indicator">🔴 Your Turn - Click a Column!</div>
+            </div>
+            <div id="connect4-board" class="connect4-board"></div>
+            <div id="connect4-game-status" class="game-status-msg"></div>
+        </div>
+    </div>
+
+    <script src="../security.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/ethers@6.10.0/dist/ethers.umd.min.js"></script>
+    <script src="arcade.js"></script>
+    <script>
+        // Auto-start Connect 4 game when page loads
+        document.addEventListener('DOMContentLoaded', () => {
+            setTimeout(() => {
+                const game = {
+                    id: 0,
+                    p1: 'player',
+                    p1Name: 'You',
+                    p2: 'CPU',
+                    p2Name: 'CPU Player',
+                    stake: '0.01',
+                    pot: '0.02',
+                    state: 1,
+                    board: Array(6).fill(null).map(() => Array(7).fill(0)),
+                    currentPlayer: 1,
+                    winner: null,
+                    createdAt: Date.now()
+                };
+                
+                activeConnect4Game = game;
+                
+                const boardElement = document.getElementById('connect4-board');
+                boardElement.innerHTML = generateConnect4BoardHTML(game.board);
+                
+                document.querySelectorAll('.connect4-column').forEach((col, index) => {
+                    col.addEventListener('click', () => makeConnect4Move(game, index));
+                });
+            }, 100);
+        });
+    </script>
+</body>
+</html>
