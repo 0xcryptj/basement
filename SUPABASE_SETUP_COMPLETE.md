@@ -1,3 +1,5 @@
+
+
 # ✅ Supabase Setup Complete!
 
 ## 🎉 Your Database is Ready!
