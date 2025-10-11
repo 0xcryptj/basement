@@ -35,6 +35,7 @@ model Thread {
   tripSig    String?    // short tripcode signature e.g. !k3f89A
   isSticky   Boolean    @default(false)
   isLocked   Boolean    @default(false)
+  views      Int        @default(0)     // view counter
   bumpAt     DateTime   @default(now())
   createdAt  DateTime   @default(now())
   updatedAt  DateTime   @updatedAt
@@ -43,6 +44,7 @@ model Thread {
   @@index([boardId])
   @@index([bumpAt])
   @@index([isSticky])
+  @@index([views])
 }
 
 model Post {

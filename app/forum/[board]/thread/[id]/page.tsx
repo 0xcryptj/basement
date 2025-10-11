@@ -104,6 +104,13 @@ export default function ThreadPage({
         
         setThread(foundThread);
 
+        // Track view (increment view counter)
+        fetch(`/api/forum/threads/view`, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ threadId }),
+        }).catch(() => {}); // Silent fail
+
         // Fetch posts
         const postsRes = await fetch(
           `/api/forum/posts?thread=${threadId}&page=${page}`
@@ -179,12 +186,12 @@ export default function ThreadPage({
           <div className="mb-1">
             {thread.isSticky && (
               <span className="px-2 py-0.5 text-xs font-bold bg-red-600 text-white mr-1">
-                📌 STICKY
+                STICKY
               </span>
             )}
             {thread.isLocked && (
               <span className="px-2 py-0.5 text-xs font-bold bg-yellow-600 text-white">
-                🔒 LOCKED
+                LOCKED
               </span>
             )}
           </div>
@@ -312,7 +319,7 @@ export default function ThreadPage({
         </div>
       ) : (
         <div className="mb-6 p-4 bg-[#EEDAC2] border border-[#D9BFB7] text-center">
-          <p className="text-[#AF0A0F] font-bold text-sm">🔒 This thread is locked.</p>
+          <p className="text-[#AF0A0F] font-bold text-sm">Thread is locked. No new replies allowed.</p>
         </div>
       )}
 

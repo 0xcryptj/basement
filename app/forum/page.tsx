@@ -38,13 +38,7 @@ export default function ForumPage() {
       setBoards(data.boards || []);
     } catch (error) {
       console.error('Failed to fetch boards:', error);
-      // Fallback to demo boards if database isn't connected
-      setBoards([
-        { id: 1, slug: 'g', title: 'Technology', about: 'Technology discussion board', _count: { threads: 0 } },
-        { id: 2, slug: 'biz', title: 'Business & Finance', about: 'Discussion about business, crypto, and finance', _count: { threads: 0 } },
-        { id: 3, slug: 'a', title: 'Anime & Manga', about: 'Anime and manga discussion', _count: { threads: 0 } },
-        { id: 4, slug: 'b', title: 'Random', about: 'Random discussion - anything goes (within rules)', _count: { threads: 0 } },
-      ]);
+      setBoards([]);
     } finally {
       setLoading(false);
     }

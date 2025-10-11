@@ -97,19 +97,19 @@ function CatalogItem({ thread, boardSlug }: CatalogItemProps) {
         <div className="mb-1 flex gap-1 justify-center">
           {thread.isSticky && (
             <span className="px-1 text-xs font-bold bg-red-600 text-white">
-              📌
+              STICKY
             </span>
           )}
           {thread.isLocked && (
             <span className="px-1 text-xs font-bold bg-yellow-600 text-white">
-              🔒
+              LOCKED
             </span>
           )}
         </div>
       )}
 
       {/* Thumbnail */}
-      {thread.opThumbUrl ? (
+      {thread.opThumbUrl && (
         <div className="mb-2 flex justify-center">
           <Image
             src={thread.opThumbUrl}
@@ -120,11 +120,6 @@ function CatalogItem({ thread, boardSlug }: CatalogItemProps) {
             style={{ maxWidth: '150px', maxHeight: '150px' }}
             unoptimized
           />
-        </div>
-      ) : (
-        <div className="mb-2 flex justify-center items-center bg-[#D6DAF0] border border-[#D9BFB7]"
-             style={{ width: '150px', height: '150px' }}>
-          <span className="text-6xl">📝</span>
         </div>
       )}
 
@@ -142,8 +137,8 @@ function CatalogItem({ thread, boardSlug }: CatalogItemProps) {
 
       {/* Stats */}
       <div className="text-xs text-gray-600">
-        <span className="font-semibold">R: {thread._count?.posts || 0}</span>
-        {thread.opImageUrl && <span className="ml-1">/ I: 1</span>}
+        <div>Replies: {thread._count?.posts || 0}</div>
+        {thread.opImageUrl && <div>Images: 1</div>}
       </div>
     </Link>
   );

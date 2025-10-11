@@ -15,6 +15,7 @@ interface Thread {
   tripSig: string | null;
   isSticky: boolean;
   isLocked: boolean;
+  views: number;
   bumpAt: string;
   createdAt: string;
   _count: {
@@ -64,12 +65,12 @@ export default function ThreadCard({ thread, boardSlug }: ThreadCardProps) {
         <div className="mb-1">
           {thread.isSticky && (
             <span className="px-2 py-0.5 text-xs font-bold bg-red-600 text-white mr-1">
-              📌 STICKY
+              STICKY
             </span>
           )}
           {thread.isLocked && (
             <span className="px-2 py-0.5 text-xs font-bold bg-yellow-600 text-white">
-              🔒 LOCKED
+              LOCKED
             </span>
           )}
         </div>
@@ -132,9 +133,10 @@ export default function ThreadCard({ thread, boardSlug }: ThreadCardProps) {
           />
 
           {/* Footer with stats */}
-          <div className="text-xs text-gray-600">
-            <span className="font-semibold">R: {thread._count.posts}</span>
-            {thread.opImageUrl && <span className="ml-2 font-semibold">/ I: 1</span>}
+          <div className="text-xs text-gray-600 flex flex-wrap gap-x-2">
+            <span className="font-semibold">Replies: {thread._count.posts}</span>
+            {thread.opImageUrl && <span className="font-semibold">/ Images: 1</span>}
+            <span>/ Views: {thread.views || 0}</span>
           </div>
         </div>
       </div>

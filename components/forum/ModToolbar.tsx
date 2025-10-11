@@ -76,7 +76,7 @@ export default function ModToolbar({
   return (
     <div className="bg-red-900/20 border border-red-500/50 rounded-lg p-4">
       <div className="flex items-center justify-between mb-3">
-        <h3 className="text-lg font-bold text-red-400">🛡️ Moderator Tools</h3>
+        <h3 className="text-lg font-bold text-red-400">Moderator Tools</h3>
       </div>
 
       <div className="flex flex-wrap gap-2 mb-3">
@@ -93,7 +93,7 @@ export default function ModToolbar({
           disabled={loading}
           className="px-3 py-1 bg-orange-600 hover:bg-orange-700 disabled:bg-gray-600 text-white text-sm font-medium rounded transition-colors"
         >
-          {isLocked ? '🔓 Unlock' : '🔒 Lock'}
+          {isLocked ? 'Unlock' : 'Lock'}
         </button>
 
         <button
@@ -101,7 +101,7 @@ export default function ModToolbar({
           disabled={loading}
           className="px-3 py-1 bg-red-600 hover:bg-red-700 disabled:bg-gray-600 text-white text-sm font-medium rounded transition-colors"
         >
-          🗑️ Delete Thread
+          Delete Thread
         </button>
       </div>
 

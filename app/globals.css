@@ -190,44 +190,84 @@
     }
 
     .catalog-grid {
-      grid-template-columns: repeat(auto-fill, minmax(120px, 1fr));
+      grid-template-columns: repeat(auto-fill, minmax(140px, 1fr));
       gap: 8px;
       padding: 8px;
     }
 
     .post-content {
       font-size: 0.875rem;
+      line-height: 1.4;
     }
 
     .poster-name, .poster-trip, .post-number {
       font-size: 0.75rem;
     }
 
-    /* Stack images vertically on mobile */
-    .opPost .flex, .reply .flex {
-      flex-direction: column;
-    }
-
-    /* Make images full width on mobile */
+    /* Improve image handling on mobile */
     .opPost img, .reply img {
       max-width: 100% !important;
       height: auto !important;
+      object-fit: contain;
     }
 
-    /* Adjust catalog items for mobile */
+    /* Catalog thread improvements */
+    .catalog-thread {
+      padding: 6px;
+    }
+
     .catalog-thread img {
-      max-width: 100px !important;
-      max-height: 100px !important;
+      max-width: 120px !important;
+      max-height: 120px !important;
+      width: 100% !important;
+      height: auto !important;
+      object-fit: cover;
+    }
+
+    /* Better text wrapping on mobile */
+    .post-content {
+      word-break: break-word;
+      overflow-wrap: break-word;
+    }
+
+    /* Touch-friendly buttons */
+    button, a {
+      min-height: 44px;
+      min-width: 44px;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+    }
+
+    /* Adjust quick reply for mobile */
+    .quick-reply-box {
+      bottom: 0;
+      left: 0;
+      right: 0;
+      width: 100%;
+      max-width: 100%;
     }
   }
 
   @media (max-width: 480px) {
     .catalog-grid {
-      grid-template-columns: repeat(auto-fill, minmax(100px, 1fr));
+      grid-template-columns: repeat(auto-fill, minmax(110px, 1fr));
+      gap: 6px;
     }
 
     .opPost, .reply {
       padding: 6px;
+      margin: 2px 0;
+    }
+
+    .catalog-thread img {
+      max-width: 100px !important;
+      max-height: 100px !important;
+    }
+
+    /* Smaller text on very small screens */
+    .post-content {
+      font-size: 0.8125rem;
     }
   }
 }
