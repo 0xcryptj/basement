@@ -22,11 +22,12 @@ export default async function BoardPage({
   params,
   searchParams,
 }: {
-  params: { board: string };
-  searchParams: { page?: string };
+  params: Promise<{ board: string }>;
+  searchParams: Promise<{ page?: string }>;
 }) {
-  const boardSlug = params.board;
-  const page = parseInt(searchParams.page || '1');
+  const { board: boardSlug } = await params;
+  const { page: pageParam } = await searchParams;
+  const page = parseInt(pageParam || '1');
 
   const { threads, pagination } = await getThreads(boardSlug, page);
   const boardInfo = BOARD_INFO[boardSlug];

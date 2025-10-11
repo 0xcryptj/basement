@@ -2,7 +2,7 @@
 
 import Link from 'next/link';
 import Image from 'next/image';
-import { useState, useEffect } from 'react';
+import { useState, useEffect, use } from 'react';
 import PostItem from '@/components/forum/PostItem';
 import ReplyForm from '@/components/forum/ReplyForm';
 import ModToolbar from '@/components/forum/ModToolbar';
@@ -14,12 +14,12 @@ export default function ThreadPage({
   params,
   searchParams,
 }: {
-  params: { board: string; id: string };
-  searchParams: { page?: string };
+  params: Promise<{ board: string; id: string }>;
+  searchParams: Promise<{ page?: string }>;
 }) {
-  const boardSlug = params.board;
-  const threadId = params.id;
-  const page = parseInt(searchParams?.page || '1');
+  const { board: boardSlug, id: threadId } = use(params);
+  const { page: pageParam } = use(searchParams);
+  const page = parseInt(pageParam || '1');
 
   const [thread, setThread] = useState<any>(null);
   const [posts, setPosts] = useState<any[]>([]);

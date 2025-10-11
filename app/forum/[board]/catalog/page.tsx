@@ -20,9 +20,9 @@ async function getThreads(boardSlug: string) {
 export default async function CatalogPage({
   params,
 }: {
-  params: { board: string };
+  params: Promise<{ board: string }>;
 }) {
-  const boardSlug = params.board;
+  const { board: boardSlug } = await params;
   const { threads } = await getThreads(boardSlug);
   const boardInfo = BOARD_INFO[boardSlug];
 
