@@ -101,3 +101,110 @@ model Admin {
   @@index([walletAddr])
 }
 
+// User profiles with wallet authentication
+model User {
+  id              String    @id @default(cuid())
+  walletAddress   String    @unique  // Primary authentication
+  username        String?   @unique  // Optional display name
+  avatarUrl       String?
+  balanceEth      Decimal   @default(0) @db.Decimal(18, 8)  // ETH balance (8 decimals)
+  balanceUsd      Decimal   @default(0) @db.Decimal(18, 2)  // USD balance (2 decimals)
+  isVerified      Boolean   @default(false)
+  createdAt       DateTime  @default(now())
+  updatedAt       DateTime  @updatedAt
+  lastSeenAt      DateTime  @default(now())
+  
+  // Relations
+  messages        Message[]
+  channelMembers  ChannelMember[]
+  transactions    Transaction[]
+
+  @@index([walletAddress])
+  @@index([username])
+  @@index([createdAt])
+}
+
+// Chat channels/rooms
+model Channel {
+  id              String    @id @default(cuid())
+  name            String
+  slug            String    @unique
+  description     String?
+  imageUrl        String?
+  isPrivate       Boolean   @default(false)
+  maxMembers      Int?      // null = unlimited
+  createdBy       String?   // wallet address of creator
+  createdAt       DateTime  @default(now())
+  updatedAt       DateTime  @updatedAt
+  
+  // Relations
+  messages        Message[]
+  members         ChannelMember[]
+
+  @@index([slug])
+  @@index([createdAt])
+  @@index([isPrivate])
+}
+
+// Channel membership
+model ChannelMember {
+  id              String    @id @default(cuid())
+  channelId       String
+  userId          String
+  role            String    @default("member") // member, moderator, admin
+  joinedAt        DateTime  @default(now())
+  
+  channel         Channel   @relation(fields: [channelId], references: [id], onDelete: Cascade)
+  user            User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([channelId, userId])
+  @@index([channelId])
+  @@index([userId])
+}
+
+// Chat messages
+model Message {
+  id              String    @id @default(cuid())
+  channelId       String
+  userId          String
+  content         String
+  imageUrl        String?
+  replyToId       String?   // For threaded replies
+  isEdited        Boolean   @default(false)
+  isDeleted       Boolean   @default(false)
+  createdAt       DateTime  @default(now())
+  updatedAt       DateTime  @updatedAt
+  
+  channel         Channel   @relation(fields: [channelId], references: [id], onDelete: Cascade)
+  user            User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+  replyTo         Message?  @relation("MessageReplies", fields: [replyToId], references: [id], onDelete: SetNull)
+  replies         Message[] @relation("MessageReplies")
+
+  @@index([channelId, createdAt])
+  @@index([userId])
+  @@index([replyToId])
+}
+
+// Transaction history for balances
+model Transaction {
+  id              String    @id @default(cuid())
+  userId          String
+  type            String    // deposit, withdrawal, transfer, tip
+  amount          Decimal   @db.Decimal(18, 8)
+  currency        String    // ETH, USD
+  status          String    @default("pending") // pending, completed, failed
+  txHash          String?   // Blockchain transaction hash
+  fromAddress     String?
+  toAddress       String?
+  description     String?
+  createdAt       DateTime  @default(now())
+  completedAt     DateTime?
+  
+  user            User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId])
+  @@index([txHash])
+  @@index([status])
+  @@index([createdAt])
+}
+
