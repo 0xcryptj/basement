@@ -1,0 +1,103 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+model Board {
+  id        Int       @id @default(autoincrement())
+  slug      String    @unique  // e.g. "g"
+  title     String    // e.g. "Technology"
+  about     String?
+  isHidden  Boolean   @default(false)
+  createdAt DateTime  @default(now())
+  updatedAt DateTime  @updatedAt
+  threads   Thread[]
+
+  @@index([slug])
+}
+
+model Thread {
+  id         String    @id @default(cuid())
+  boardId    Int
+  board      Board     @relation(fields: [boardId], references: [id], onDelete: Cascade)
+  subject    String?
+  opText     String
+  opImageUrl String?
+  opThumbUrl String?
+  anonId     String     // rotating anon id shown in UI
+  tripSig    String?    // short tripcode signature e.g. !k3f89A
+  isSticky   Boolean    @default(false)
+  isLocked   Boolean    @default(false)
+  bumpAt     DateTime   @default(now())
+  createdAt  DateTime   @default(now())
+  updatedAt  DateTime   @updatedAt
+  posts      Post[]
+
+  @@index([boardId])
+  @@index([bumpAt])
+  @@index([isSticky])
+}
+
+model Post {
+  id         String    @id @default(cuid())
+  threadId   String
+  thread     Thread    @relation(fields: [threadId], references: [id], onDelete: Cascade)
+  text       String
+  imageUrl   String?
+  thumbUrl   String?
+  anonId     String
+  tripSig    String?
+  sage       Boolean    @default(false)
+  likes      Int        @default(0)     // upvotes count
+  dislikes   Int        @default(0)     // downvotes count
+  createdAt  DateTime   @default(now())
+  votes      Vote[]
+
+  @@index([threadId])
+  @@index([createdAt])
+  @@index([likes])
+}
+
+model Vote {
+  id         String    @id @default(cuid())
+  postId     String
+  post       Post      @relation(fields: [postId], references: [id], onDelete: Cascade)
+  anonId     String    // voter's anonymous ID
+  isLike     Boolean   // true = like, false = dislike
+  createdAt  DateTime  @default(now())
+
+  @@unique([postId, anonId])  // One vote per anon ID per post
+  @@index([postId])
+  @@index([anonId])
+}
+
+model Ban {
+  id         Int       @id @default(autoincrement())
+  reason     String
+  walletAddr String?   // if we ever store it; optional to preserve anonymity policy
+  anonId     String?
+  ipHash     String?   // hash of IP + salt; never store raw IP
+  expiresAt  DateTime?
+  createdAt  DateTime  @default(now())
+
+  @@index([anonId])
+  @@index([walletAddr])
+  @@index([ipHash])
+  @@index([expiresAt])
+}
+
+model Admin {
+  id         Int       @id @default(autoincrement())
+  walletAddr String    @unique
+  createdAt  DateTime  @default(now())
+
+  @@index([walletAddr])
+}
+

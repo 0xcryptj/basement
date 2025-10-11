@@ -1672,7 +1672,9 @@ class BasementApp {
     }
 
     createCategory() {
-        const categoryName = document.getElementById('category-name-input').value.trim();
+        const categoryName = document.getElementById('category-name').value.trim();
+        const categoryDesc = document.getElementById('category-description').value.trim();
+        const categoryIcon = document.getElementById('category-icon').value.trim();
         
         if (!categoryName) {
             alert('Please enter a category name');
@@ -1682,7 +1684,8 @@ class BasementApp {
         const category = {
             id: Date.now(),
             name: categoryName,
-            description: `Discussion about ${categoryName}`,
+            description: categoryDesc || `Discussion about ${categoryName}`,
+            icon: categoryIcon || '📁',
             posts: 0
         };
         
@@ -1693,16 +1696,20 @@ class BasementApp {
         this.hideCategoryDialog();
         
         // Clear form
-        document.getElementById('category-name-input').value = '';
+        document.getElementById('category-name').value = '';
+        document.getElementById('category-description').value = '';
+        document.getElementById('category-icon').value = '';
     }
 
     addCategoryToUI(category) {
         const categoriesContainer = document.querySelector('.forum-categories');
+        if (!categoriesContainer) return;
+        
         const categoryCard = document.createElement('div');
         categoryCard.className = 'category-card';
         categoryCard.dataset.category = category.name.toLowerCase();
         categoryCard.innerHTML = `
-            <div class="category-icon">📁</div>
+            <div class="category-icon">${category.icon || '📁'}</div>
             <h3 class="category-title">${category.name}</h3>
             <p class="category-desc">${category.description}</p>
             <div class="category-stats">
@@ -1734,9 +1741,172 @@ class BasementApp {
             mainContent.classList.remove('hidden');
         }
     }
+
+    // Channel creation methods
+    showChannelDialog() {
+        const dialog = document.getElementById('channel-dialog');
+        if (dialog) {
+            dialog.classList.remove('hidden');
+        }
+    }
+
+    hideChannelDialog() {
+        const dialog = document.getElementById('channel-dialog');
+        if (dialog) {
+            dialog.classList.add('hidden');
+        }
+    }
+
+    createChannel() {
+        const channelName = document.getElementById('channel-name').value.trim();
+        const channelDesc = document.getElementById('channel-description').value.trim();
+        const isPrivate = document.getElementById('channel-private').checked;
+
+        if (!channelName) {
+            alert('Please enter a channel name');
+            return;
+        }
+
+        // Validate channel name format
+        if (!channelName.startsWith('#')) {
+            alert('Channel name must start with #');
+            return;
+        }
+
+        if (!/^#[a-z0-9\-]+$/.test(channelName)) {
+            alert('Channel name can only contain letters, numbers, and hyphens');
+            return;
+        }
+
+        // Check if channel already exists
+        if (this.channels[channelName]) {
+            alert('Channel already exists');
+            return;
+        }
+
+        // Create the channel
+        this.channels[channelName] = {
+            name: channelName,
+            description: channelDesc || `${channelName} discussion`,
+            private: isPrivate,
+            users: new Set(),
+            messages: []
+        };
+
+        // Add to channel list
+        this.addChannelToUI(channelName);
+        this.hideChannelDialog();
+
+        // Clear form
+        document.getElementById('channel-name').value = '';
+        document.getElementById('channel-description').value = '';
+        document.getElementById('channel-private').checked = false;
+
+        // Switch to the new channel
+        this.switchChannel(channelName);
+    }
+
+    addChannelToUI(channelName) {
+        const channelList = document.getElementById('channel-list');
+        if (!channelList) return;
+
+        const channelItem = document.createElement('div');
+        channelItem.className = 'channel-item';
+        channelItem.dataset.channel = channelName;
+        channelItem.innerHTML = `
+            <span class="channel-name">${channelName}</span>
+            <span class="channel-users">0</span>
+        `;
+
+        channelItem.addEventListener('click', () => {
+            this.switchChannel(channelName);
+        });
+
+        channelList.appendChild(channelItem);
+    }
+
+    switchChannel(channelName) {
+        // Update active channel
+        this.currentChannel = channelName;
+
+        // Update UI
+        const channelItems = document.querySelectorAll('.channel-item');
+        channelItems.forEach(item => {
+            if (item.dataset.channel === channelName) {
+                item.classList.add('active');
+            } else {
+                item.classList.remove('active');
+            }
+        });
+
+        // Update channel title
+        const currentChannelTitle = document.getElementById('current-channel');
+        if (currentChannelTitle) {
+            currentChannelTitle.textContent = channelName;
+        }
+
+        // Load channel messages
+        this.loadChannelMessages(channelName);
+    }
+
+    loadChannelMessages(channelName) {
+        const channel = this.channels[channelName];
+        if (!channel) return;
+
+        const messagesContainer = document.getElementById('messages-container');
+        if (!messagesContainer) return;
+
+        // Clear current messages
+        messagesContainer.innerHTML = '';
+
+        // Load messages for this channel
+        channel.messages.forEach(msg => {
+            this.addMessageToUI(msg);
+        });
+
+        // Scroll to bottom
+        messagesContainer.scrollTop = messagesContainer.scrollHeight;
+    }
 }
 
 // Initialize the app when DOM is loaded
 document.addEventListener('DOMContentLoaded', () => {
     window.basementApp = new BasementApp();
+    
+    // Set up event listeners for dialogs
+    const createChannelBtn = document.getElementById('create-channel');
+    const cancelChannelBtn = document.getElementById('cancel-channel');
+    const createChannelSubmit = document.getElementById('create-channel-btn');
+    const cancelCategoryBtn = document.getElementById('cancel-category');
+    const createCategorySubmit = document.getElementById('create-category-submit');
+
+    if (createChannelBtn) {
+        createChannelBtn.addEventListener('click', () => {
+            window.basementApp.showChannelDialog();
+        });
+    }
+
+    if (cancelChannelBtn) {
+        cancelChannelBtn.addEventListener('click', () => {
+            window.basementApp.hideChannelDialog();
+        });
+    }
+
+    if (createChannelSubmit) {
+        createChannelSubmit.addEventListener('click', () => {
+            window.basementApp.createChannel();
+        });
+    }
+
+    if (cancelCategoryBtn) {
+        cancelCategoryBtn.addEventListener('click', () => {
+            window.basementApp.hideCategoryDialog();
+        });
+    }
+
+    if (createCategorySubmit) {
+        createCategorySubmit.addEventListener('click', () => {
+            window.basementApp.createCategory();
+        });
+    }
 });

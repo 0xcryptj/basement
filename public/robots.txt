@@ -1,0 +1,11 @@
+# Disallow forum indexing by default to protect user privacy
+User-agent: *
+Disallow: /forum/
+Disallow: /api/forum/
+
+# Allow main site
+Allow: /
+Allow: /index.html
+Allow: /arcade/
+Allow: /assets/
+

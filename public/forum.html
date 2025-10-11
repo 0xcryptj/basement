@@ -1,0 +1,214 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>The Basement - Anonymous Board</title>
+    <link rel="stylesheet" href="forum.css">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Press+Start+2P&family=Courier+Prime:wght@400;700&display=swap" rel="stylesheet">
+    <link rel="icon" href="assets/icon.ico" type="image/x-icon">
+</head>
+<body>
+    <!-- Navigation Bar -->
+    <nav class="navbar">
+        <div class="nav-content">
+            <div class="logo">
+                <a href="index.html" class="logo-link">
+                    <img src="assets/tsvg.svg" alt="Logo" class="main-logo">
+                    <span class="logo-text">The Basement</span>
+                </a>
+            </div>
+            
+            <div class="nav-links">
+                <a href="arcade/arcade.html" class="nav-link">Arcade</a>
+                <a href="tokenomics.html" class="nav-link">Tokenomics</a>
+                <a href="index.html#shop" class="nav-link">Shop</a>
+                <a href="forum.html" class="nav-link active">Forum</a>
+            </div>
+            
+            <!-- Mobile Menu Toggle -->
+            <button id="mobile-menu-toggle" class="mobile-menu-toggle">
+                <span class="hamburger-line"></span>
+                <span class="hamburger-line"></span>
+                <span class="hamburger-line"></span>
+            </button>
+            
+            <div id="mobile-menu" class="mobile-menu hidden">
+                <a href="arcade/arcade.html" class="mobile-nav-link">🎮 Arcade</a>
+                <a href="tokenomics.html" class="mobile-nav-link">💰 Tokenomics</a>
+                <a href="index.html#shop" class="mobile-nav-link">🛒 Shop</a>
+                <a href="forum.html" class="mobile-nav-link active">💬 Forum</a>
+            </div>
+            
+            <div class="wallet-section">
+                <div id="wallet-connected-display" class="wallet-info" style="display: none;">
+                    <div class="user-profile">
+                        <div class="profile-pic-container" id="profile-pic-container">
+                            <img id="profile-pic" class="profile-pic" src="" alt="Profile" style="display: none;">
+                            <div id="profile-pic-placeholder" class="profile-pic-placeholder">●</div>
+                        </div>
+                        <div class="user-details">
+                            <span id="wallet-address" class="wallet-address"></span>
+                        </div>
+                    </div>
+                    <button id="disconnect-wallet" class="disconnect-btn">Disconnect</button>
+                </div>
+                <div id="wallet-not-connected" style="display: block;">
+                    <a href="index.html" class="connect-prompt">Connect Wallet</a>
+                </div>
+            </div>
+        </div>
+    </nav>
+
+    <!-- Main Content -->
+    <main class="chan-main">
+        <!-- Board List View (Home) -->
+        <div id="board-list" class="board-list">
+            <div class="chan-header">
+                <h1 class="chan-title neon">/basement/ - The Basement</h1>
+                <p class="chan-subtitle">Anonymous Web3 Discussion</p>
+            </div>
+
+            <div class="boards-container">
+                <div class="board-category">
+                    <h2 class="category-header">Main Boards</h2>
+                    <div class="board-grid">
+                        <div class="board-card" data-board="b" onclick="loadBoard('b')">
+                            <div class="board-name">/b/</div>
+                            <div class="board-title">Random</div>
+                            <div class="board-desc">The random board - anything goes</div>
+                            <div class="board-stats">
+                                <span class="thread-count">420 threads</span>
+                                <span class="post-count">69,420 posts</span>
+                            </div>
+                        </div>
+                        
+                        <div class="board-card" data-board="g" onclick="loadBoard('g')">
+                            <div class="board-name">/g/</div>
+                            <div class="board-title">Gaming</div>
+                            <div class="board-desc">Retro gaming, Web3 games, arcade culture</div>
+                            <div class="board-stats">
+                                <span class="thread-count">156 threads</span>
+                                <span class="post-count">12,450 posts</span>
+                            </div>
+                        </div>
+                        
+                        <div class="board-card" data-board="w3" onclick="loadBoard('w3')">
+                            <div class="board-name">/w3/</div>
+                            <div class="board-title">Web3</div>
+                            <div class="board-desc">Crypto, DeFi, Base Chain discussion</div>
+                            <div class="board-stats">
+                                <span class="thread-count">234 threads</span>
+                                <span class="post-count">34,567 posts</span>
+                            </div>
+                        </div>
+                        
+                        <div class="board-card" data-board="t" onclick="loadBoard('t')">
+                            <div class="board-name">/t/</div>
+                            <div class="board-title">Technology</div>
+                            <div class="board-desc">Tech discussion, coding, hacking</div>
+                            <div class="board-stats">
+                                <span class="thread-count">189 threads</span>
+                                <span class="post-count">23,890 posts</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Thread Catalog View -->
+        <div id="catalog-view" class="catalog-view hidden">
+            <div class="board-header">
+                <a href="#" onclick="showBoardList()" class="back-link">← Back to Boards</a>
+                <h1 class="board-title neon" id="current-board-title"></h1>
+                <button onclick="showNewThreadForm()" class="new-thread-btn">+ New Thread</button>
+            </div>
+            
+            <div class="view-toggle">
+                <button class="view-btn active" onclick="switchView('catalog')">Catalog</button>
+                <button class="view-btn" onclick="switchView('list')">List</button>
+            </div>
+
+            <div id="thread-catalog" class="thread-catalog"></div>
+        </div>
+
+        <!-- Thread View -->
+        <div id="thread-view" class="thread-view hidden">
+            <div class="board-header">
+                <a href="#" onclick="backToCatalog()" class="back-link">← Back to Catalog</a>
+                <h2 class="board-title" id="thread-board-name"></h2>
+            </div>
+
+            <div id="thread-content" class="thread-content">
+                <!-- Thread OP and replies will be loaded here -->
+            </div>
+
+            <!-- Quick Reply Form (4chan-style) -->
+            <div class="quick-reply">
+                <div class="reply-header">
+                    <h3 class="reply-title">Post a Reply</h3>
+                    <button onclick="document.getElementById('quick-reply').classList.toggle('minimized')" class="minimize-btn">[−]</button>
+                </div>
+                <div class="reply-form" id="quick-reply">
+                    <div class="form-row">
+                        <label class="form-label">Comment</label>
+                        <textarea id="reply-text" class="reply-textarea" placeholder="Type your reply here...&#10;&#10;>use greentext&#10;>>quote posts" rows="6"></textarea>
+                    </div>
+                    <div class="form-row">
+                        <label class="form-label">File</label>
+                        <div class="file-input-container">
+                            <input type="file" id="reply-image" accept="image/*" class="file-input">
+                            <span id="image-preview-name" class="image-preview-name"></span>
+                        </div>
+                    </div>
+                    <div class="form-row form-options">
+                        <label class="checkbox-label">
+                            <input type="checkbox" id="sage-checkbox">
+                            <span>sage (don't bump)</span>
+                        </label>
+                    </div>
+                    <div class="form-row">
+                        <button onclick="submitReply()" class="submit-reply-btn">Post</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- New Thread Form Modal -->
+        <div id="new-thread-modal" class="modal hidden">
+            <div class="modal-content chan-modal">
+                <span class="close-modal" onclick="closeNewThreadModal()">&times;</span>
+                <h2 class="modal-title neon">Create New Thread</h2>
+                
+                <div class="thread-form">
+                    <div class="form-group">
+                        <label>Subject (Optional)</label>
+                        <input type="text" id="thread-subject" class="chan-input" placeholder="Thread subject..." maxlength="100">
+                    </div>
+                    
+                    <div class="form-group">
+                        <label>Comment *</label>
+                        <textarea id="thread-comment" class="chan-textarea" placeholder="Type your post here...&#10;&#10;Use >greentext for green text" rows="8" required></textarea>
+                    </div>
+                    
+                    <div class="form-group">
+                        <label>Image (Optional)</label>
+                        <input type="file" id="thread-image" accept="image/*" class="file-input">
+                        <div id="thread-image-preview" class="image-preview"></div>
+                    </div>
+                    
+                    <button onclick="createThread()" class="create-thread-btn">Post Thread</button>
+                </div>
+            </div>
+        </div>
+    </main>
+
+    <!-- Security Module - MUST load first -->
+    <script src="security.js"></script>
+    <script src="forum.js"></script>
+</body>
+</html>
+

@@ -1,0 +1,335 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>The Basement Arcade</title>
+    <link rel="stylesheet" href="arcade.css">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Press+Start+2P&display=swap" rel="stylesheet">
+    <link rel="icon" href="../assets/icon.ico" type="image/x-icon">
+</head>
+<body>
+    <!-- Navigation Bar -->
+    <nav class="navbar">
+        <div class="nav-content">
+            <!-- Left Logo -->
+            <div class="logo">
+                <a href="../index.html" class="logo-link">
+                    <img src="../assets/tsvg.svg" alt="Logo" class="main-logo">
+                    <span class="logo-text">The Basement</span>
+                </a>
+            </div>
+            
+            <!-- Center Navigation -->
+            <div class="nav-links">
+                <a href="arcade.html" class="nav-link">Arcade</a>
+                <a href="../tokenomics.html" class="nav-link">Tokenomics</a>
+                <a href="../index.html#shop" class="nav-link">Shop</a>
+                <a href="../index.html#forum" class="nav-link">Forum</a>
+            </div>
+            
+            <!-- Mobile Menu Toggle -->
+            <button id="mobile-menu-toggle" class="mobile-menu-toggle">
+                <span class="hamburger-line"></span>
+                <span class="hamburger-line"></span>
+                <span class="hamburger-line"></span>
+            </button>
+            
+            <!-- Mobile Menu -->
+            <div id="mobile-menu" class="mobile-menu hidden">
+                <a href="arcade.html" class="mobile-nav-link">🎮 Arcade</a>
+                <a href="../tokenomics.html" class="mobile-nav-link">💰 Tokenomics</a>
+                <a href="../index.html#shop" class="mobile-nav-link">🛒 Shop</a>
+                <a href="../index.html#forum" class="mobile-nav-link">💬 Forum</a>
+            </div>
+            
+            <!-- Demo Mode Toggle -->
+            <div class="demo-toggle-container">
+                <label class="demo-toggle">
+                    <input type="checkbox" id="demo-mode-toggle" checked>
+                    <span class="demo-toggle-slider"></span>
+                </label>
+                <span class="demo-toggle-label">Demo Mode</span>
+            </div>
+            
+            <!-- Right Wallet Section (matches homepage) -->
+            <div class="wallet-section">
+                <div id="wallet-connected-display" class="wallet-info" style="display: none;">
+                    <div class="user-profile">
+                        <div class="profile-pic-container" id="profile-pic-container">
+                            <img id="profile-pic" class="profile-pic" src="" alt="Profile" style="display: none;">
+                            <div id="profile-pic-placeholder" class="profile-pic-placeholder">●</div>
+                        </div>
+                        <div class="user-details">
+                            <span id="wallet-address" class="wallet-address"></span>
+                        </div>
+                    </div>
+                    <button id="disconnect-wallet" class="disconnect-btn">Disconnect</button>
+                </div>
+                <div id="wallet-not-connected" style="display: none;">
+                    <a href="../index.html" class="connect-prompt">Connect Wallet</a>
+                </div>
+            </div>
+        </div>
+    </nav>
+
+    <!-- Main Content -->
+    <main class="arcade-container">
+        <h1 class="neon arcade-title">🎮 ARCADE 🎮</h1>
+        
+        <!-- Game Grid -->
+        <div class="game-grid">
+            <!-- Coin Toss Game -->
+            <div class="game-tile" id="coin-toss-tile">
+                <div class="game-icon-img">
+                    <img src="../assets/cointoss.png" alt="Coin Toss" class="game-image">
+                </div>
+                <h3 class="game-title">Coin Toss</h3>
+                <p class="game-description">PvP Heads or Tails</p>
+                <p class="game-description">Winner takes all</p>
+                <a href="cointoss.html" class="btn-play" style="text-decoration: none; display: inline-block; text-align: center; line-height: 1.5;">Play Now</a>
+            </div>
+
+            <!-- Connect 4 Game -->
+            <div class="game-tile" id="connect4-tile">
+                <div class="game-icon-img">
+                    <img src="../assets/connect4.png" alt="Connect 4" class="game-image">
+                </div>
+                <h3 class="game-title">Connect 4</h3>
+                <p class="game-description">Classic Strategy PvP</p>
+                <p class="game-description">Winner takes all</p>
+                <a href="connect4-game.html" class="btn-play" style="text-decoration: none; display: inline-block; text-align: center; line-height: 1.5;">Play Now</a>
+            </div>
+
+            <!-- War Card Game -->
+            <div class="game-tile" id="war-tile">
+                <div class="game-icon-img">
+                    <img src="../assets/war.png" alt="War" class="game-image">
+                </div>
+                <h3 class="game-title">War</h3>
+                <p class="game-description">Classic Card Battle</p>
+                <p class="game-description">Winner takes all</p>
+                <a href="war-game.html" class="btn-play" style="text-decoration: none; display: inline-block; text-align: center; line-height: 1.5;">Play Now</a>
+            </div>
+
+            <!-- Rock Paper Scissors Game -->
+            <div class="game-tile" id="rps-tile">
+                <div class="game-icon-img">
+                    <img src="../assets/rps.png" alt="Rock Paper Scissors" class="game-image">
+                </div>
+                <h3 class="game-title">Rock Paper Scissors</h3>
+                <p class="game-description">Best of 3 battles</p>
+                <p class="game-description">Winner takes all</p>
+                <a href="rps-game.html" class="btn-play" style="text-decoration: none; display: inline-block; text-align: center; line-height: 1.5;">Play Now</a>
+            </div>
+
+            <div class="game-tile placeholder">
+                <div class="game-icon">🎯</div>
+                <h3 class="game-title">Target Master</h3>
+                <p class="game-description">Coming Soon</p>
+                <button class="btn-play" disabled>Coming Soon</button>
+            </div>
+
+            <div class="game-tile placeholder">
+                <div class="game-icon">🏁</div>
+                <h3 class="game-title">Race Track</h3>
+                <p class="game-description">Coming Soon</p>
+                <button class="btn-play" disabled>Coming Soon</button>
+            </div>
+        </div>
+    </main>
+
+    <!-- Coin Toss Modal -->
+    <div id="coin-toss-modal" class="modal">
+        <div class="modal-content">
+            <span class="close" onclick="closeCoinTossModal()">&times;</span>
+            <h2 class="neon modal-title">🪙 COIN TOSS 🪙</h2>
+            
+            <!-- Tabs -->
+            <div class="tab-container">
+                <button class="tab-btn active" onclick="switchTab('create')">Create Game</button>
+                <button class="tab-btn" onclick="switchTab('join')">Join Game</button>
+                <button class="tab-btn" onclick="switchTab('my-games')">My Games</button>
+            </div>
+
+            <!-- Create Game Tab -->
+            <div id="create-tab" class="tab-content active">
+                <div class="form-group">
+                    <label for="create-stake">Stake Amount (ETH):</label>
+                    <input type="number" id="create-stake" step="0.001" min="0.001" placeholder="0.01" class="input-field">
+                </div>
+                <div class="form-group">
+                    <label>Your Choice:</label>
+                    <div class="choice-buttons">
+                        <button class="choice-btn" data-choice="0" onclick="selectChoice(this, 'create')">
+                            <span class="coin-icon">🪙</span>
+                            <span>Heads</span>
+                        </button>
+                        <button class="choice-btn" data-choice="1" onclick="selectChoice(this, 'create')">
+                            <span class="coin-icon">🪙</span>
+                            <span>Tails</span>
+                        </button>
+                    </div>
+                </div>
+                <button class="btn-primary" onclick="createGame()">Create Game</button>
+                <div id="create-status" class="status-message"></div>
+            </div>
+
+            <!-- Join Game Tab -->
+            <div id="join-tab" class="tab-content">
+                <div id="open-games-list" class="games-list">
+                    <p class="loading-text">Loading open games...</p>
+                </div>
+            </div>
+
+            <!-- My Games Tab -->
+            <div id="my-games-tab" class="tab-content">
+                <div id="my-games-list" class="games-list">
+                    <p class="loading-text">Loading your games...</p>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Join Game Modal -->
+    <div id="join-game-modal" class="modal">
+        <div class="modal-content small">
+            <span class="close" onclick="closeJoinGameModal()">&times;</span>
+            <h3 class="neon modal-title">Join Game</h3>
+            <div id="join-game-info" class="game-info"></div>
+            <div class="form-group">
+                <label>Your Choice:</label>
+                <div class="choice-buttons">
+                    <button class="choice-btn" data-choice="0" onclick="selectChoice(this, 'join')">
+                        <span class="coin-icon">🪙</span>
+                        <span>Heads</span>
+                    </button>
+                    <button class="choice-btn" data-choice="1" onclick="selectChoice(this, 'join')">
+                        <span class="coin-icon">🪙</span>
+                        <span>Tails</span>
+                    </button>
+                </div>
+            </div>
+            <button class="btn-primary" onclick="confirmJoinGame()">Confirm Join</button>
+            <div id="join-status" class="status-message"></div>
+        </div>
+    </div>
+
+    <!-- Connect 4 Modal -->
+    <div id="connect4-modal" class="modal">
+        <div class="modal-content">
+            <span class="close" onclick="closeConnect4Modal()">&times;</span>
+            <h2 class="neon">🔴 Connect 4 🔴</h2>
+            <p class="modal-description">Get 4 in a row to win! Winner takes all.</p>
+            
+            <div class="modal-tabs">
+                <button class="tab-btn active" onclick="switchConnect4Tab('create')">Create Game</button>
+                <button class="tab-btn" onclick="switchConnect4Tab('join')">Join Game</button>
+                <button class="tab-btn" onclick="switchConnect4Tab('my-games')">My Games</button>
+            </div>
+
+            <!-- Create Connect 4 Tab -->
+            <div id="connect4-create-tab" class="tab-content active">
+                <input type="number" id="connect4-stake" placeholder="Stake (ETH)" step="0.001" min="0.001">
+                <button class="btn-primary" onclick="createConnect4Game()">Create Game</button>
+                <div id="connect4-create-status" class="status-message"></div>
+            </div>
+
+            <!-- Join Connect 4 Tab -->
+            <div id="connect4-join-tab" class="tab-content">
+                <div id="connect4-games-list" class="games-list">
+                    <p class="loading-text">Loading games...</p>
+                </div>
+            </div>
+
+            <!-- My Connect 4 Games Tab -->
+            <div id="connect4-my-games-tab" class="tab-content">
+                <div id="connect4-my-games-list" class="games-list">
+                    <p class="loading-text">Loading your games...</p>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- War Modal -->
+    <div id="war-modal" class="modal">
+        <div class="modal-content">
+            <span class="close" onclick="closeWarModal()">&times;</span>
+            <h2 class="neon">🃏 War 🃏</h2>
+            <p class="modal-description">Highest card wins! Winner takes all.</p>
+            
+            <div class="modal-tabs">
+                <button class="tab-btn active" onclick="switchWarTab('create')">Create Game</button>
+                <button class="tab-btn" onclick="switchWarTab('join')">Join Game</button>
+                <button class="tab-btn" onclick="switchWarTab('my-games')">My Games</button>
+            </div>
+
+            <!-- Create War Tab -->
+            <div id="war-create-tab" class="tab-content active">
+                <input type="number" id="war-stake" placeholder="Stake (ETH)" step="0.001" min="0.001">
+                <button class="btn-primary" onclick="createWarGame()">Create Game</button>
+                <div id="war-create-status" class="status-message"></div>
+            </div>
+
+            <!-- Join War Tab -->
+            <div id="war-join-tab" class="tab-content">
+                <div id="war-games-list" class="games-list">
+                    <p class="loading-text">Loading games...</p>
+                </div>
+            </div>
+
+            <!-- My War Games Tab -->
+            <div id="war-my-games-tab" class="tab-content">
+                <div id="war-my-games-list" class="games-list">
+                    <p class="loading-text">Loading your games...</p>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Rock Paper Scissors Modal -->
+    <div id="rps-modal" class="modal">
+        <div class="modal-content">
+            <span class="close" onclick="closeRPSModal()">&times;</span>
+            <h2 class="neon">✊✋✌️ Rock Paper Scissors ✊✋✌️</h2>
+            <p class="modal-description">Best of 3 rounds! Winner takes all.</p>
+            
+            <div class="modal-tabs">
+                <button class="tab-btn active" onclick="switchRPSTab('create')">Create Game</button>
+                <button class="tab-btn" onclick="switchRPSTab('join')">Join Game</button>
+                <button class="tab-btn" onclick="switchRPSTab('my-games')">My Games</button>
+            </div>
+
+            <!-- Create RPS Tab -->
+            <div id="rps-create-tab" class="tab-content active">
+                <input type="number" id="rps-stake" placeholder="Stake (ETH)" step="0.001" min="0.001">
+                <button class="btn-primary" onclick="createRPSGame()">Create Game</button>
+                <div id="rps-create-status" class="status-message"></div>
+            </div>
+
+            <!-- Join RPS Tab -->
+            <div id="rps-join-tab" class="tab-content">
+                <div id="rps-games-list" class="games-list">
+                    <p class="loading-text">Loading games...</p>
+                </div>
+            </div>
+
+            <!-- My RPS Games Tab -->
+            <div id="rps-my-games-tab" class="tab-content">
+                <div id="rps-my-games-list" class="games-list">
+                    <p class="loading-text">Loading your games...</p>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Scripts -->
+    <!-- Security Module - MUST load first -->
+    <script src="../security.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/ethers@6.10.0/dist/ethers.umd.min.js"></script>
+    <script src="arcade.js"></script>
+</body>
+</html>
+

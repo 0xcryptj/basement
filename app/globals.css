@@ -1,0 +1,235 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer base {
+  * {
+    box-sizing: border-box;
+  }
+
+  body {
+    margin: 0;
+    padding: 0;
+    font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', 'Oxygen',
+      'Ubuntu', 'Cantarell', 'Fira Sans', 'Droid Sans', 'Helvetica Neue',
+      sans-serif;
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+  }
+
+  code {
+    font-family: source-code-pro, Menlo, Monaco, Consolas, 'Courier New',
+      monospace;
+  }
+}
+
+@layer components {
+  /* 4chan-style greentext */
+  .greentext {
+    color: #789922 !important;
+  }
+
+  .post-content .greentext {
+    color: #789922;
+    font-style: normal;
+  }
+
+  /* Quote links - 4chan style */
+  .quotelink {
+    color: #0000EE;
+    text-decoration: none;
+  }
+
+  .quotelink:hover {
+    color: #0000EE;
+    text-decoration: underline;
+    cursor: pointer;
+  }
+
+  /* Post highlighting when referenced */
+  .post-highlight {
+    background-color: #D6BAD0 !important;
+    transition: background-color 0.3s ease;
+  }
+
+  /* Anonymous name color (4chan green) */
+  .anonymous-name {
+    color: #117743;
+    font-weight: bold;
+  }
+
+  /* Name field */
+  .poster-name {
+    color: #117743;
+    font-weight: bold;
+  }
+
+  /* Post number */
+  .post-number {
+    color: #000000;
+    text-decoration: none;
+  }
+
+  .post-number:hover {
+    color: #000000;
+    text-decoration: underline;
+  }
+
+  /* Tripcode */
+  .poster-trip {
+    color: #228854;
+    font-weight: normal;
+  }
+
+  /* Subject/Title */
+  .subject {
+    color: #0F0C5D;
+    font-weight: bold;
+  }
+
+  /* Image info */
+  .file-info {
+    color: #707070;
+    font-size: 0.75rem;
+  }
+
+  /* Image loading */
+  img {
+    max-width: 100%;
+    height: auto;
+  }
+
+  /* 4chan post styling */
+  .chan-post {
+    background-color: #f0e0d6;
+    border: 1px solid #d9bfb7;
+    padding: 0.5rem;
+    margin-bottom: 0.25rem;
+  }
+
+  .chan-post-header {
+    color: #117743;
+    font-weight: bold;
+    font-size: 0.875rem;
+  }
+
+  .chan-post-info {
+    color: #800000;
+    font-size: 0.75rem;
+  }
+
+  /* Reply/Post containers */
+  .reply {
+    background-color: #F0E0D6;
+    border: 1px solid #D9BFB7;
+    border-left: none;
+    border-top: none;
+    display: table;
+    padding: 4px;
+    margin: 4px 0;
+  }
+
+  .opPost {
+    background-color: #F0E0D6;
+    border: 1px solid #D9BFB7;
+    display: table;
+    padding: 4px;
+    margin: 4px 0;
+  }
+
+  /* Thread card styling */
+  .chan-thread {
+    background-color: #f0e0d6;
+    border: 1px solid #d9bfb7;
+    margin-bottom: 0.5rem;
+    transition: background-color 0.2s;
+  }
+
+  .chan-thread:hover {
+    background-color: #eedac2;
+  }
+
+  /* Board tile styling */
+  .chan-board {
+    background-color: #f0e0d6;
+    border: 1px solid #b7c5d9;
+    text-align: center;
+    transition: background-color 0.2s;
+  }
+
+  .chan-board:hover {
+    background-color: #eedac2;
+  }
+
+  /* Catalog grid */
+  .catalog-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(150px, 1fr));
+    gap: 10px;
+    padding: 10px;
+  }
+
+  .catalog-thread {
+    background-color: #F0E0D6;
+    border: 1px solid #D9BFB7;
+    padding: 8px;
+    text-align: center;
+    cursor: pointer;
+    transition: background-color 0.2s;
+  }
+
+  .catalog-thread:hover {
+    background-color: #EEDAC2;
+  }
+
+  /* Mobile Responsiveness */
+  @media (max-width: 768px) {
+    .opPost, .reply {
+      padding: 8px;
+      font-size: 0.875rem;
+    }
+
+    .catalog-grid {
+      grid-template-columns: repeat(auto-fill, minmax(120px, 1fr));
+      gap: 8px;
+      padding: 8px;
+    }
+
+    .post-content {
+      font-size: 0.875rem;
+    }
+
+    .poster-name, .poster-trip, .post-number {
+      font-size: 0.75rem;
+    }
+
+    /* Stack images vertically on mobile */
+    .opPost .flex, .reply .flex {
+      flex-direction: column;
+    }
+
+    /* Make images full width on mobile */
+    .opPost img, .reply img {
+      max-width: 100% !important;
+      height: auto !important;
+    }
+
+    /* Adjust catalog items for mobile */
+    .catalog-thread img {
+      max-width: 100px !important;
+      max-height: 100px !important;
+    }
+  }
+
+  @media (max-width: 480px) {
+    .catalog-grid {
+      grid-template-columns: repeat(auto-fill, minmax(100px, 1fr));
+    }
+
+    .opPost, .reply {
+      padding: 6px;
+    }
+  }
+}
+
+

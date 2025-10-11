@@ -1,0 +1,660 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Tokenomics - The Basement</title>
+    <link rel="icon" type="image/x-icon" href="assets/icon.ico">
+    <link href="https://fonts.googleapis.com/css2?family=Press+Start+2P&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="style.css">
+    <style>
+        .tokenomics-container {
+            max-width: 1200px;
+            margin: 80px auto 40px;
+            padding: 2rem;
+        }
+
+        .token-header {
+            text-align: center;
+            margin-bottom: 3rem;
+        }
+
+        .token-title {
+            font-size: 2rem;
+            color: #0052ff;
+            text-shadow: 0 0 20px #0052ff99;
+            margin-bottom: 1rem;
+        }
+
+        .contract-info {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 1rem;
+            margin-top: 1rem;
+            flex-wrap: wrap;
+        }
+
+        .contract-label {
+            font-size: 0.7rem;
+            color: #00BFFF;
+        }
+
+        .contract-address {
+            background: rgba(0, 82, 255, 0.1);
+            border: 2px solid #0052ff99;
+            padding: 0.75rem 1.5rem;
+            border-radius: 4px;
+            font-size: 0.7rem;
+            color: #00FF88;
+            text-decoration: none;
+            transition: all 0.3s ease;
+            display: inline-flex;
+            align-items: center;
+            gap: 0.5rem;
+            box-shadow: 0 0 10px rgba(0, 82, 255, 0.3);
+        }
+
+        .contract-address:hover {
+            background: rgba(0, 82, 255, 0.3);
+            box-shadow: 0 0 20px rgba(0, 82, 255, 0.6);
+            transform: translateY(-2px);
+        }
+
+        .token-price {
+            background: rgba(0, 255, 136, 0.1);
+            border: 2px solid #00FF88;
+            padding: 0.75rem 1.5rem;
+            border-radius: 4px;
+            font-size: 0.8rem;
+            color: #00FF88;
+            box-shadow: 0 0 10px rgba(0, 255, 136, 0.3);
+        }
+
+        .price-label {
+            font-size: 0.6rem;
+            color: rgba(255, 255, 255, 0.6);
+            margin-right: 0.5rem;
+        }
+
+        .stats-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 2rem;
+            margin: 3rem 0;
+        }
+
+        .stat-card {
+            background: rgba(0, 0, 0, 0.3);
+            backdrop-filter: blur(15px);
+            border: 2px solid #0052ff99;
+            border-radius: 8px;
+            padding: 2rem;
+            transition: all 0.3s ease;
+        }
+
+        .stat-card:hover {
+            border-color: #00BFFF;
+            box-shadow: 0 0 20px rgba(0, 82, 255, 0.4);
+            transform: translateY(-5px);
+        }
+
+        .stat-title {
+            font-size: 0.8rem;
+            color: #0052ff;
+            margin-bottom: 0.75rem;
+            text-transform: uppercase;
+            font-family: 'Press Start 2P', monospace;
+        }
+
+        .stat-value {
+            font-size: 1.8rem;
+            color: #00FF88;
+            text-shadow: 0 0 10px rgba(0, 255, 136, 0.5);
+            margin-bottom: 0.75rem;
+            font-family: 'Press Start 2P', monospace;
+        }
+
+        .stat-description {
+            font-size: 0.7rem;
+            color: rgba(255, 255, 255, 0.7);
+            line-height: 1.8;
+            font-family: 'Courier New', monospace;
+        }
+
+        .feature-section {
+            margin: 4rem 0;
+        }
+
+        .section-title {
+            font-size: 1.2rem;
+            color: #0052ff;
+            text-shadow: 0 0 15px #0052ff99;
+            margin-bottom: 2rem;
+            text-align: center;
+        }
+
+        .features-list {
+            background: rgba(0, 0, 0, 0.3);
+            backdrop-filter: blur(15px);
+            border: 2px solid #0052ff99;
+            border-radius: 8px;
+            padding: 2rem;
+        }
+
+        .feature-item {
+            padding: 1.5rem;
+            border-bottom: 1px solid rgba(0, 82, 255, 0.3);
+            transition: all 0.3s ease;
+        }
+
+        .feature-item:last-child {
+            border-bottom: none;
+        }
+
+        .feature-item:hover {
+            background: rgba(0, 82, 255, 0.1);
+            padding-left: 2rem;
+        }
+
+        .feature-title {
+            font-size: 0.9rem;
+            color: #00BFFF;
+            margin-bottom: 0.75rem;
+            font-family: 'Press Start 2P', monospace;
+        }
+
+        .feature-description {
+            font-size: 0.75rem;
+            color: rgba(255, 255, 255, 0.8);
+            line-height: 2;
+            font-family: 'Courier New', monospace;
+        }
+
+        .allocation-chart {
+            background: rgba(0, 0, 0, 0.3);
+            backdrop-filter: blur(15px);
+            border: 2px solid #0052ff99;
+            border-radius: 8px;
+            padding: 2rem;
+            margin-top: 2rem;
+        }
+
+        .allocation-item {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 1rem;
+            border-bottom: 1px solid rgba(0, 82, 255, 0.2);
+        }
+
+        .allocation-item:last-child {
+            border-bottom: none;
+        }
+
+        .allocation-label {
+            font-size: 0.8rem;
+            color: #00BFFF;
+            font-family: 'Courier New', monospace;
+        }
+
+        .allocation-value {
+            font-size: 0.9rem;
+            color: #00FF88;
+            font-weight: bold;
+            font-family: 'Press Start 2P', monospace;
+        }
+
+        /* Price Terminal */
+        .price-terminal {
+            background: rgba(0, 0, 0, 0.5);
+            backdrop-filter: blur(15px);
+            border: 2px solid #0052ff99;
+            border-radius: 8px;
+            padding: 2rem;
+            margin: 3rem 0;
+            font-family: 'Courier New', monospace;
+        }
+
+        .terminal-header {
+            font-size: 0.8rem;
+            color: #00BFFF;
+            margin-bottom: 1rem;
+            padding-bottom: 0.5rem;
+            border-bottom: 1px solid rgba(0, 82, 255, 0.3);
+        }
+
+        .terminal-row {
+            display: flex;
+            justify-content: space-between;
+            padding: 0.5rem 0;
+            font-size: 0.75rem;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+        }
+
+        .terminal-label {
+            color: rgba(255, 255, 255, 0.6);
+        }
+
+        .terminal-value {
+            color: #00FF88;
+            font-weight: bold;
+        }
+
+        .terminal-value.positive {
+            color: #00FF88;
+        }
+
+        .terminal-value.negative {
+            color: #FF4444;
+        }
+
+        .dex-links {
+            display: flex;
+            gap: 1rem;
+            margin-top: 1.5rem;
+            flex-wrap: wrap;
+        }
+
+        .dex-link {
+            background: rgba(0, 82, 255, 0.1);
+            border: 1px solid #0052ff99;
+            padding: 0.75rem 1.5rem;
+            border-radius: 4px;
+            text-decoration: none;
+            color: #00BFFF;
+            font-size: 0.7rem;
+            transition: all 0.3s ease;
+            display: inline-flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        .dex-link:hover {
+            background: rgba(0, 82, 255, 0.3);
+            box-shadow: 0 0 15px rgba(0, 82, 255, 0.5);
+            transform: translateY(-2px);
+        }
+
+        .allocation-bar {
+            flex: 1;
+            height: 20px;
+            background: rgba(0, 82, 255, 0.2);
+            border-radius: 10px;
+            margin: 0 1rem;
+            overflow: hidden;
+        }
+
+        .allocation-fill {
+            height: 100%;
+            background: linear-gradient(90deg, #0052ff99, #00BFFF);
+            transition: width 0.5s ease;
+        }
+    </style>
+</head>
+<body>
+    <!-- Navigation Bar -->
+    <nav class="navbar">
+        <div class="nav-content">
+            <!-- Left Logo -->
+            <div class="logo">
+                <a href="index.html" class="logo-link">
+                    <img src="assets/tsvg.svg" alt="Logo" class="main-logo">
+                    <span class="logo-text">The Basement</span>
+                </a>
+            </div>
+            
+            <!-- Center Navigation -->
+            <div class="nav-links">
+                <a href="arcade/arcade.html" class="nav-link">Arcade</a>
+                <a href="tokenomics.html" class="nav-link active">Tokenomics</a>
+                <a href="index.html#shop" class="nav-link">Shop</a>
+                <a href="index.html#forum" class="nav-link">Forum</a>
+            </div>
+            
+            <!-- Right Wallet Connect -->
+            <div class="wallet-section">
+                <div class="wallet-dropdown">
+                    <button id="connect-wallet" class="connect-btn">
+                        <span class="btn-text">Connect Wallet</span>
+                        <span class="dropdown-arrow">▼</span>
+                    </button>
+                    <div id="wallet-options" class="wallet-options">
+                        <button class="wallet-option" data-wallet="base">Base Wallet</button>
+                        <button class="wallet-option" data-wallet="phantom">Phantom</button>
+                        <button class="wallet-option" data-wallet="metamask">MetaMask</button>
+                    </div>
+                </div>
+                <div id="wallet-info" class="wallet-info">
+                    <div class="user-profile">
+                        <div class="profile-pic-container" id="profile-pic-container">
+                            <img id="profile-pic" class="profile-pic" src="" alt="Profile" style="display: none;">
+                            <div id="profile-pic-placeholder" class="profile-pic-placeholder">●</div>
+                        </div>
+                        <div class="user-details">
+                            <span id="wallet-address" class="wallet-address"></span>
+                        </div>
+                    </div>
+                    <button id="disconnect-wallet" class="disconnect-btn">Disconnect Wallet</button>
+                </div>
+            </div>
+        </div>
+    </nav>
+
+    <!-- Main Content -->
+    <div class="tokenomics-container">
+        <div class="token-header">
+            <h1 class="token-title neon">💎 $BASEMENT TOKENOMICS 💎</h1>
+            
+            <div class="contract-info">
+                <span class="contract-label">Contract:</span>
+                <a href="https://basescan.org/token/0x0000000000000000000000000000000000000000" 
+                   target="_blank" 
+                   rel="noopener noreferrer" 
+                   class="contract-address"
+                   id="contract-link">
+                    <span id="ticker-text">$BASEMENT</span>
+                    <span style="font-size: 0.5rem;">↗</span>
+                </a>
+                
+                <div class="token-price">
+                    <span class="price-label">Price:</span>
+                    <span id="token-price">Loading...</span>
+                </div>
+            </div>
+        </div>
+
+        <!-- Stats Grid -->
+        <div class="stats-grid">
+            <div class="stat-card">
+                <div class="stat-title">Total Supply</div>
+                <div class="stat-value">100M</div>
+                <div class="stat-description">Fixed supply, no minting</div>
+            </div>
+
+            <div class="stat-card">
+                <div class="stat-title">Circulating</div>
+                <div class="stat-value" id="circulating-supply">Loading...</div>
+                <div class="stat-description">Currently in circulation</div>
+            </div>
+
+            <div class="stat-card">
+                <div class="stat-title">Market Cap</div>
+                <div class="stat-value" id="market-cap">Loading...</div>
+                <div class="stat-description">Total market value</div>
+            </div>
+
+            <div class="stat-card">
+                <div class="stat-title">Holders</div>
+                <div class="stat-value" id="holders-count">Loading...</div>
+                <div class="stat-description">Unique wallet holders</div>
+            </div>
+        </div>
+
+        <!-- Price Terminal -->
+        <div class="price-terminal">
+            <div class="terminal-header">📊 LIVE MARKET DATA</div>
+            
+            <div class="terminal-row">
+                <span class="terminal-label">Price USD:</span>
+                <span class="terminal-value" id="terminal-price">$0.0000</span>
+            </div>
+            
+            <div class="terminal-row">
+                <span class="terminal-label">24h Change:</span>
+                <span class="terminal-value" id="terminal-change">0.00%</span>
+            </div>
+            
+            <div class="terminal-row">
+                <span class="terminal-label">24h Volume:</span>
+                <span class="terminal-value" id="terminal-volume">$0</span>
+            </div>
+            
+            <div class="terminal-row">
+                <span class="terminal-label">Liquidity:</span>
+                <span class="terminal-value" id="terminal-liquidity">$0</span>
+            </div>
+            
+            <div class="terminal-row">
+                <span class="terminal-label">FDV:</span>
+                <span class="terminal-value" id="terminal-fdv">$0</span>
+            </div>
+            
+            <div class="dex-links">
+                <a href="https://www.dexscreener.com/base/YOUR_PAIR_ADDRESS" 
+                   target="_blank" 
+                   rel="noopener noreferrer" 
+                   class="dex-link">
+                    📈 DexScreener
+                </a>
+                <a href="https://www.geckoterminal.com/base/pools/YOUR_PAIR_ADDRESS" 
+                   target="_blank" 
+                   rel="noopener noreferrer" 
+                   class="dex-link">
+                    🦎 GeckoTerminal
+                </a>
+                <a href="https://app.uniswap.org/#/swap?outputCurrency=YOUR_TOKEN_ADDRESS&chain=base" 
+                   target="_blank" 
+                   rel="noopener noreferrer" 
+                   class="dex-link">
+                    🦄 Trade on Uniswap
+                </a>
+            </div>
+        </div>
+
+        <!-- Token Distribution -->
+        <div class="feature-section">
+            <h2 class="section-title">📊 Token Distribution</h2>
+            <div class="allocation-chart">
+                <div class="allocation-item">
+                    <span class="allocation-label">Liquidity Pool (Locked)</span>
+                    <div class="allocation-bar">
+                        <div class="allocation-fill" style="width: 40%"></div>
+                    </div>
+                    <span class="allocation-value">40%</span>
+                </div>
+                <div class="allocation-item">
+                    <span class="allocation-label">Treasury (36mo vest)</span>
+                    <div class="allocation-bar">
+                        <div class="allocation-fill" style="width: 20%"></div>
+                    </div>
+                    <span class="allocation-value">20%</span>
+                </div>
+                <div class="allocation-item">
+                    <span class="allocation-label">Community Rewards (24mo)</span>
+                    <div class="allocation-bar">
+                        <div class="allocation-fill" style="width: 15%"></div>
+                    </div>
+                    <span class="allocation-value">15%</span>
+                </div>
+                <div class="allocation-item">
+                    <span class="allocation-label">Team/Advisors (12mo cliff)</span>
+                    <div class="allocation-bar">
+                        <div class="allocation-fill" style="width: 10%"></div>
+                    </div>
+                    <span class="allocation-value">10%</span>
+                </div>
+                <div class="allocation-item">
+                    <span class="allocation-label">Development (6mo cliff)</span>
+                    <div class="allocation-bar">
+                        <div class="allocation-fill" style="width: 10%"></div>
+                    </div>
+                    <span class="allocation-value">10%</span>
+                </div>
+                <div class="allocation-item">
+                    <span class="allocation-label">Marketing/Partnerships</span>
+                    <div class="allocation-bar">
+                        <div class="allocation-fill" style="width: 5%"></div>
+                    </div>
+                    <span class="allocation-value">5%</span>
+                </div>
+            </div>
+        </div>
+
+        <!-- Utility & Features -->
+        <div class="feature-section">
+            <h2 class="section-title">⚡ Utility & Features</h2>
+            <div class="features-list">
+                <div class="feature-item">
+                    <div class="feature-title">🎮 Arcade Access</div>
+                    <div class="feature-description">
+                        Use $BASEMENT to play games in the arcade. Stake tokens to enter tournaments and win prizes. Lower fees for token holders.
+                    </div>
+                </div>
+                <div class="feature-item">
+                    <div class="feature-title">🏆 Tournament Entry</div>
+                    <div class="feature-description">
+                        Hold $BASEMENT to access exclusive tournaments with larger prize pools. Top players earn bonus token rewards.
+                    </div>
+                </div>
+                <div class="feature-item">
+                    <div class="feature-title">💬 Community Governance</div>
+                    <div class="feature-description">
+                        Token holders vote on new games, features, and platform improvements. Your voice matters in The Basement community.
+                    </div>
+                </div>
+                <div class="feature-item">
+                    <div class="feature-title">🎁 Staking Rewards</div>
+                    <div class="feature-description">
+                        Stake $BASEMENT to earn passive income. APY varies based on platform revenue and staking duration.
+                    </div>
+                </div>
+                <div class="feature-item">
+                    <div class="feature-title">🛍️ Marketplace Benefits</div>
+                    <div class="feature-description">
+                        Get discounts on NFTs and digital goods in the shop. Exclusive items available only to token holders.
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Deflationary Mechanics -->
+        <div class="feature-section">
+            <h2 class="section-title">🔥 Deflationary Mechanics</h2>
+            <div class="features-list">
+                <div class="feature-item">
+                    <div class="feature-title">Game Fee Burns</div>
+                    <div class="feature-description">
+                        A portion of every game fee is permanently burned, reducing total supply over time. This creates upward price pressure.
+                    </div>
+                </div>
+                <div class="feature-item">
+                    <div class="feature-title">Tournament Burns</div>
+                    <div class="feature-description">
+                        Entry fees for major tournaments include a burn component. Bigger events = bigger burns.
+                    </div>
+                </div>
+                <div class="feature-item">
+                    <div class="feature-title">Buyback & Burn</div>
+                    <div class="feature-description">
+                        Platform profits are used to buy back tokens from the market and burn them permanently.
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script src="security.js"></script>
+    <script src="script.js"></script>
+    <script>
+        // Configuration - UPDATE THESE WITH YOUR TOKEN INFO
+        const TOKEN_ADDRESS = "0x0000000000000000000000000000000000000000"; // Your token contract
+        const PAIR_ADDRESS = ""; // Your Uniswap pair address (leave empty if not deployed yet)
+        
+        // Fetch token price and stats from DexScreener
+        async function fetchTokenData() {
+            try {
+                // Update contract link
+                document.getElementById('contract-link').href = 
+                    `https://basescan.org/token/${TOKEN_ADDRESS}`;
+                
+                // If pair address exists, fetch from DexScreener
+                if (PAIR_ADDRESS && PAIR_ADDRESS !== "") {
+                    const response = await fetch(`https://api.dexscreener.com/latest/dex/pairs/base/${PAIR_ADDRESS}`);
+                    
+                    if (response.ok) {
+                        const data = await response.json();
+                        const pair = data.pair;
+                        
+                        if (pair) {
+                            // Update header price
+                            document.getElementById('token-price').textContent = 
+                                `$${parseFloat(pair.priceUsd).toFixed(6)}`;
+                            
+                            // Update terminal data
+                            document.getElementById('terminal-price').textContent = 
+                                `$${parseFloat(pair.priceUsd).toFixed(6)}`;
+                            
+                            const change24h = parseFloat(pair.priceChange.h24 || 0);
+                            const changeEl = document.getElementById('terminal-change');
+                            changeEl.textContent = `${change24h > 0 ? '+' : ''}${change24h.toFixed(2)}%`;
+                            changeEl.className = `terminal-value ${change24h >= 0 ? 'positive' : 'negative'}`;
+                            
+                            document.getElementById('terminal-volume').textContent = 
+                                `$${formatNumber(pair.volume.h24)}`;
+                            
+                            document.getElementById('terminal-liquidity').textContent = 
+                                `$${formatNumber(pair.liquidity.usd)}`;
+                            
+                            document.getElementById('terminal-fdv').textContent = 
+                                `$${formatNumber(pair.fdv)}`;
+                            
+                            // Update market cap
+                            document.getElementById('market-cap').textContent = 
+                                `$${formatNumber(pair.marketCap || pair.fdv)}`;
+                            
+                            // Calculate circulating supply (if available)
+                            const circulatingSupply = pair.marketCap ? 
+                                (pair.marketCap / parseFloat(pair.priceUsd)).toFixed(0) : 
+                                '100M';
+                            document.getElementById('circulating-supply').textContent = 
+                                formatNumber(circulatingSupply);
+                            
+                            // Update DEX links
+                            document.querySelectorAll('.dex-link')[0].href = 
+                                `https://www.dexscreener.com/base/${PAIR_ADDRESS}`;
+                            document.querySelectorAll('.dex-link')[1].href = 
+                                `https://www.geckoterminal.com/base/pools/${PAIR_ADDRESS}`;
+                            document.querySelectorAll('.dex-link')[2].href = 
+                                `https://app.uniswap.org/#/swap?outputCurrency=${TOKEN_ADDRESS}&chain=base`;
+                            
+                            return;
+                        }
+                    }
+                }
+                
+                // Fallback: Show placeholder if no pair address or API fails
+                document.getElementById('token-price').textContent = "TBD";
+                document.getElementById('terminal-price').textContent = "Not Listed Yet";
+                document.getElementById('terminal-change').textContent = "N/A";
+                document.getElementById('terminal-volume').textContent = "N/A";
+                document.getElementById('terminal-liquidity').textContent = "N/A";
+                document.getElementById('terminal-fdv').textContent = "N/A";
+                document.getElementById('circulating-supply').textContent = "TBD";
+                document.getElementById('market-cap').textContent = "TBD";
+                document.getElementById('holders-count').textContent = "TBD";
+                
+            } catch (error) {
+                console.error('Error fetching token data:', error);
+                document.getElementById('token-price').textContent = "Error";
+                document.getElementById('terminal-price').textContent = "Error loading data";
+            }
+        }
+        
+        // Helper function to format large numbers
+        function formatNumber(num) {
+            if (num >= 1e9) return (num / 1e9).toFixed(2) + 'B';
+            if (num >= 1e6) return (num / 1e6).toFixed(2) + 'M';
+            if (num >= 1e3) return (num / 1e3).toFixed(2) + 'K';
+            return num.toString();
+        }
+
+        // Load token data on page load
+        fetchTokenData();
+        
+        // Refresh every 30 seconds
+        setInterval(fetchTokenData, 30000);
+    </script>
+</body>
+</html>
+
