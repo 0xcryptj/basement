@@ -12,6 +12,8 @@
     "db:push": "prisma db push",
     "db:migrate": "prisma migrate dev",
     "db:seed": "ts-node --compiler-options {\\\"module\\\":\\\"CommonJS\\\"} prisma/seeds/forum.ts",
+    "db:seed:channels": "ts-node --compiler-options {\\\"module\\\":\\\"CommonJS\\\"} prisma/seeds/channels.ts",
+    "cleanup:messages": "ts-node --compiler-options {\\\"module\\\":\\\"CommonJS\\\"} scripts/cleanup-old-messages.ts",
     "postinstall": "prisma generate"
   },
   "prisma": {
