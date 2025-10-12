@@ -71,27 +71,35 @@ class BasementApp {
         const devNotice = document.getElementById('dev-notice');
         const closeBtn = document.getElementById('close-dev-notice');
         
-        // Check if user already dismissed it today
-        const dismissed = localStorage.getItem('basement_dev_notice_dismissed');
-        const today = new Date().toDateString();
+        // Check if user already dismissed it this session
+        const dismissed = sessionStorage.getItem('basement_dev_notice_dismissed');
         
-        if (dismissed === today) {
+        if (dismissed === 'true') {
             if (devNotice) devNotice.style.display = 'none';
             return;
         }
         
-        if (devNotice) devNotice.style.display = 'flex';
+        // Show the notice
+        if (devNotice) {
+            devNotice.style.display = 'flex';
+            devNotice.style.opacity = '1';
+        }
         
+        // Attach close handler
         if (closeBtn) {
-            closeBtn.addEventListener('click', () => {
+            closeBtn.onclick = () => {
+                console.log('Closing dev notice');
                 if (devNotice) {
                     devNotice.style.opacity = '0';
                     setTimeout(() => {
                         devNotice.style.display = 'none';
+                        devNotice.remove(); // Remove from DOM completely
                     }, 300);
                 }
-                localStorage.setItem('basement_dev_notice_dismissed', today);
-            });
+                sessionStorage.setItem('basement_dev_notice_dismissed', 'true');
+            };
+        } else {
+            console.error('Close button not found!');
         }
     }
 
@@ -109,7 +117,9 @@ class BasementApp {
         // Clear existing particles
         particlesContainer.innerHTML = '';
         
-        const particleCount = 200;
+        // Reduce particles on mobile to prevent overheating
+        const isMobile = window.innerWidth <= 768;
+        const particleCount = isMobile ? 30 : 150;
         
         for (let i = 0; i < particleCount; i++) {
             const particle = document.createElement('div');
