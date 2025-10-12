@@ -175,6 +175,7 @@ model Message {
   replyToId       String?   // For threaded replies
   isEdited        Boolean   @default(false)
   isDeleted       Boolean   @default(false)
+  expiresAt       DateTime? // Message expiration (5 min for anon, 30 days for authenticated)
   createdAt       DateTime  @default(now())
   updatedAt       DateTime  @updatedAt
   
@@ -186,6 +187,7 @@ model Message {
   @@index([channelId, createdAt])
   @@index([userId])
   @@index([replyToId])
+  @@index([expiresAt])
 }
 
 // Transaction history for balances

@@ -1,77 +1,84 @@
 /**
- * Cleanup Old Messages Script
+ * Cleanup Expired Messages Script
  * 
- * Automatically deletes or marks messages older than CHAT_RETENTION_DAYS
- * Run this script periodically (e.g., daily cron job)
+ * Automatically deletes messages that have passed their expiration time:
+ * - Anonymous user messages: expire after 5 minutes
+ * - Authenticated user messages: expire after 30 days
+ * 
+ * Run this script periodically (e.g., every 5 minutes via cron job)
  * 
  * Usage:
  *   npm run cleanup-messages
- * 
- * Or with custom retention days:
- *   CHAT_RETENTION_DAYS=7 npm run cleanup-messages
  */
 
-import { PrismaClient } from '@prisma/client';
+import { createClient } from '@supabase/supabase-js';
+import * as dotenv from 'dotenv';
+import * as path from 'path';
 
-const prisma = new PrismaClient();
+// Load .env.local
+dotenv.config({ path: path.join(__dirname, '../.env.local') });
 
-const RETENTION_DAYS = parseInt(process.env.CHAT_RETENTION_DAYS || '30');
-const HARD_DELETE_DAYS = RETENTION_DAYS * 2; // 60 days by default
+const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL!;
+const supabaseKey = process.env.SUPABASE_SERVICE_ROLE_KEY!;
 
-async function cleanupOldMessages() {
-  console.log(`🧹 Starting message cleanup...`);
-  console.log(`📅 Retention period: ${RETENTION_DAYS} days`);
-  console.log(`🗑️  Hard delete after: ${HARD_DELETE_DAYS} days`);
+const supabase = createClient(supabaseUrl, supabaseKey);
 
-  const retentionDate = new Date();
-  retentionDate.setDate(retentionDate.getDate() - RETENTION_DAYS);
-
-  const hardDeleteDate = new Date();
-  hardDeleteDate.setDate(hardDeleteDate.getDate() - HARD_DELETE_DAYS);
+async function cleanupExpiredMessages() {
+  console.log(`🧹 Starting expired message cleanup...`);
+  const now = new Date();
+  console.log(`🕐 Current time: ${now.toISOString()}`);
 
   try {
-    // Step 1: Mark old messages as deleted (soft delete)
-    const softDeleted = await prisma.message.updateMany({
-      where: {
-        createdAt: {
-          lt: retentionDate,
-        },
-        isDeleted: false,
-      },
-      data: {
-        isDeleted: true,
-        content: '[Message deleted due to retention policy]',
-        imageUrl: null, // Remove image references
-      },
-    });
+    // Step 1: Delete expired messages (hard delete)
+    const { data: expiredMessages, error: fetchError } = await supabase
+      .from('Message')
+      .select('id, content, createdAt, expiresAt, user:User!Message_userId_fkey(walletAddress)')
+      .not('expiresAt', 'is', null)
+      .lte('expiresAt', now.toISOString());
 
-    console.log(`📝 Soft deleted ${softDeleted.count} messages older than ${RETENTION_DAYS} days`);
+    if (fetchError) {
+      console.error('❌ Error fetching expired messages:', fetchError);
+      throw fetchError;
+    }
 
-    // Step 2: Hard delete very old messages
-    const hardDeleted = await prisma.message.deleteMany({
-      where: {
-        createdAt: {
-          lt: hardDeleteDate,
-        },
-        isDeleted: true,
-      },
-    });
+    console.log(`📝 Found ${expiredMessages?.length || 0} expired messages`);
 
-    console.log(`🗑️  Hard deleted ${hardDeleted.count} messages older than ${HARD_DELETE_DAYS} days`);
+    if (expiredMessages && expiredMessages.length > 0) {
+      // Delete expired messages
+      const { error: deleteError, count } = await supabase
+        .from('Message')
+        .delete()
+        .not('expiresAt', 'is', null)
+        .lte('expiresAt', now.toISOString());
 
-    // Step 3: Get statistics
-    const totalMessages = await prisma.message.count();
-    const activeMessages = await prisma.message.count({
-      where: { isDeleted: false },
-    });
-    const deletedMessages = await prisma.message.count({
-      where: { isDeleted: true },
-    });
+      if (deleteError) {
+        console.error('❌ Error deleting messages:', deleteError);
+        throw deleteError;
+      }
+
+      console.log(`🗑️  Deleted ${count || 0} expired messages`);
+    }
+
+    // Step 2: Get statistics
+    const { count: totalMessages, error: countError1 } = await supabase
+      .from('Message')
+      .select('*', { count: 'exact', head: true });
+
+    const { count: activeMessages, error: countError2 } = await supabase
+      .from('Message')
+      .select('*', { count: 'exact', head: true })
+      .eq('isDeleted', false);
+
+    const { count: expiringSoon, error: countError3 } = await supabase
+      .from('Message')
+      .select('*', { count: 'exact', head: true })
+      .not('expiresAt', 'is', null)
+      .lte('expiresAt', new Date(now.getTime() + 10 * 60 * 1000).toISOString()); // Expires within 10 minutes
 
     console.log(`\n📊 Message Statistics:`);
-    console.log(`   Total: ${totalMessages}`);
-    console.log(`   Active: ${activeMessages}`);
-    console.log(`   Soft Deleted: ${deletedMessages}`);
+    console.log(`   Total: ${totalMessages || 0}`);
+    console.log(`   Active: ${activeMessages || 0}`);
+    console.log(`   Expiring soon (next 10 min): ${expiringSoon || 0}`);
 
     console.log(`\n✨ Cleanup complete!`);
   } catch (error) {
@@ -80,12 +87,9 @@ async function cleanupOldMessages() {
   }
 }
 
-cleanupOldMessages()
+cleanupExpiredMessages()
   .catch((e) => {
     console.error('Fatal error:', e);
     process.exit(1);
-  })
-  .finally(async () => {
-    await prisma.$disconnect();
   });
 

@@ -37,7 +37,7 @@ export async function GET(request: NextRequest) {
       });
     }
 
-    // Fetch messages with user data
+    // Fetch messages with user data (filter out expired messages)
     const { data: messages, error: messagesError } = await supabase
       .from('Message')
       .select(`
@@ -45,6 +45,7 @@ export async function GET(request: NextRequest) {
         content,
         imageUrl,
         createdAt,
+        expiresAt,
         user:User!Message_userId_fkey (
           username,
           walletAddress,
@@ -55,6 +56,12 @@ export async function GET(request: NextRequest) {
       .eq('isDeleted', false)
       .order('createdAt', { ascending: true })
       .limit(limit);
+    
+    // Filter out expired messages on the server side
+    const now = new Date();
+    const activeMessages = messages?.filter(msg => 
+      !msg.expiresAt || new Date(msg.expiresAt) > now
+    ) || [];
 
     if (messagesError) {
       console.error('❌ Error fetching messages:', messagesError);
@@ -69,11 +76,11 @@ export async function GET(request: NextRequest) {
       });
     }
 
-    console.log(`✅ Fetched ${messages?.length || 0} messages`);
+    console.log(`✅ Fetched ${activeMessages.length} active messages (${messages?.length || 0} total)`);
 
     return NextResponse.json({
       success: true,
-      messages: messages || [],
+      messages: activeMessages,
       channel: {
         id: channel.id,
         name: channel.name,
@@ -184,6 +191,15 @@ export async function POST(request: NextRequest) {
       .single();
 
     if (!channel) {
+      // Anonymous users cannot create new channels
+      if (isAnonymous) {
+        console.log('❌ Anonymous users cannot create channels');
+        return NextResponse.json(
+          { error: 'Channel not found. Anonymous users cannot create channels. Please connect your wallet or use an existing channel.' },
+          { status: 403 }
+        );
+      }
+
       console.log('📢 Creating new channel:', channelSlug);
       const now = new Date().toISOString();
       const { data: newChannel, error: channelCreateError } = await supabase
@@ -224,7 +240,18 @@ export async function POST(request: NextRequest) {
 
     // Create message using Supabase
     console.log('💬 Creating message...');
-    const now = new Date().toISOString();
+    const now = new Date();
+    const nowISO = now.toISOString();
+    
+    // Calculate expiration based on user type
+    // Anonymous users: 5 minutes
+    // Authenticated users: 30 days
+    const expiresAt = isAnonymous
+      ? new Date(now.getTime() + 5 * 60 * 1000).toISOString() // 5 minutes
+      : new Date(now.getTime() + 30 * 24 * 60 * 60 * 1000).toISOString(); // 30 days
+    
+    console.log(`⏱️  Message will expire at: ${expiresAt} (${isAnonymous ? '5 min' : '30 days'})`);
+    
     const { data: message, error: messageError } = await supabase
       .from('Message')
       .insert({
@@ -233,14 +260,16 @@ export async function POST(request: NextRequest) {
         userId: user.id,
         content,
         imageUrl,
-        createdAt: now,
-        updatedAt: now
+        expiresAt,
+        createdAt: nowISO,
+        updatedAt: nowISO
       })
       .select(`
         id,
         content,
         imageUrl,
-        createdAt
+        createdAt,
+        expiresAt
       `)
       .single();
 
