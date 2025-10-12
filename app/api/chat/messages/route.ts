@@ -1,8 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { PrismaClient } from '@prisma/client';
 import { createClient } from '@supabase/supabase-js';
 
-const prisma = new PrismaClient();
 const supabase = createClient(
   process.env.NEXT_PUBLIC_SUPABASE_URL!,
   process.env.SUPABASE_SERVICE_ROLE_KEY!
@@ -15,37 +13,66 @@ export async function GET(request: NextRequest) {
     const channelSlug = searchParams.get('channel') || 'basement';
     const limit = parseInt(searchParams.get('limit') || '50');
 
-    // Find channel
-    const channel = await prisma.channel.findUnique({
-      where: { slug: channelSlug }
-    });
+    console.log('📥 Fetching messages for channel:', channelSlug);
 
-    if (!channel) {
-      return NextResponse.json({ error: 'Channel not found' }, { status: 404 });
+    // Find channel
+    const { data: channel, error: channelError } = await supabase
+      .from('Channel')
+      .select('id, name, slug')
+      .eq('slug', channelSlug)
+      .single();
+
+    if (channelError || !channel) {
+      console.log('❌ Channel not found, returning empty messages');
+      // Return empty messages instead of error - channel will be created when first message is sent
+      return NextResponse.json({
+        success: true,
+        messages: [],
+        channel: {
+          id: null,
+          name: `#${channelSlug}`,
+          slug: channelSlug
+        }
+      });
     }
 
-    // Fetch messages
-    const messages = await prisma.message.findMany({
-      where: {
-        channelId: channel.id,
-        isDeleted: false
-      },
-      include: {
-        user: {
-          select: {
-            username: true,
-            walletAddress: true,
-            avatarUrl: true
-          }
+    // Fetch messages with user data
+    const { data: messages, error: messagesError } = await supabase
+      .from('Message')
+      .select(`
+        id,
+        content,
+        imageUrl,
+        createdAt,
+        user:User!Message_userId_fkey (
+          username,
+          walletAddress,
+          avatarUrl
+        )
+      `)
+      .eq('channelId', channel.id)
+      .eq('isDeleted', false)
+      .order('createdAt', { ascending: true })
+      .limit(limit);
+
+    if (messagesError) {
+      console.error('❌ Error fetching messages:', messagesError);
+      return NextResponse.json({
+        success: true,
+        messages: [],
+        channel: {
+          id: channel.id,
+          name: channel.name,
+          slug: channel.slug
         }
-      },
-      orderBy: { createdAt: 'desc' },
-      take: limit
-    });
+      });
+    }
+
+    console.log(`✅ Fetched ${messages?.length || 0} messages`);
 
     return NextResponse.json({
       success: true,
-      messages: messages.reverse(),
+      messages: messages || [],
       channel: {
         id: channel.id,
         name: channel.name,
@@ -54,13 +81,11 @@ export async function GET(request: NextRequest) {
     });
 
   } catch (error) {
-    console.error('Error fetching messages:', error);
+    console.error('❌ Error in GET /api/chat/messages:', error);
     return NextResponse.json(
       { error: 'Failed to fetch messages', details: error instanceof Error ? error.message : 'Unknown error' },
       { status: 500 }
     );
-  } finally {
-    await prisma.$disconnect();
   }
 }
 
@@ -75,10 +100,10 @@ export async function POST(request: NextRequest) {
     const { walletAddress, content, channelSlug = 'basement', imageUrl } = body;
 
     // Validation
-    if (!walletAddress || !content) {
-      console.log('❌ Validation failed: missing wallet or content');
+    if (!content) {
+      console.log('❌ Validation failed: missing content');
       return NextResponse.json(
-        { error: 'Wallet address and content are required' },
+        { error: 'Content is required' },
         { status: 400 }
       );
     }
@@ -94,91 +119,107 @@ export async function POST(request: NextRequest) {
     console.log('✅ Validation passed');
 
     // Handle anonymous users
-    const isAnonymous = walletAddress === 'anonymous' || !walletAddress.startsWith('0x');
+    const isAnonymous = !walletAddress || walletAddress === 'anonymous' || !walletAddress.startsWith('0x');
+    const effectiveWallet = isAnonymous ? 'anonymous' : walletAddress;
+    const username = isAnonymous ? 'Anon' : `User_${walletAddress.slice(0, 6)}`;
     
-    // Find or create user
-    let user;
-    if (isAnonymous) {
-      console.log('👤 Anonymous user - using default user');
-      // Find or create anonymous user
-      user = await prisma.user.findUnique({
-        where: { walletAddress: 'anonymous' }
-      });
-      
-      if (!user) {
-        user = await prisma.user.create({
-          data: {
-            walletAddress: 'anonymous',
-            username: 'Anon',
-            lastSeenAt: new Date()
-          }
-        });
-        console.log('✅ Created anonymous user:', user.id);
-      }
-    } else {
-      user = await prisma.user.findUnique({
-        where: { walletAddress }
-      });
+    console.log('👤 User type:', isAnonymous ? 'Anonymous' : 'Authenticated');
 
-      if (!user) {
-        console.log('👤 Creating new user:', walletAddress);
-        user = await prisma.user.create({
-          data: {
-            walletAddress,
-            username: `User_${walletAddress.slice(0, 6)}`,
-            lastSeenAt: new Date()
-          }
-        });
-        console.log('✅ User created:', user.id);
-      } else {
-        console.log('👤 User exists:', user.id);
-        // Update last seen
-        await prisma.user.update({
-          where: { id: user.id },
-          data: { lastSeenAt: new Date() }
-        });
+    // Find or create user using Supabase
+    let { data: user, error: userFindError } = await supabase
+      .from('User')
+      .select('id, username, walletAddress')
+      .eq('walletAddress', effectiveWallet)
+      .single();
+
+    if (!user) {
+      console.log('👤 Creating new user:', effectiveWallet);
+      const { data: newUser, error: userCreateError } = await supabase
+        .from('User')
+        .insert({
+          walletAddress: effectiveWallet,
+          username: username,
+          lastSeenAt: new Date().toISOString()
+        })
+        .select()
+        .single();
+
+      if (userCreateError) {
+        console.error('❌ Error creating user:', userCreateError);
+        return NextResponse.json(
+          { error: 'Failed to create user', details: userCreateError.message },
+          { status: 500 }
+        );
       }
+      user = newUser;
+      console.log('✅ User created:', user.id);
+    } else {
+      console.log('👤 User exists:', user.id);
+      // Update last seen
+      await supabase
+        .from('User')
+        .update({ lastSeenAt: new Date().toISOString() })
+        .eq('id', user.id);
     }
 
-    // Find or create channel
-    let channel = await prisma.channel.findUnique({
-      where: { slug: channelSlug }
-    });
+    // Find or create channel using Supabase
+    let { data: channel, error: channelFindError } = await supabase
+      .from('Channel')
+      .select('id, name, slug')
+      .eq('slug', channelSlug)
+      .single();
 
     if (!channel) {
       console.log('📢 Creating new channel:', channelSlug);
-      channel = await prisma.channel.create({
-        data: {
+      const { data: newChannel, error: channelCreateError } = await supabase
+        .from('Channel')
+        .insert({
           name: `#${channelSlug}`,
           slug: channelSlug,
           description: `${channelSlug} channel`,
-          createdBy: walletAddress
-        }
-      });
+          createdBy: effectiveWallet
+        })
+        .select()
+        .single();
+
+      if (channelCreateError) {
+        console.error('❌ Error creating channel:', channelCreateError);
+        return NextResponse.json(
+          { error: 'Failed to create channel', details: channelCreateError.message },
+          { status: 500 }
+        );
+      }
+      channel = newChannel;
       console.log('✅ Channel created:', channel.id);
     } else {
       console.log('📢 Channel exists:', channel.id);
     }
 
-    // Create message
+    // Create message using Supabase
     console.log('💬 Creating message...');
-    const message = await prisma.message.create({
-      data: {
+    const { data: message, error: messageError } = await supabase
+      .from('Message')
+      .insert({
         channelId: channel.id,
         userId: user.id,
         content,
         imageUrl
-      },
-      include: {
-        user: {
-          select: {
-            username: true,
-            walletAddress: true,
-            avatarUrl: true
-          }
-        }
-      }
-    });
+      })
+      .select(`
+        id,
+        content,
+        imageUrl,
+        createdAt
+      `)
+      .single();
+
+    if (messageError) {
+      console.error('❌ Error creating message:', messageError);
+      return NextResponse.json(
+        { error: 'Failed to send message', details: messageError.message },
+        { status: 500 }
+      );
+    }
 
     console.log('✅ Message created:', message.id);
 
@@ -190,8 +231,8 @@ export async function POST(request: NextRequest) {
         imageUrl: message.imageUrl,
         createdAt: message.createdAt,
         user: {
-          username: message.user.username,
-          walletAddress: message.user.walletAddress
+          username: user.username,
+          walletAddress: user.walletAddress
         }
       }
     });
@@ -206,8 +247,6 @@ export async function POST(request: NextRequest) {
       },
       { status: 500 }
     );
-  } finally {
-    await prisma.$disconnect();
   }
 }
 

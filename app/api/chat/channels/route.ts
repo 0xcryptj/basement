@@ -1,57 +1,39 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { PrismaClient } from '@prisma/client';
+import { createClient } from '@supabase/supabase-js';
 
-const prisma = new PrismaClient();
+const supabase = createClient(
+  process.env.NEXT_PUBLIC_SUPABASE_URL!,
+  process.env.SUPABASE_SERVICE_ROLE_KEY!
+);
 
 // GET - List all public channels
 export async function GET(request: NextRequest) {
   try {
-    const channels = await prisma.channel.findMany({
-      where: { isPrivate: false },
-      select: {
-        id: true,
-        name: true,
-        slug: true,
-        description: true,
-        createdAt: true,
-        _count: {
-          select: {
-            messages: true,
-            members: true
-          }
-        }
-      },
-      orderBy: { createdAt: 'asc' }
-    });
+    const { data: channels, error } = await supabase
+      .from('Channel')
+      .select('id, name, slug, description, createdAt')
+      .eq('isPrivate', false)
+      .order('createdAt', { ascending: true });
+
+    if (error) {
+      console.error('Error fetching channels:', error);
+      return NextResponse.json(
+        { error: 'Failed to fetch channels', details: error.message },
+        { status: 500 }
+      );
+    }
 
     return NextResponse.json({
       success: true,
-      channels: channels.map((ch: {
-        id: string;
-        name: string;
-        slug: string;
-        description: string | null;
-        createdAt: Date;
-        _count: { messages: number; members: number };
-      }) => ({
-        id: ch.id,
-        name: ch.name,
-        slug: ch.slug,
-        description: ch.description,
-        messageCount: ch._count.messages,
-        memberCount: ch._count.members,
-        createdAt: ch.createdAt
-      }))
+      channels: channels || []
     });
 
   } catch (error) {
     console.error('Error fetching channels:', error);
     return NextResponse.json(
-      { error: 'Failed to fetch channels' },
+      { error: 'Failed to fetch channels', details: error instanceof Error ? error.message : 'Unknown error' },
       { status: 500 }
     );
-  } finally {
-    await prisma.$disconnect();
   }
 }
 
@@ -78,9 +60,11 @@ export async function POST(request: NextRequest) {
     }
 
     // Check if channel already exists
-    const existing = await prisma.channel.findUnique({
-      where: { slug }
-    });
+    const { data: existing } = await supabase
+      .from('Channel')
+      .select('id')
+      .eq('slug', slug)
+      .single();
 
     if (existing) {
       return NextResponse.json(
@@ -90,15 +74,25 @@ export async function POST(request: NextRequest) {
     }
 
     // Create channel
-    const channel = await prisma.channel.create({
-      data: {
+    const { data: channel, error: channelError } = await supabase
+      .from('Channel')
+      .insert({
         name,
         slug,
         description,
         isPrivate,
         createdBy: walletAddress
-      }
-    });
+      })
+      .select()
+      .single();
+
+    if (channelError) {
+      console.error('Error creating channel:', channelError);
+      return NextResponse.json(
+        { error: 'Failed to create channel', details: channelError.message },
+        { status: 500 }
+      );
+    }
 
     return NextResponse.json({
       success: true,
@@ -114,11 +108,9 @@ export async function POST(request: NextRequest) {
   } catch (error) {
     console.error('Error creating channel:', error);
     return NextResponse.json(
-      { error: 'Failed to create channel' },
+      { error: 'Failed to create channel', details: error instanceof Error ? error.message : 'Unknown error' },
       { status: 500 }
     );
-  } finally {
-    await prisma.$disconnect();
   }
 }
 
