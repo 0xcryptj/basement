@@ -1279,7 +1279,7 @@ class BasementApp {
                 });
                 
                 const data = await response.json();
-                console.log('Server response:', data);
+                console.log('Server response:', JSON.stringify(data, null, 2));
                 
                 if (!response.ok) {
                     throw new Error(data.error || data.details || 'Failed to send message');
@@ -1302,20 +1302,29 @@ class BasementApp {
 
     async fetchChannels() {
         try {
+            console.log('Fetching channels from server...');
             const response = await fetch('/api/chat/channels');
-            if (response.ok) {
-                const data = await response.json();
-                if (data.success && data.channels) {
-                    // Merge server channels with local channels
-                    const serverChannels = data.channels.map(ch => ch.slug);
-                    this.channels = Array.from(new Set([...this.channels, ...serverChannels]));
-                    this.saveChannels();
-                    this.updateChannelList();
-                    console.log('Fetched channels from server:', this.channels);
-                }
+            const data = await response.json();
+            
+            console.log('Channels API response:', JSON.stringify(data, null, 2));
+            
+            if (!response.ok) {
+                console.error('❌ Failed to fetch channels:', data.error, data.details);
+                // Continue with local channels only
+                return;
+            }
+            
+            if (data.success && data.channels) {
+                // Merge server channels with local channels
+                const serverChannels = data.channels.map(ch => '#' + ch.slug);
+                this.channels = Array.from(new Set([...this.channels, ...serverChannels]));
+                this.saveChannels();
+                this.updateChannelList();
+                console.log('✅ Fetched channels from server:', this.channels);
             }
         } catch (error) {
-            console.error('Error fetching channels:', error);
+            console.error('❌ Error fetching channels:', error);
+            // Continue with local channels only
         }
     }
 
