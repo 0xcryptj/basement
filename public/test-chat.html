@@ -1,0 +1,170 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Chat Test - The Basement</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            max-width: 600px;
+            margin: 50px auto;
+            padding: 20px;
+            background: #1a1a1a;
+            color: #fff;
+        }
+        
+        .test-section {
+            background: #2a2a2a;
+            padding: 20px;
+            margin: 20px 0;
+            border-radius: 8px;
+            border: 2px solid #0052ff;
+        }
+        
+        input, button {
+            width: 100%;
+            padding: 12px;
+            margin: 10px 0;
+            font-size: 16px;
+        }
+        
+        button {
+            background: #0052ff;
+            color: white;
+            border: none;
+            cursor: pointer;
+            border-radius: 4px;
+        }
+        
+        button:active {
+            transform: scale(0.98);
+        }
+        
+        #response {
+            background: #000;
+            padding: 15px;
+            margin-top: 10px;
+            border-radius: 4px;
+            font-family: 'Courier New', monospace;
+            font-size: 12px;
+            white-space: pre-wrap;
+            word-break: break-all;
+        }
+        
+        .status {
+            padding: 10px;
+            margin: 10px 0;
+            border-radius: 4px;
+            font-weight: bold;
+        }
+        
+        .success {
+            background: #00ff0020;
+            border: 1px solid #00ff00;
+            color: #00ff00;
+        }
+        
+        .error {
+            background: #ff000020;
+            border: 1px solid #ff0000;
+            color: #ff0000;
+        }
+    </style>
+</head>
+<body>
+    <h1>🧪 Chat Test Page</h1>
+    <p>This page tests anonymous chat functionality</p>
+    
+    <div class="test-section">
+        <h2>Test Anonymous Message</h2>
+        <input type="text" id="message" placeholder="Type your test message" value="Test anonymous message from test page">
+        <button onclick="testAnonymousChat()">Send Anonymous Message</button>
+        <div id="status"></div>
+        <div id="response"></div>
+    </div>
+    
+    <div class="test-section">
+        <h2>Get Messages</h2>
+        <button onclick="getMessages()">Load Messages from #basement</button>
+        <div id="messages-response"></div>
+    </div>
+    
+    <div class="test-section">
+        <h2>Button Status Check</h2>
+        <p>Send button exists: <span id="btn-exists">Checking...</span></p>
+        <p>Send button disabled: <span id="btn-disabled">Checking...</span></p>
+        <p>Input exists: <span id="input-exists">Checking...</span></p>
+        <p>Input disabled: <span id="input-disabled">Checking...</span></p>
+    </div>
+
+    <script>
+        // Check button status on main page
+        window.addEventListener('load', () => {
+            setTimeout(() => {
+                const sendBtn = document.getElementById('send-btn');
+                const chatInput = document.getElementById('chat-input-field');
+                
+                document.getElementById('btn-exists').textContent = sendBtn ? 'YES ✓' : 'NO ✗';
+                document.getElementById('btn-disabled').textContent = sendBtn?.disabled ? 'YES ✗' : 'NO ✓';
+                document.getElementById('input-exists').textContent = chatInput ? 'YES ✓' : 'NO ✗';
+                document.getElementById('input-disabled').textContent = chatInput?.disabled ? 'YES ✗' : 'NO ✓';
+            }, 1000);
+        });
+        
+        async function testAnonymousChat() {
+            const message = document.getElementById('message').value;
+            const statusDiv = document.getElementById('status');
+            const responseDiv = document.getElementById('response');
+            
+            statusDiv.innerHTML = '⏳ Sending...';
+            statusDiv.className = 'status';
+            
+            try {
+                const response = await fetch('/api/chat/messages', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({
+                        walletAddress: 'anonymous',
+                        content: message,
+                        channelSlug: 'basement'
+                    })
+                });
+                
+                const data = await response.json();
+                
+                if (response.ok) {
+                    statusDiv.innerHTML = '✅ SUCCESS! Message sent';
+                    statusDiv.className = 'status success';
+                } else {
+                    statusDiv.innerHTML = `❌ FAILED: ${data.error}`;
+                    statusDiv.className = 'status error';
+                }
+                
+                responseDiv.textContent = JSON.stringify(data, null, 2);
+                
+            } catch (error) {
+                statusDiv.innerHTML = `❌ ERROR: ${error.message}`;
+                statusDiv.className = 'status error';
+                responseDiv.textContent = error.stack;
+            }
+        }
+        
+        async function getMessages() {
+            const responseDiv = document.getElementById('messages-response');
+            responseDiv.textContent = '⏳ Loading...';
+            
+            try {
+                const response = await fetch('/api/chat/messages?channel=basement&limit=10');
+                const data = await response.json();
+                
+                responseDiv.textContent = JSON.stringify(data, null, 2);
+                
+            } catch (error) {
+                responseDiv.textContent = `Error: ${error.message}`;
+            }
+        }
+    </script>
+</body>
+</html>
+
