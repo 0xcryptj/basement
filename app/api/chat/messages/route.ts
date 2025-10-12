@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { createClient } from '@supabase/supabase-js';
+import { createId } from '@paralleldrive/cuid2';
 
 const supabase = createClient(
   process.env.NEXT_PUBLIC_SUPABASE_URL!,
@@ -134,12 +135,16 @@ export async function POST(request: NextRequest) {
 
     if (!user) {
       console.log('👤 Creating new user:', effectiveWallet);
+      const now = new Date().toISOString();
       const { data: newUser, error: userCreateError } = await supabase
         .from('User')
         .insert({
+          id: createId(),
           walletAddress: effectiveWallet,
           username: username,
-          lastSeenAt: new Date().toISOString()
+          lastSeenAt: now,
+          createdAt: now,
+          updatedAt: now
         })
         .select()
         .single();
@@ -180,13 +185,17 @@ export async function POST(request: NextRequest) {
 
     if (!channel) {
       console.log('📢 Creating new channel:', channelSlug);
+      const now = new Date().toISOString();
       const { data: newChannel, error: channelCreateError } = await supabase
         .from('Channel')
         .insert({
+          id: createId(),
           name: `#${channelSlug}`,
           slug: channelSlug,
           description: `${channelSlug} channel`,
-          createdBy: effectiveWallet
+          createdBy: effectiveWallet,
+          createdAt: now,
+          updatedAt: now
         })
         .select()
         .single();
@@ -215,13 +224,17 @@ export async function POST(request: NextRequest) {
 
     // Create message using Supabase
     console.log('💬 Creating message...');
+    const now = new Date().toISOString();
     const { data: message, error: messageError } = await supabase
       .from('Message')
       .insert({
+        id: createId(),
         channelId: channel.id,
         userId: user.id,
         content,
-        imageUrl
+        imageUrl,
+        createdAt: now,
+        updatedAt: now
       })
       .select(`
         id,
