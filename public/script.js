@@ -144,6 +144,34 @@ class BasementApp {
     }
 
     setupEventListeners() {
+        // Mobile navigation handlers
+        const mobileChatLink = document.getElementById('mobile-chat-link');
+        const mobileForumLink = document.getElementById('mobile-forum-link');
+        const mobileMenu = document.getElementById('mobile-menu');
+        const chatSidebar = document.getElementById('chat-sidebar');
+
+        if (mobileChatLink) {
+            mobileChatLink.addEventListener('click', (e) => {
+                e.preventDefault();
+                // Show chat sidebar on mobile
+                if (chatSidebar) {
+                    chatSidebar.style.display = 'flex';
+                    chatSidebar.classList.remove('collapsed');
+                    this.sidebarCollapsed = false;
+                }
+                // Close mobile menu
+                if (mobileMenu) mobileMenu.classList.add('hidden');
+            });
+        }
+
+        if (mobileForumLink) {
+            mobileForumLink.addEventListener('click', (e) => {
+                e.preventDefault();
+                // Navigate to forum (Next.js route)
+                window.location.href = '/forum';
+            });
+        }
+
         // Coming Soon links
         const tokenomicsLink = document.getElementById('tokenomics-link');
         const shopLink = document.getElementById('shop-link');
@@ -689,14 +717,12 @@ class BasementApp {
             } else if (walletType === 'phantom') {
                 // Phantom supports Ethereum/Base - use ethereum provider
                 if (typeof window.phantom !== 'undefined' && window.phantom.ethereum) {
-                    // Try to switch to Base network, but don't fail if user rejects
+                    // MUST switch to Base network
                     try {
                         await this.switchToBaseNetwork(window.phantom.ethereum);
                         console.log('✅ Switched to Base network');
                     } catch (networkError) {
-                        console.warn('⚠️ Could not switch to Base network:', networkError.message);
-                        console.log('Continuing with current network...');
-                        // Continue anyway - user can switch manually
+                        throw new Error('Please switch to Base network in Phantom wallet to continue');
                     }
                     
                     const accounts = await window.phantom.ethereum.request({ 
