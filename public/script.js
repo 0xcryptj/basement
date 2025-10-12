@@ -142,16 +142,25 @@ class BasementApp {
         }
     }
 
-    initializeChat() {
+    async initializeChat() {
         console.log('Initializing chat...');
         
-        // Load saved channels first
+        // Load saved channels first (from localStorage for quick display)
         this.loadChannels();
+        
+        // Then fetch channels from server
+        await this.fetchChannels();
         
         this.addSystemMessage('Welcome to The Basement! Connect your wallet to start chatting.');
         
         // Initialize channel list with default channel
         this.updateChannelList();
+        
+        // Load messages for current channel
+        if (this.isConnected) {
+            await this.loadChannelMessages(this.currentChannel);
+            this.subscribeToRealtimeMessages();
+        }
     }
 
     setupEventListeners() {
@@ -1216,7 +1225,7 @@ class BasementApp {
         return `${address.slice(0, 6)}...${address.slice(-4)}`;
     }
 
-    sendMessage() {
+    async sendMessage() {
         if (!this.isConnected) {
             console.log('User not connected, cannot send message');
             return;
@@ -1248,16 +1257,120 @@ class BasementApp {
                 return;
             }
             
-            this.addUserMessage(this.username, message);
+            // Clear input immediately for better UX
             chatInput.value = '';
+            
+            // Send to server
+            try {
+                const response = await fetch('/api/chat/messages', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({
+                        walletAddress: this.walletAddress,
+                        content: message,
+                        channelSlug: this.currentChannel.replace('#', '')
+                    })
+                });
+                
+                if (!response.ok) {
+                    throw new Error('Failed to send message');
+                }
+                
+                // Message will appear via real-time subscription
+                console.log('Message sent successfully');
+                
+            } catch (error) {
+                console.error('Error sending message:', error);
+                alert('Failed to send message. Please try again.');
+                chatInput.value = message; // Restore message on error
+            }
         }
     }
 
-    addUserMessage(username, message) {
-        if (!this.isConnected) return;
+    async fetchChannels() {
+        try {
+            const response = await fetch('/api/chat/channels');
+            if (response.ok) {
+                const data = await response.json();
+                if (data.success && data.channels) {
+                    // Merge server channels with local channels
+                    const serverChannels = data.channels.map(ch => ch.slug);
+                    this.channels = Array.from(new Set([...this.channels, ...serverChannels]));
+                    this.saveChannels();
+                    this.updateChannelList();
+                    console.log('Fetched channels from server:', this.channels);
+                }
+            }
+        } catch (error) {
+            console.error('Error fetching channels:', error);
+        }
+    }
+
+    async loadChannelMessages(channel) {
+        try {
+            const slug = channel.replace('#', '');
+            const response = await fetch(`/api/chat/messages?channel=${slug}&limit=50`);
+            
+            if (response.ok) {
+                const data = await response.json();
+                if (data.success && data.messages) {
+                    // Clear chat and display messages
+                    const chatMessages = document.getElementById('chat-messages');
+                    chatMessages.innerHTML = '';
+                    
+                    data.messages.forEach(msg => {
+                        this.displayMessage(msg.user.username, msg.content, new Date(msg.createdAt));
+                    });
+                    
+                    console.log(`Loaded ${data.messages.length} messages for ${channel}`);
+                }
+            }
+        } catch (error) {
+            console.error('Error loading messages:', error);
+            this.addSystemMessage('Failed to load messages');
+        }
+    }
+
+    subscribeToRealtimeMessages() {
+        // Poll for new messages every 3 seconds (simple polling approach)
+        // For true real-time, would use WebSocket or Supabase Realtime subscriptions
+        if (this.messagePoller) {
+            clearInterval(this.messagePoller);
+        }
         
+        this.lastMessageId = null;
+        
+        this.messagePoller = setInterval(async () => {
+            if (!this.isConnected) return;
+            
+            try {
+                const slug = this.currentChannel.replace('#', '');
+                const response = await fetch(`/api/chat/messages?channel=${slug}&limit=10`);
+                
+                if (response.ok) {
+                    const data = await response.json();
+                    if (data.success && data.messages) {
+                        // Only show new messages (ones we haven't seen yet)
+                        const newMessages = data.messages.filter(msg => {
+                            if (!this.lastMessageId) return true;
+                            return new Date(msg.createdAt) > new Date(this.lastMessageId);
+                        });
+                        
+                        newMessages.forEach(msg => {
+                            this.displayMessage(msg.user.username, msg.content, new Date(msg.createdAt));
+                            this.lastMessageId = msg.createdAt;
+                        });
+                    }
+                }
+            } catch (error) {
+                console.error('Error polling messages:', error);
+            }
+        }, 3000); // Poll every 3 seconds
+    }
+
+    displayMessage(username, content, timestamp = new Date()) {
         const chatMessages = document.getElementById('chat-messages');
-        const timestamp = new Date().toLocaleTimeString('en-US', { 
+        const time = timestamp.toLocaleTimeString('en-US', { 
             hour12: false, 
             hour: '2-digit', 
             minute: '2-digit' 
@@ -1267,66 +1380,89 @@ class BasementApp {
         const sanitizedUsername = window.SecurityManager ? 
             window.SecurityManager.sanitizeHTML(username) : this.escapeHTML(username);
         const sanitizedMessage = window.SecurityManager ? 
-            window.SecurityManager.sanitizeHTML(message) : this.escapeHTML(message);
+            window.SecurityManager.sanitizeHTML(content) : this.escapeHTML(content);
         
         const messageDiv = document.createElement('div');
         messageDiv.className = 'user-message';
         
-        // Make username clickable to BaseScan (safely)
-        const userAddress = this.userAddresses[username] || (username === this.username ? this.walletAddress : null);
-        
-        // Create elements safely without innerHTML
         const timestampSpan = document.createElement('span');
         timestampSpan.className = 'timestamp';
-        timestampSpan.textContent = `[${timestamp}]`;
+        timestampSpan.textContent = `[${time}]`;
         
         const usernameSpan = document.createElement('span');
         usernameSpan.className = 'username';
+        usernameSpan.textContent = `<${sanitizedUsername}>`;
         
-        if (userAddress && this.isValidAddress(userAddress)) {
-            const link = document.createElement('a');
-            link.href = `https://basescan.org/address/${userAddress}`;
-            link.target = '_blank';
-            link.rel = 'noopener noreferrer'; // Security: prevent window.opener access
-            link.className = 'username-link';
-            link.textContent = sanitizedUsername;
-            link.title = `View ${sanitizedUsername} on BaseScan`;
-            usernameSpan.textContent = '<';
-            usernameSpan.appendChild(link);
-            usernameSpan.appendChild(document.createTextNode('>'));
-        } else {
-            usernameSpan.textContent = `<${sanitizedUsername}>`;
-        }
-        
-        const messageSpan = document.createElement('span');
-        messageSpan.className = 'message-text';
-        messageSpan.textContent = sanitizedMessage;
+        const textSpan = document.createElement('span');
+        textSpan.className = 'message-text';
+        textSpan.textContent = sanitizedMessage;
         
         messageDiv.appendChild(timestampSpan);
         messageDiv.appendChild(document.createTextNode(' '));
         messageDiv.appendChild(usernameSpan);
         messageDiv.appendChild(document.createTextNode(' '));
-        messageDiv.appendChild(messageSpan);
+        messageDiv.appendChild(textSpan);
         
         chatMessages.appendChild(messageDiv);
         chatMessages.scrollTop = chatMessages.scrollHeight;
-        
-        // Store message in current channel
-        this.channels[this.currentChannel].messages.push({
-            author: sanitizedUsername,
-            text: sanitizedMessage,
-            timestamp: timestamp
-        });
-        
-        // Store user address mapping if not already stored
-        if (username === this.username && !this.userAddresses[username]) {
-            this.userAddresses[username] = this.walletAddress;
-            localStorage.setItem('basement_userAddresses', JSON.stringify(this.userAddresses));
+    }
+
+    addUserMessage(username, message) {
+        // Deprecated: Use displayMessage() instead
+        this.displayMessage(username, message);
+    }
+
+    async createChannel(channelName) {
+        if (!this.isConnected) {
+            alert('Please connect your wallet to create a channel');
+            return;
         }
         
-        // Track user activity
-        this.updateUserActivity(username, 'message');
+        const slug = channelName.replace('#', '').toLowerCase();
+        
+        try {
+            const response = await fetch('/api/chat/channels', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({
+                    name: channelName,
+                    slug,
+                    description: `${channelName} channel`,
+                    walletAddress: this.walletAddress
+                })
+            });
+            
+            const data = await response.json();
+            
+            if (data.success) {
+                // Add to local channels
+                if (!this.channels.includes(channelName)) {
+                    this.channels.push(channelName);
+                    this.saveChannels();
+                    this.updateChannelList();
+                }
+                this.switchChannel(channelName);
+                console.log('Channel created:', channelName);
+            } else {
+                if (response.status === 409) {
+                    // Channel already exists, just add it locally and switch
+                    if (!this.channels.includes(channelName)) {
+                        this.channels.push(channelName);
+                        this.saveChannels();
+                        this.updateChannelList();
+                    }
+                    this.switchChannel(channelName);
+                } else {
+                    alert(data.error || 'Failed to create channel');
+                }
+            }
+        } catch (error) {
+            console.error('Error creating channel:', error);
+            alert('Failed to create channel');
+        }
     }
+
+    // Removed duplicate - see displayMessage() above
 
     // Security helper methods
     escapeHTML(text) {
