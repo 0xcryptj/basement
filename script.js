@@ -376,7 +376,7 @@ class BasementApp {
 
         // Forum navigation
         const forumLink = document.getElementById('forum-link');
-        const mobileForumLink = document.getElementById('mobile-forum-link');
+        // mobileForumLink already declared at function top
         
         if (forumLink) {
             forumLink.addEventListener('click', (e) => {
@@ -400,17 +400,11 @@ class BasementApp {
             });
         }
 
-        // Mobile menu toggle
-        const mobileMenuToggle = document.getElementById('mobile-menu-toggle');
-        const mobileMenu = document.getElementById('mobile-menu');
+        // Mobile menu toggle (already handled at function top)
+        // mobileMenuToggle and mobileMenu already declared and configured above
         
-        if (mobileMenuToggle && mobileMenu) {
-            mobileMenuToggle.addEventListener('click', (e) => {
-                e.stopPropagation();
-                console.log('Mobile menu toggle clicked');
-                mobileMenuToggle.classList.toggle('active');
-                mobileMenu.classList.toggle('hidden');
-            });
+        if (false) { // Disabled - already handled at function top
+            // This code block is now redundant
         } else {
             console.error('Mobile menu elements not found:', { mobileMenuToggle, mobileMenu });
         }
@@ -479,11 +473,8 @@ class BasementApp {
             });
         }
 
-        // Chat sidebar toggle
-        const toggleSidebarBtn = document.getElementById('toggle-sidebar');
-        if (toggleSidebarBtn) {
-            toggleSidebarBtn.addEventListener('click', () => this.toggleChatSidebar());
-        }
+        // Chat sidebar toggle (already handled at function top)
+        // toggleSidebarBtn already declared and configured above
 
         // Close wallet dropdown when clicking outside
         document.addEventListener('click', (e) => {
