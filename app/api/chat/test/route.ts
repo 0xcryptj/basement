@@ -8,6 +8,16 @@ export async function GET(request: NextRequest) {
   try {
     console.log('🧪 Testing database connection...');
     
+    // Check environment variables
+    const envCheck = {
+      DATABASE_URL: !!process.env.DATABASE_URL,
+      DIRECT_URL: !!process.env.DIRECT_URL,
+      NEXT_PUBLIC_SUPABASE_URL: !!process.env.NEXT_PUBLIC_SUPABASE_URL,
+      SUPABASE_SERVICE_ROLE_KEY: !!process.env.SUPABASE_SERVICE_ROLE_KEY,
+    };
+    
+    console.log('Environment variables:', envCheck);
+    
     // Test basic connection
     await prisma.$queryRaw`SELECT 1`;
     console.log('✅ Database connection successful');
@@ -33,6 +43,7 @@ export async function GET(request: NextRequest) {
     return NextResponse.json({
       success: true,
       message: 'Chat API is working!',
+      environment: envCheck,
       database: {
         connected: true,
         tables: {
