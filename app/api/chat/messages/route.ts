@@ -93,28 +93,51 @@ export async function POST(request: NextRequest) {
 
     console.log('✅ Validation passed');
 
+    // Handle anonymous users
+    const isAnonymous = walletAddress === 'anonymous' || !walletAddress.startsWith('0x');
+    
     // Find or create user
-    let user = await prisma.user.findUnique({
-      where: { walletAddress }
-    });
-
-    if (!user) {
-      console.log('👤 Creating new user:', walletAddress);
-      user = await prisma.user.create({
-        data: {
-          walletAddress,
-          username: `User_${walletAddress.slice(0, 6)}`,
-          lastSeenAt: new Date()
-        }
+    let user;
+    if (isAnonymous) {
+      console.log('👤 Anonymous user - using default user');
+      // Find or create anonymous user
+      user = await prisma.user.findUnique({
+        where: { walletAddress: 'anonymous' }
       });
-      console.log('✅ User created:', user.id);
+      
+      if (!user) {
+        user = await prisma.user.create({
+          data: {
+            walletAddress: 'anonymous',
+            username: 'Anon',
+            lastSeenAt: new Date()
+          }
+        });
+        console.log('✅ Created anonymous user:', user.id);
+      }
     } else {
-      console.log('👤 User exists:', user.id);
-      // Update last seen
-      await prisma.user.update({
-        where: { id: user.id },
-        data: { lastSeenAt: new Date() }
+      user = await prisma.user.findUnique({
+        where: { walletAddress }
       });
+
+      if (!user) {
+        console.log('👤 Creating new user:', walletAddress);
+        user = await prisma.user.create({
+          data: {
+            walletAddress,
+            username: `User_${walletAddress.slice(0, 6)}`,
+            lastSeenAt: new Date()
+          }
+        });
+        console.log('✅ User created:', user.id);
+      } else {
+        console.log('👤 User exists:', user.id);
+        // Update last seen
+        await prisma.user.update({
+          where: { id: user.id },
+          data: { lastSeenAt: new Date() }
+        });
+      }
     }
 
     // Find or create channel

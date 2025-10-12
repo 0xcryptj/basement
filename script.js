@@ -156,11 +156,9 @@ class BasementApp {
         // Initialize channel list with default channel
         this.updateChannelList();
         
-        // Load messages for current channel
-        if (this.isConnected) {
-            await this.loadChannelMessages(this.currentChannel);
-            this.subscribeToRealtimeMessages();
-        }
+        // Load messages for current channel (always, not just when connected)
+        await this.loadChannelMessages(this.currentChannel);
+        this.subscribeToRealtimeMessages();
     }
 
     setupEventListeners() {
@@ -1226,9 +1224,11 @@ class BasementApp {
     }
 
     async sendMessage() {
-        if (!this.isConnected) {
-            console.log('User not connected, cannot send message');
-            return;
+        // Allow sending even if not connected (anonymous mode)
+        const isAnonymous = !this.isConnected;
+        
+        if (isAnonymous) {
+            console.log('Sending as anonymous user');
         }
         
         const chatInput = document.getElementById('chat-input-field');
@@ -1262,17 +1262,20 @@ class BasementApp {
             
             // Send to server
             try {
+                const walletAddress = this.walletAddress || 'anonymous';
+                
                 console.log('Sending message to server:', {
-                    walletAddress: this.walletAddress,
+                    walletAddress: walletAddress,
                     content: message.substring(0, 50),
-                    channel: this.currentChannel
+                    channel: this.currentChannel,
+                    isAnonymous: !this.isConnected
                 });
                 
                 const response = await fetch('/api/chat/messages', {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
                     body: JSON.stringify({
-                        walletAddress: this.walletAddress,
+                        walletAddress: walletAddress,
                         content: message,
                         channelSlug: this.currentChannel.replace('#', '')
                     })
@@ -1280,9 +1283,14 @@ class BasementApp {
                 
                 const data = await response.json();
                 console.log('Server response:', JSON.stringify(data, null, 2));
+                console.log('Response status:', response.status);
+                console.log('Response ok:', response.ok);
                 
                 if (!response.ok) {
-                    throw new Error(data.error || data.details || 'Failed to send message');
+                    const errorDetails = data.details || data.error || 'Failed to send message';
+                    console.error('❌ Server error details:', errorDetails);
+                    console.error('Full error object:', JSON.stringify(data, null, 2));
+                    throw new Error(errorDetails);
                 }
                 
                 // Message will appear via real-time subscription
@@ -1363,7 +1371,7 @@ class BasementApp {
         this.lastMessageId = null;
         
         this.messagePoller = setInterval(async () => {
-            if (!this.isConnected) return;
+            // Poll even if not connected (for anonymous users)
             
             try {
                 const slug = this.currentChannel.replace('#', '');
@@ -1436,7 +1444,7 @@ class BasementApp {
 
     async createChannel(channelName) {
         if (!this.isConnected) {
-            alert('Please connect your wallet to create a channel');
+            alert('⚠️ Anonymous users cannot create channels.\n\nConnect your wallet to create channels!');
             return;
         }
         
