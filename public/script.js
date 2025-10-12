@@ -29,6 +29,7 @@ class BasementApp {
         };
         this.currentChannel = '#basement';
         this.userAddresses = {}; // Map usernames to wallet addresses
+        this.globalClickHandlerAttached = false; // Prevent duplicate global listeners
         
         this.init();
     }
@@ -154,32 +155,35 @@ class BasementApp {
     }
 
     setupEventListeners() {
-        // Hamburger menu toggle
+        // Get all mobile elements at the top for proper scope
         const mobileMenuToggle = document.getElementById('mobile-menu-toggle');
         const mobileMenu = document.getElementById('mobile-menu');
-        
-        if (mobileMenuToggle && mobileMenu) {
-            mobileMenuToggle.addEventListener('click', (e) => {
-                e.stopPropagation();
-                mobileMenu.classList.toggle('hidden');
-            });
-            
-            // Close menu when clicking outside
-            document.addEventListener('click', (e) => {
-                if (!mobileMenu.contains(e.target) && e.target !== mobileMenuToggle) {
-                    mobileMenu.classList.add('hidden');
-                }
-            });
-        }
-
-        // Mobile navigation handlers
         const mobileChatLink = document.getElementById('mobile-chat-link');
         const mobileForumLink = document.getElementById('mobile-forum-link');
         const chatSidebar = document.getElementById('chat-sidebar');
         const toggleSidebarBtn = document.getElementById('toggle-sidebar');
+        
+        // Hamburger menu toggle
+        if (mobileMenuToggle && mobileMenu) {
+            mobileMenuToggle.onclick = (e) => {
+                e.stopPropagation();
+                mobileMenu.classList.toggle('hidden');
+            };
+            
+            // Close menu when clicking outside (only once)
+            if (!this.globalClickHandlerAttached) {
+                document.addEventListener('click', (e) => {
+                    if (mobileMenu && mobileMenuToggle && !mobileMenu.contains(e.target) && e.target !== mobileMenuToggle) {
+                        mobileMenu.classList.add('hidden');
+                    }
+                });
+                this.globalClickHandlerAttached = true;
+            }
+        }
 
+        // Mobile chat link
         if (mobileChatLink) {
-            mobileChatLink.addEventListener('click', (e) => {
+            mobileChatLink.onclick = (e) => {
                 e.preventDefault();
                 // Show chat sidebar on mobile
                 if (chatSidebar) {
@@ -189,26 +193,26 @@ class BasementApp {
                 }
                 // Close mobile menu
                 if (mobileMenu) mobileMenu.classList.add('hidden');
-            });
+            };
         }
 
+        // Mobile forum link
         if (mobileForumLink) {
-            mobileForumLink.addEventListener('click', (e) => {
+            mobileForumLink.onclick = (e) => {
                 e.preventDefault();
-                // Navigate to forum (Next.js route)
                 window.location.href = '/forum';
-            });
+            };
         }
 
         // Sidebar toggle button
         if (toggleSidebarBtn) {
-            toggleSidebarBtn.addEventListener('click', () => {
+            toggleSidebarBtn.onclick = () => {
                 if (chatSidebar) {
                     chatSidebar.classList.toggle('collapsed');
                     this.sidebarCollapsed = !this.sidebarCollapsed;
                     toggleSidebarBtn.textContent = this.sidebarCollapsed ? '>>' : '<<';
                 }
-            });
+            };
         }
 
         // Coming Soon links
