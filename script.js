@@ -1262,6 +1262,12 @@ class BasementApp {
             
             // Send to server
             try {
+                console.log('Sending message to server:', {
+                    walletAddress: this.walletAddress,
+                    content: message.substring(0, 50),
+                    channel: this.currentChannel
+                });
+                
                 const response = await fetch('/api/chat/messages', {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
@@ -1272,16 +1278,23 @@ class BasementApp {
                     })
                 });
                 
+                const data = await response.json();
+                console.log('Server response:', data);
+                
                 if (!response.ok) {
-                    throw new Error('Failed to send message');
+                    throw new Error(data.error || data.details || 'Failed to send message');
                 }
                 
                 // Message will appear via real-time subscription
-                console.log('Message sent successfully');
+                console.log('✅ Message sent successfully:', data.message?.id);
+                
+                // Force immediate reload of messages
+                await this.loadChannelMessages(this.currentChannel);
                 
             } catch (error) {
-                console.error('Error sending message:', error);
-                alert('Failed to send message. Please try again.');
+                console.error('❌ Error sending message:', error);
+                const errorMsg = error instanceof Error ? error.message : 'Unknown error';
+                alert(`Failed to send message:\n${errorMsg}\n\nCheck console for details.`);
                 chatInput.value = message; // Restore message on error
             }
         }
