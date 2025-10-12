@@ -1339,25 +1339,39 @@ class BasementApp {
     async loadChannelMessages(channel) {
         try {
             const slug = channel.replace('#', '');
-            const response = await fetch(`/api/chat/messages?channel=${slug}&limit=50`);
+            console.log(`📥 Loading messages for channel: ${slug}`);
             
-            if (response.ok) {
-                const data = await response.json();
-                if (data.success && data.messages) {
-                    // Clear chat and display messages
-                    const chatMessages = document.getElementById('chat-messages');
+            const response = await fetch(`/api/chat/messages?channel=${slug}&limit=50`);
+            const data = await response.json();
+            
+            if (!response.ok) {
+                console.error('❌ Failed to load messages:', data.error, data.details);
+                this.addSystemMessage(`Failed to load messages for ${channel}`);
+                return;
+            }
+            
+            if (data.success && data.messages) {
+                // Clear chat display
+                const chatMessages = document.getElementById('chat-messages');
+                if (chatMessages) {
                     chatMessages.innerHTML = '';
-                    
-                    data.messages.forEach(msg => {
-                        this.displayMessage(msg.user.username, msg.content, new Date(msg.createdAt));
-                    });
-                    
-                    console.log(`Loaded ${data.messages.length} messages for ${channel}`);
                 }
+                
+                // Display all messages for this channel
+                data.messages.forEach(msg => {
+                    this.displayMessage(msg.user.username, msg.content, new Date(msg.createdAt));
+                });
+                
+                // Set last message ID for polling
+                if (data.messages.length > 0) {
+                    this.lastMessageId = data.messages[data.messages.length - 1].createdAt;
+                }
+                
+                console.log(`✅ Loaded ${data.messages.length} messages for ${channel}`);
             }
         } catch (error) {
-            console.error('Error loading messages:', error);
-            this.addSystemMessage('Failed to load messages');
+            console.error('❌ Error loading messages:', error);
+            this.addSystemMessage(`Error: Could not load ${channel}`);
         }
     }
 
@@ -1957,26 +1971,33 @@ class BasementApp {
         channelList.appendChild(channelItem);
     }
 
-    switchChannel(channelName) {
+    async switchChannel(channelName) {
+        console.log('🔄 Switching to channel:', channelName);
+        
+        // Update current channel
         this.currentChannel = channelName;
-        this.updateChannelUI();
         
-        // Clear and reload messages
+        // Clear messages display
         const chatMessages = document.getElementById('chat-messages');
-        chatMessages.innerHTML = '';
+        if (chatMessages) {
+            chatMessages.innerHTML = '';
+        }
         
-        const messages = this.channels[channelName].messages || [];
-        messages.forEach(msg => {
-            if (msg.author === 'system') {
-                this.addSystemMessage(msg.text);
-            } else {
-                this.addUserMessage(msg.author, msg.text);
-            }
-        });
-        
-        // Update user counts
-        this.channels[channelName].users.add(this.username);
+        // Update UI to show new channel
         this.updateChannelUI();
+        
+        // Stop polling for old channel
+        if (this.messagePoller) {
+            clearInterval(this.messagePoller);
+        }
+        
+        // Load messages from database for this channel
+        await this.loadChannelMessages(channelName);
+        
+        // Restart polling for new channel
+        this.subscribeToRealtimeMessages();
+        
+        console.log('✅ Switched to channel:', channelName);
     }
 
     updateChannelUI() {
