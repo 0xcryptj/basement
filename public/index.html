@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>The Basement - Retro Cyberpunk Web3 Arcade</title>
+    <title>The Basement - Retro Web3 Arcade</title>
     <link rel="icon" type="image/x-icon" href="assets/icon.ico">
     <link rel="shortcut icon" type="image/x-icon" href="assets/icon.ico">
     <link rel="apple-touch-icon" sizes="180x180" href="assets/icon.ico">
@@ -79,6 +79,17 @@
                 <a href="#shop" class="mobile-nav-link">Shop</a>
                 <a href="#forum" class="mobile-nav-link" id="mobile-forum-link">Forum</a>
                 <a href="#chat" class="mobile-nav-link" id="mobile-chat-link">Chat</a>
+                <div class="mobile-wallet-section">
+                    <div id="mobile-wallet-options" class="mobile-wallet-options">
+                        <button class="mobile-wallet-btn" data-wallet="base">Connect Base Wallet</button>
+                        <button class="mobile-wallet-btn" data-wallet="phantom">Connect Phantom</button>
+                        <button class="mobile-wallet-btn" data-wallet="metamask">Connect MetaMask</button>
+                    </div>
+                    <div id="mobile-wallet-info" class="mobile-wallet-info" style="display: none;">
+                        <span id="mobile-wallet-address" class="mobile-wallet-address"></span>
+                        <button id="mobile-disconnect-wallet" class="mobile-disconnect-btn">Disconnect</button>
+                    </div>
+                </div>
             </div>
         </div>
     </nav>
@@ -131,7 +142,7 @@
                 <!-- Welcome Section -->
                 <div class="welcome-section" id="welcome-section">
                     <h1 class="main-title">Welcome to The Basement</h1>
-                    <p class="main-subtitle">Retro Cyberpunk Web3 Arcade, IRC, and Forum on Basechain!</p>
+                    <p class="main-subtitle">Retro Web3 Arcade, IRC, and Forum on Basechain!</p>
                 </div>
                 
                 <!-- Forum Section -->

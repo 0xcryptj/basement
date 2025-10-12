@@ -1,7 +1,7 @@
 {
   "name": "the-basement",
   "version": "1.0.0",
-  "description": "Retro Cyberpunk Web3 Arcade on Base Network",
+  "description": "Retro Web3 Arcade on Base Network",
   "main": "index.html",
   "scripts": {
     "dev": "next dev -p 8000",

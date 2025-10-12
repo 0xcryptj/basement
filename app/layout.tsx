@@ -4,8 +4,8 @@ import { SpeedInsights } from '@vercel/speed-insights/next';
 import './globals.css';
 
 export const metadata: Metadata = {
-  title: 'The Basement - Retro Cyberpunk Web3 Arcade',
-  description: 'Retro Cyberpunk Web3 Arcade on Base Network with Anonymous Forum',
+  title: 'The Basement - Retro Web3 Arcade',
+  description: 'Retro Web3 Arcade on Base Network with Anonymous Forum',
 };
 
 export default function RootLayout({

@@ -126,6 +126,29 @@ class BasementApp {
             });
         });
 
+        // Mobile wallet buttons
+        const mobileWalletBtns = document.querySelectorAll('.mobile-wallet-btn');
+        mobileWalletBtns.forEach(btn => {
+            btn.addEventListener('click', (e) => {
+                const walletType = e.target.dataset.wallet;
+                this.connectWallet(walletType);
+                // Close mobile menu after clicking
+                const mobileMenu = document.getElementById('mobile-menu');
+                if (mobileMenu) mobileMenu.classList.add('hidden');
+            });
+        });
+
+        // Mobile disconnect button
+        const mobileDisconnectBtn = document.getElementById('mobile-disconnect-wallet');
+        if (mobileDisconnectBtn) {
+            mobileDisconnectBtn.addEventListener('click', () => {
+                this.disconnectWallet();
+                // Close mobile menu
+                const mobileMenu = document.getElementById('mobile-menu');
+                if (mobileMenu) mobileMenu.classList.add('hidden');
+            });
+        }
+
         // Chat functionality
         const chatInput = document.getElementById('chat-input-field');
         const sendBtn = document.getElementById('send-btn');
@@ -789,13 +812,29 @@ class BasementApp {
         const sendBtn = document.getElementById('send-btn');
         const fileUploadBtn = document.getElementById('file-upload-btn');
         
+        // Mobile elements
+        const mobileWalletOptions = document.getElementById('mobile-wallet-options');
+        const mobileWalletInfo = document.getElementById('mobile-wallet-info');
+        const mobileWalletAddress = document.getElementById('mobile-wallet-address');
+        
         if (this.isConnected) {
             // Hide connect button, show wallet info
             if (connectBtn) connectBtn.style.display = 'none';
             if (walletInfo) walletInfo.style.display = 'flex';
             
+            // Mobile: Hide connect options, show wallet info
+            if (mobileWalletOptions) mobileWalletOptions.style.display = 'none';
+            if (mobileWalletInfo) mobileWalletInfo.style.display = 'flex';
+            if (mobileWalletAddress) {
+                const displayText = this.username || `${this.walletAddress.slice(0, 6)}...${this.walletAddress.slice(-4)}`;
+                mobileWalletAddress.textContent = displayText;
+            }
+            
             // Enable chat functionality
-            if (chatInput) chatInput.disabled = false;
+            if (chatInput) {
+                chatInput.disabled = false;
+                chatInput.placeholder = 'Type a message...';
+            }
             if (sendBtn) sendBtn.disabled = false;
             if (fileUploadBtn) fileUploadBtn.disabled = false;
             
@@ -814,8 +853,15 @@ class BasementApp {
             if (connectBtn) connectBtn.style.display = 'block';
             if (walletInfo) walletInfo.style.display = 'none';
             
+            // Mobile: Show connect options, hide wallet info
+            if (mobileWalletOptions) mobileWalletOptions.style.display = 'block';
+            if (mobileWalletInfo) mobileWalletInfo.style.display = 'none';
+            
             // Disable chat functionality
-            if (chatInput) chatInput.disabled = true;
+            if (chatInput) {
+                chatInput.disabled = true;
+                chatInput.placeholder = 'Connect wallet to chat...';
+            }
             if (sendBtn) sendBtn.disabled = true;
             if (fileUploadBtn) fileUploadBtn.disabled = true;
             

@@ -2844,4 +2844,54 @@ body::before {
     .main-title {
         font-size: 1.2rem;
     }
+}/* Mobile Wallet Styles */
+.mobile-wallet-section {
+    border-top: 1px solid rgba(0, 82, 255, 0.3);
+    padding-top: 15px;
+    margin-top: 15px;
+}
+
+.mobile-wallet-btn {
+    width: 100%;
+    padding: 12px 20px;
+    margin: 5px 0;
+    background: linear-gradient(135deg, #0052ff99, #00BFFF99);
+    color: #fff;
+    border: 2px solid #00BFFF;
+    border-radius: 8px;
+    cursor: pointer;
+    font-family: 'Press Start 2P', monospace;
+    font-size: 10px;
+    text-shadow: 0 0 10px #00BFFF;
+    transition: all 0.3s ease;
+}
+
+.mobile-wallet-btn:hover {
+    background: linear-gradient(135deg, #00BFFF, #0052ff);
+    box-shadow: 0 0 20px #00BFFF;
+    transform: translateY(-2px);
+}
+
+.mobile-wallet-info {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 10px;
+    padding: 10px;
+}
+
+.mobile-wallet-address {
+    color: #00BFFF;
+    font-size: 10px;
+    text-shadow: 0 0 10px #00BFFF;
+}
+
+.mobile-disconnect-btn {
+    padding: 8px 16px;
+    background: #ff0052;
+    color: #fff;
+    border: 2px solid #ff0052;
+    border-radius: 5px;
+    cursor: pointer;
+    font-size: 9px;
 }
