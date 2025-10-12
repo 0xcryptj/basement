@@ -1,0 +1,132 @@
+/* Mobile Arcade Fixes */
+@media (max-width: 768px) {
+    /* Ensure arcade loads properly */
+    html, body {
+        overflow: hidden !important;
+        overflow-x: hidden !important;
+        width: 100vw !important;
+        max-width: 100vw !important;
+        height: 100vh !important;
+        position: fixed !important;
+    }
+    
+    /* Game container responsive - CENTER EVERYTHING */
+    #game-container {
+        position: fixed !important;
+        top: 0 !important;
+        left: 0 !important;
+        right: 0 !important;
+        bottom: 0 !important;
+        width: 100vw !important;
+        height: 100vh !important;
+        display: flex !important;
+        align-items: center !important;
+        justify-content: center !important;
+        padding: 15px !important;
+        overflow: hidden !important;
+    }
+    
+    /* Game board smaller on mobile - CENTERED */
+    .game-board-container {
+        max-width: 85vw !important;
+        max-height: 65vh !important;
+        width: auto !important;
+        height: auto !important;
+        padding: 1rem !important;
+        margin: 0 auto !important;
+        display: flex !important;
+        flex-direction: column !important;
+        align-items: center !important;
+        justify-content: center !important;
+    }
+    
+    /* Game title smaller */
+    .game-title {
+        font-size: 14px !important;
+        margin-bottom: 0.5rem !important;
+    }
+    
+    /* Game status compact */
+    .game-status {
+        font-size: 11px !important;
+        padding: 0.5rem !important;
+    }
+    
+    /* Connect 4 grid sizing - RESPONSIVE */
+    .connect4-grid {
+        width: 100% !important;
+        max-width: min(85vw, 400px) !important;
+        margin: 0 auto !important;
+        display: grid !important;
+        grid-template-columns: repeat(7, 1fr) !important;
+        grid-template-rows: repeat(6, 1fr) !important;
+        gap: 4px !important;
+        padding: 8px !important;
+    }
+    
+    .connect4-cell {
+        width: 100% !important;
+        height: 0 !important;
+        padding-bottom: 100% !important; /* Make it square */
+        position: relative !important;
+        min-width: 35px !important;
+        max-width: 50px !important;
+    }
+    
+    .connect4-cell > * {
+        position: absolute !important;
+        top: 50% !important;
+        left: 50% !important;
+        transform: translate(-50%, -50%) !important;
+    }
+    
+    /* Buttons smaller */
+    .game-button, .back-button {
+        font-size: 10px !important;
+        padding: 8px 12px !important;
+        margin: 4px !important;
+    }
+    
+    /* Remove expensive effects */
+    * {
+        animation: none !important;
+        text-shadow: 0 0 4px currentColor !important;
+    }
+    
+    .crt-overlay, .grain-overlay {
+        opacity: 0.02 !important;
+    }
+}
+
+/* Landscape orientation on mobile */
+@media (max-width: 768px) and (orientation: landscape) {
+    .game-board-container {
+        max-width: 60vw !important;
+        max-height: 80vh !important;
+    }
+    
+    .connect4-grid {
+        max-width: min(55vw, 350px) !important;
+    }
+}
+
+/* Very small screens */
+@media (max-width: 375px) {
+    .connect4-cell {
+        min-width: 30px !important;
+    }
+    
+    .game-board-container {
+        max-width: 92vw !important;
+        padding: 0.6rem !important;
+    }
+}
+
+/* Larger phones */
+@media (min-width: 376px) and (max-width: 768px) {
+    .connect4-cell {
+        min-width: 40px !important;
+        max-width: 55px !important;
+    }
+}
+

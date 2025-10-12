@@ -5,6 +5,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Connect 4 - The Basement Arcade</title>
     <link rel="stylesheet" href="arcade.css">
+    <link rel="stylesheet" href="mobile-arcade.css">
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Press+Start+2P&display=swap" rel="stylesheet">
@@ -80,9 +81,9 @@
             background: linear-gradient(145deg, #0a0a1e 0%, #1a1a3e 50%, #0a0a1e 100%);
             border: 6px solid #0052ff99;
             border-radius: 16px;
-            padding: 2.5rem;
-            max-width: 95vw;
-            max-height: 90vh;
+            padding: 1.5rem;
+            max-width: 80vw;
+            max-height: 75vh;
             position: relative;
             overflow: visible;
             box-shadow: 
@@ -92,6 +93,24 @@
                 0 20px 0 #001a4d,
                 0 25px 50px rgba(0, 0, 0, 0.9),
                 inset 0 0 100px rgba(0, 82, 255, 0.15);
+        }
+        
+        /* Mobile sizing */
+        @media (max-width: 768px) {
+            .game-board-container {
+                max-width: 90vw !important;
+                max-height: 70vh !important;
+                padding: 0.8rem !important;
+                transform: scale(0.85);
+            }
+            
+            .game-title {
+                font-size: 16px !important;
+            }
+            
+            .game-status {
+                font-size: 12px !important;
+            }
         }
         
         /* Inner neon frame */

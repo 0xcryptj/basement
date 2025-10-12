@@ -151,7 +151,7 @@ class BasementApp {
         // Then fetch channels from server
         await this.fetchChannels();
         
-        this.addSystemMessage('Welcome to The Basement! Connect your wallet to start chatting.');
+        this.addSystemMessage('Welcome to The Basement! You can chat anonymously or connect wallet for persistent messages.');
         
         // Initialize channel list with default channel
         this.updateChannelList();

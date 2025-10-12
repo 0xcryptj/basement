@@ -1,0 +1,325 @@
+/* Mobile-First Optimized Layout - Phantom Wallet Style */
+
+/* Mobile Viewport Fixes */
+@media (max-width: 768px) {
+    /* Reset and base fixes */
+    html, body {
+        overflow-x: hidden !important;
+        width: 100vw !important;
+        max-width: 100vw !important;
+        position: relative !important;
+    }
+    
+    /* NAVBAR - Phantom-style clean design */
+    .navbar {
+        height: 56px !important;
+        padding: 0 !important;
+        background: rgba(10, 10, 10, 0.95) !important;
+        backdrop-filter: blur(20px) !important;
+    }
+    
+    .nav-content {
+        padding: 0 12px !important;
+        gap: 8px !important;
+        justify-content: space-between !important;
+    }
+    
+    /* Logo section - compact */
+    .logo {
+        flex: 0 0 auto !important;
+        padding: 0 !important;
+        margin: 0 !important;
+    }
+    
+    .logo-link {
+        padding: 0 !important;
+        margin: 0 !important;
+    }
+    
+    .main-logo {
+        height: 36px !important;
+        width: auto !important;
+        margin: 0 !important;
+        padding: 0 !important;
+    }
+    
+    /* HIDE text on mobile */
+    .logo-text {
+        display: none !important;
+    }
+    
+    /* HIDE desktop nav links on mobile */
+    .nav-links {
+        display: none !important;
+    }
+    
+    /* Wallet section - right aligned */
+    .wallet-section {
+        flex: 0 0 auto !important;
+        display: flex !important;
+        align-items: center !important;
+        gap: 8px !important;
+        margin-left: auto !important;
+    }
+    
+    .connect-btn {
+        font-size: 10px !important;
+        padding: 8px 12px !important;
+        height: 36px !important;
+        min-width: auto !important;
+        white-space: nowrap !important;
+    }
+    
+    .btn-text {
+        display: none !important;
+    }
+    
+    .connect-btn::before {
+        content: 'Connect' !important;
+        font-size: 11px !important;
+    }
+    
+    /* Hamburger menu */
+    .mobile-menu-toggle {
+        width: 36px !important;
+        height: 36px !important;
+        padding: 6px !important;
+        background: rgba(0, 82, 255, 0.1) !important;
+        border: 1px solid rgba(0, 82, 255, 0.3) !important;
+        border-radius: 8px !important;
+        display: flex !important;
+        flex-direction: column !important;
+        justify-content: center !important;
+        gap: 4px !important;
+        cursor: pointer !important;
+        transition: all 0.2s ease !important;
+    }
+    
+    .hamburger-line {
+        width: 20px !important;
+        height: 2px !important;
+        background: #0052ff !important;
+        border-radius: 2px !important;
+        transition: all 0.2s ease !important;
+    }
+    
+    .mobile-menu-toggle:active {
+        transform: scale(0.95) !important;
+        background: rgba(0, 82, 255, 0.2) !important;
+    }
+    
+    /* Mobile menu overlay - Phantom style (NO SCROLL) */
+    .mobile-menu {
+        position: fixed !important;
+        top: 56px !important;
+        left: 0 !important;
+        right: 0 !important;
+        height: auto !important;
+        max-height: calc(100vh - 56px) !important;
+        background: rgba(10, 10, 10, 0.98) !important;
+        backdrop-filter: blur(20px) !important;
+        z-index: 9998 !important;
+        display: flex !important;
+        flex-direction: column !important;
+        padding: 0 !important;
+        overflow: hidden !important;
+        transform: translateY(-100%) !important;
+        transition: transform 0.3s cubic-bezier(0.4, 0, 0.2, 1) !important;
+        border-bottom: 2px solid rgba(0, 82, 255, 0.3) !important;
+    }
+    
+    .mobile-menu:not(.hidden) {
+        transform: translateY(0) !important;
+    }
+    
+    .mobile-nav-link {
+        padding: 18px 20px !important;
+        font-size: 15px !important;
+        color: #fff !important;
+        text-decoration: none !important;
+        border-bottom: 1px solid rgba(255, 255, 255, 0.05) !important;
+        transition: all 0.2s ease !important;
+        display: block !important;
+        background: transparent !important;
+    }
+    
+    .mobile-nav-link:active {
+        background: rgba(0, 82, 255, 0.15) !important;
+        padding-left: 25px !important;
+    }
+    
+    /* Mobile wallet section in menu */
+    .mobile-wallet-section {
+        padding: 16px 20px !important;
+        background: rgba(0, 82, 255, 0.05) !important;
+        border-top: 1px solid rgba(255, 255, 255, 0.1) !important;
+    }
+    
+    .mobile-wallet-btn {
+        width: 100% !important;
+        padding: 14px !important;
+        margin-bottom: 8px !important;
+        background: rgba(0, 82, 255, 0.2) !important;
+        border: 1px solid rgba(0, 82, 255, 0.4) !important;
+        border-radius: 8px !important;
+        color: #fff !important;
+        font-size: 13px !important;
+        cursor: pointer !important;
+        transition: all 0.2s ease !important;
+    }
+    
+    .mobile-wallet-btn:active {
+        transform: scale(0.98) !important;
+        background: rgba(0, 82, 255, 0.3) !important;
+    }
+    
+    /* CHAT SIDEBAR - Full screen on mobile */
+    .chat-sidebar {
+        position: fixed !important;
+        top: 56px !important;
+        left: 0 !important;
+        right: 0 !important;
+        bottom: 0 !important;
+        width: 100vw !important;
+        max-width: 100vw !important;
+        height: calc(100vh - 56px) !important;
+        transform: translateX(-100%) !important;
+        transition: transform 0.3s ease !important;
+        z-index: 9997 !important;
+        border-right: none !important;
+    }
+    
+    .chat-sidebar:not(.collapsed) {
+        transform: translateX(0) !important;
+    }
+    
+    .chat-header {
+        height: 48px !important;
+        padding: 0 12px !important;
+    }
+    
+    .chat-title {
+        font-size: 14px !important;
+    }
+    
+    /* Chat channels */
+    .channel-list {
+        padding: 8px !important;
+    }
+    
+    .channel-item {
+        padding: 10px 12px !important;
+        font-size: 13px !important;
+    }
+    
+    /* Chat messages */
+    .chat-messages {
+        padding: 12px !important;
+        font-size: 13px !important;
+    }
+    
+    .chat-message {
+        margin-bottom: 12px !important;
+    }
+    
+    /* Chat input */
+    .chat-input {
+        padding: 12px !important;
+        gap: 8px !important;
+    }
+    
+    #chat-input-field {
+        font-size: 14px !important;
+        padding: 10px 12px !important;
+    }
+    
+    #send-btn {
+        font-size: 12px !important;
+        padding: 10px 16px !important;
+        min-width: 60px !important;
+    }
+    
+    /* MAIN CONTENT - Full width on mobile */
+    .main-content {
+        margin-left: 0 !important;
+        width: 100vw !important;
+        max-width: 100vw !important;
+        padding: 68px 12px 12px 12px !important;
+        overflow-x: hidden !important;
+    }
+    
+    /* ARCADE GRID - Single column on mobile */
+    .games-grid {
+        grid-template-columns: 1fr !important;
+        gap: 16px !important;
+        padding: 0 !important;
+    }
+    
+    .game-card {
+        max-width: 100% !important;
+        margin: 0 auto !important;
+    }
+    
+    /* Performance optimizations */
+    .particle {
+        display: none !important;
+    }
+    
+    * {
+        animation: none !important;
+        text-shadow: none !important;
+        box-shadow: none !important;
+    }
+    
+    .navbar, .chat-sidebar, .main-content {
+        box-shadow: 0 2px 8px rgba(0, 0, 0, 0.3) !important;
+    }
+    
+    /* Connect 4 and all arcade games - SMALLER SIZING */
+    .game-board-container {
+        max-width: 85vw !important;
+        max-height: 70vh !important;
+        padding: 1rem !important;
+        transform: scale(0.8) !important;
+        transform-origin: center !important;
+    }
+    
+    .connect4-grid {
+        width: 100% !important;
+        height: auto !important;
+        max-height: 60vh !important;
+    }
+    
+    .connect4-cell {
+        width: 40px !important;
+        height: 40px !important;
+    }
+    
+    /* Game status and controls */
+    .game-status, .game-controls {
+        font-size: 12px !important;
+        padding: 8px !important;
+    }
+    
+    .game-button {
+        font-size: 11px !important;
+        padding: 8px 12px !important;
+    }
+}
+
+/* Tablet adjustments */
+@media (min-width: 769px) and (max-width: 1024px) {
+    .logo-text {
+        font-size: 1rem !important;
+    }
+    
+    .main-logo {
+        height: 48px !important;
+    }
+    
+    .game-board-container {
+        max-width: 70vw !important;
+        max-height: 75vh !important;
+    }
+}
+
