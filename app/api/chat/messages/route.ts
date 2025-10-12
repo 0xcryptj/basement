@@ -152,7 +152,7 @@ export async function POST(request: NextRequest) {
         );
       }
       user = newUser;
-      console.log('✅ User created:', user.id);
+      console.log('✅ User created:', newUser.id);
     } else {
       console.log('👤 User exists:', user.id);
       // Update last seen
@@ -160,6 +160,15 @@ export async function POST(request: NextRequest) {
         .from('User')
         .update({ lastSeenAt: new Date().toISOString() })
         .eq('id', user.id);
+    }
+
+    // Type guard: At this point user must exist
+    if (!user) {
+      console.error('❌ User is null after creation/fetch');
+      return NextResponse.json(
+        { error: 'Failed to get or create user' },
+        { status: 500 }
+      );
     }
 
     // Find or create channel using Supabase
@@ -190,9 +199,18 @@ export async function POST(request: NextRequest) {
         );
       }
       channel = newChannel;
-      console.log('✅ Channel created:', channel.id);
+      console.log('✅ Channel created:', newChannel.id);
     } else {
       console.log('📢 Channel exists:', channel.id);
+    }
+
+    // Type guard: At this point user and channel must exist
+    if (!user || !channel) {
+      console.error('❌ User or channel is null after creation/fetch');
+      return NextResponse.json(
+        { error: 'Failed to get or create user/channel' },
+        { status: 500 }
+      );
     }
 
     // Create message using Supabase
