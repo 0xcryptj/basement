@@ -154,11 +154,29 @@ class BasementApp {
     }
 
     setupEventListeners() {
+        // Hamburger menu toggle
+        const mobileMenuToggle = document.getElementById('mobile-menu-toggle');
+        const mobileMenu = document.getElementById('mobile-menu');
+        
+        if (mobileMenuToggle && mobileMenu) {
+            mobileMenuToggle.addEventListener('click', (e) => {
+                e.stopPropagation();
+                mobileMenu.classList.toggle('hidden');
+            });
+            
+            // Close menu when clicking outside
+            document.addEventListener('click', (e) => {
+                if (!mobileMenu.contains(e.target) && e.target !== mobileMenuToggle) {
+                    mobileMenu.classList.add('hidden');
+                }
+            });
+        }
+
         // Mobile navigation handlers
         const mobileChatLink = document.getElementById('mobile-chat-link');
         const mobileForumLink = document.getElementById('mobile-forum-link');
-        const mobileMenu = document.getElementById('mobile-menu');
         const chatSidebar = document.getElementById('chat-sidebar');
+        const toggleSidebarBtn = document.getElementById('toggle-sidebar');
 
         if (mobileChatLink) {
             mobileChatLink.addEventListener('click', (e) => {
@@ -179,6 +197,17 @@ class BasementApp {
                 e.preventDefault();
                 // Navigate to forum (Next.js route)
                 window.location.href = '/forum';
+            });
+        }
+
+        // Sidebar toggle button
+        if (toggleSidebarBtn) {
+            toggleSidebarBtn.addEventListener('click', () => {
+                if (chatSidebar) {
+                    chatSidebar.classList.toggle('collapsed');
+                    this.sidebarCollapsed = !this.sidebarCollapsed;
+                    toggleSidebarBtn.textContent = this.sidebarCollapsed ? '>>' : '<<';
+                }
             });
         }
 
