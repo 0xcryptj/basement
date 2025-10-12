@@ -2994,6 +2994,17 @@ body::before {
         max-width: 100vw !important;
     }
     
+    /* Hide "The Basement" text on mobile - keep only logo and hamburger */
+    .logo-text {
+        display: none !important;
+    }
+    
+    /* Make logo smaller on mobile */
+    .main-logo {
+        height: 40px !important;
+        margin-right: 0 !important;
+    }
+    
     /* Disable expensive animations on mobile */
     .particle {
         animation: none !important;
@@ -3007,7 +3018,7 @@ body::before {
     }
     
     /* Reduce glow effects */
-    .logo-text, .nav-link, .wallet-display {
+    .nav-link, .wallet-display {
         text-shadow: none;
     }
     
