@@ -144,10 +144,10 @@ export async function POST(request: NextRequest) {
         .select()
         .single();
 
-      if (userCreateError) {
+      if (userCreateError || !newUser) {
         console.error('❌ Error creating user:', userCreateError);
         return NextResponse.json(
-          { error: 'Failed to create user', details: userCreateError.message },
+          { error: 'Failed to create user', details: userCreateError?.message || 'Unknown error' },
           { status: 500 }
         );
       }
@@ -182,10 +182,10 @@ export async function POST(request: NextRequest) {
         .select()
         .single();
 
-      if (channelCreateError) {
+      if (channelCreateError || !newChannel) {
         console.error('❌ Error creating channel:', channelCreateError);
         return NextResponse.json(
-          { error: 'Failed to create channel', details: channelCreateError.message },
+          { error: 'Failed to create channel', details: channelCreateError?.message || 'Unknown error' },
           { status: 500 }
         );
       }
@@ -213,10 +213,10 @@ export async function POST(request: NextRequest) {
       `)
       .single();
 
-    if (messageError) {
+    if (messageError || !message) {
       console.error('❌ Error creating message:', messageError);
       return NextResponse.json(
-        { error: 'Failed to send message', details: messageError.message },
+        { error: 'Failed to send message', details: messageError?.message || 'Unknown error' },
         { status: 500 }
       );
     }
