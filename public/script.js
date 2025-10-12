@@ -37,6 +37,9 @@ class BasementApp {
         try {
             console.log('Initializing Basement App...');
             
+            // Show dev notice
+            this.showDevNotice();
+            
             // Try to restore user session first
             const sessionRestored = this.restoreUserSession();
             
@@ -62,6 +65,38 @@ class BasementApp {
             console.error('Failed to initialize Basement App:', error);
             this.showError('Failed to initialize application. Please refresh the page.');
         }
+    }
+
+    showDevNotice() {
+        const devNotice = document.getElementById('dev-notice');
+        const closeBtn = document.getElementById('close-dev-notice');
+        
+        // Check if user already dismissed it today
+        const dismissed = localStorage.getItem('basement_dev_notice_dismissed');
+        const today = new Date().toDateString();
+        
+        if (dismissed === today) {
+            if (devNotice) devNotice.style.display = 'none';
+            return;
+        }
+        
+        if (devNotice) devNotice.style.display = 'flex';
+        
+        if (closeBtn) {
+            closeBtn.addEventListener('click', () => {
+                if (devNotice) {
+                    devNotice.style.opacity = '0';
+                    setTimeout(() => {
+                        devNotice.style.display = 'none';
+                    }, 300);
+                }
+                localStorage.setItem('basement_dev_notice_dismissed', today);
+            });
+        }
+    }
+
+    showComingSoon(featureName) {
+        alert(`${featureName} - COMING SOON\n\nThis feature is currently under development and will be available in a future update.`);
     }
 
     generateParticles() {
@@ -98,6 +133,10 @@ class BasementApp {
 
     initializeChat() {
         console.log('Initializing chat...');
+        
+        // Load saved channels first
+        this.loadChannels();
+        
         this.addSystemMessage('Welcome to The Basement! Connect your wallet to start chatting.');
         
         // Initialize channel list with default channel
@@ -105,6 +144,40 @@ class BasementApp {
     }
 
     setupEventListeners() {
+        // Coming Soon links
+        const tokenomicsLink = document.getElementById('tokenomics-link');
+        const shopLink = document.getElementById('shop-link');
+        const mobileTokenomicsLink = document.getElementById('mobile-tokenomics-link');
+        const mobileShopLink = document.getElementById('mobile-shop-link');
+
+        if (tokenomicsLink) {
+            tokenomicsLink.addEventListener('click', (e) => {
+                e.preventDefault();
+                this.showComingSoon('Tokenomics');
+            });
+        }
+
+        if (shopLink) {
+            shopLink.addEventListener('click', (e) => {
+                e.preventDefault();
+                this.showComingSoon('Shop');
+            });
+        }
+
+        if (mobileTokenomicsLink) {
+            mobileTokenomicsLink.addEventListener('click', (e) => {
+                e.preventDefault();
+                this.showComingSoon('Tokenomics');
+            });
+        }
+
+        if (mobileShopLink) {
+            mobileShopLink.addEventListener('click', (e) => {
+                e.preventDefault();
+                this.showComingSoon('Shop');
+            });
+        }
+
         // Wallet connection
         const connectBtn = document.getElementById('connect-wallet');
         const disconnectBtn = document.getElementById('disconnect-wallet');
@@ -1839,6 +1912,9 @@ class BasementApp {
             messages: []
         };
 
+        // Save channels to localStorage for persistence
+        this.saveChannels();
+
         // Add to channel list
         this.addChannelToUI(channelName);
         this.hideChannelDialog();
@@ -1850,6 +1926,47 @@ class BasementApp {
 
         // Switch to the new channel
         this.switchChannel(channelName);
+    }
+
+    saveChannels() {
+        try {
+            // Convert channels object to storable format (can't store Sets)
+            const channelsData = {};
+            Object.keys(this.channels).forEach(key => {
+                channelsData[key] = {
+                    name: this.channels[key].name,
+                    description: this.channels[key].description,
+                    private: this.channels[key].private,
+                    messages: this.channels[key].messages || []
+                };
+            });
+            localStorage.setItem('basement_channels', JSON.stringify(channelsData));
+            console.log('Channels saved to localStorage');
+        } catch (error) {
+            console.error('Failed to save channels:', error);
+        }
+    }
+
+    loadChannels() {
+        try {
+            const savedChannels = localStorage.getItem('basement_channels');
+            if (savedChannels) {
+                const channelsData = JSON.parse(savedChannels);
+                Object.keys(channelsData).forEach(key => {
+                    this.channels[key] = {
+                        ...channelsData[key],
+                        users: new Set() // Recreate Set
+                    };
+                    // Add to UI if not default #basement
+                    if (key !== '#basement') {
+                        this.addChannelToUI(key);
+                    }
+                });
+                console.log('Loaded saved channels:', Object.keys(this.channels).length);
+            }
+        } catch (error) {
+            console.error('Failed to load channels:', error);
+        }
     }
 
     addChannelToUI(channelName) {

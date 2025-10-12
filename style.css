@@ -2895,3 +2895,94 @@ body::before {
     cursor: pointer;
     font-size: 9px;
 }
+/* Development Notice Popup */
+.dev-notice-overlay {
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: rgba(0, 0, 0, 0.9);
+    backdrop-filter: blur(5px);
+    z-index: 10000;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    opacity: 1;
+    transition: opacity 0.3s ease;
+}
+
+.dev-notice-box {
+    background: linear-gradient(135deg, rgba(0, 82, 255, 0.1), rgba(0, 191, 255, 0.1));
+    border: 3px solid #00BFFF;
+    border-radius: 10px;
+    padding: 30px;
+    max-width: 500px;
+    width: 90%;
+    box-shadow: 0 0 40px #00BFFF, inset 0 0 20px rgba(0, 191, 255, 0.2);
+    animation: glowPulse 2s ease-in-out infinite;
+}
+
+@keyframes glowPulse {
+    0%, 100% { box-shadow: 0 0 40px #00BFFF, inset 0 0 20px rgba(0, 191, 255, 0.2); }
+    50% { box-shadow: 0 0 60px #00BFFF, inset 0 0 30px rgba(0, 191, 255, 0.3); }
+}
+
+.dev-notice-header {
+    text-align: center;
+    margin-bottom: 25px;
+    padding-bottom: 15px;
+    border-bottom: 2px solid #00BFFF;
+}
+
+.dev-notice-title {
+    font-family: 'Press Start 2P', monospace;
+    font-size: 16px;
+    color: #00BFFF;
+    text-shadow: 0 0 20px #00BFFF, 0 0 40px #0052ff;
+    letter-spacing: 2px;
+}
+
+.dev-notice-content {
+    margin-bottom: 25px;
+}
+
+.dev-notice-text {
+    font-family: 'Courier New', monospace;
+    font-size: 13px;
+    color: #ffffff;
+    line-height: 1.8;
+    margin-bottom: 15px;
+    text-align: center;
+}
+
+.dev-notice-text.small {
+    font-size: 11px;
+    color: #aaaaaa;
+    font-style: italic;
+}
+
+.dev-notice-close {
+    width: 100%;
+    padding: 15px;
+    background: linear-gradient(135deg, #0052ff, #00BFFF);
+    border: 2px solid #00BFFF;
+    border-radius: 8px;
+    color: #fff;
+    font-family: 'Press Start 2P', monospace;
+    font-size: 12px;
+    cursor: pointer;
+    text-shadow: 0 0 10px #fff;
+    box-shadow: 0 0 20px #00BFFF;
+    transition: all 0.3s ease;
+}
+
+.dev-notice-close:hover {
+    background: linear-gradient(135deg, #00BFFF, #0052ff);
+    box-shadow: 0 0 30px #00BFFF;
+    transform: translateY(-2px);
+}
+
+.dev-notice-close:active {
+    transform: translateY(0);
+}
