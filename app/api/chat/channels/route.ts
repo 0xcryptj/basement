@@ -26,7 +26,14 @@ export async function GET(request: NextRequest) {
 
     return NextResponse.json({
       success: true,
-      channels: channels.map(ch => ({
+      channels: channels.map((ch: {
+        id: string;
+        name: string;
+        slug: string;
+        description: string | null;
+        createdAt: Date;
+        _count: { messages: number; members: number };
+      }) => ({
         id: ch.id,
         name: ch.name,
         slug: ch.slug,
