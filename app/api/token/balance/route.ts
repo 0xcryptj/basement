@@ -39,7 +39,7 @@ export async function GET(request: NextRequest) {
       abi: TOKEN_CONFIG.abi,
       functionName: 'balanceOf',
       args: [address as Address],
-    });
+    }) as bigint;
 
     // Check against requirements
     const canCreateChannel = balance >= BigInt(TOKEN_CONFIG.requirements.createChannel);
@@ -54,7 +54,7 @@ export async function GET(request: NextRequest) {
         address: TOKEN_CONFIG.address as Address,
         abi: TOKEN_CONFIG.abi,
         functionName: 'totalSupply',
-      });
+      }) as bigint;
     } catch (e) {
       console.error('Error fetching total supply:', e);
     }
@@ -123,7 +123,7 @@ export async function POST(request: NextRequest) {
             abi: TOKEN_CONFIG.abi,
             functionName: 'balanceOf',
             args: [address as Address],
-          });
+          }) as bigint;
 
           return {
             address,

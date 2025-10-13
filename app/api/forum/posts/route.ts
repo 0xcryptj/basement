@@ -93,7 +93,7 @@ export async function POST(req: NextRequest) {
         abi: TOKEN_CONFIG.abi,
         functionName: 'balanceOf',
         args: [wallet as Address],
-      });
+      }) as bigint;
 
       const minRequired = BigInt(TOKEN_CONFIG.requirements.createPost);
       
