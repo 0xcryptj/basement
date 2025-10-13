@@ -1375,6 +1375,7 @@ class BasementApp {
             const slug = channel.replace('#', '');
             console.log(`📥 Loading messages for channel: ${slug}`);
             
+            // Fetch messages for THIS specific channel
             const response = await fetch(`/api/chat/messages?channel=${slug}&limit=50`);
             const data = await response.json();
             
@@ -1385,13 +1386,16 @@ class BasementApp {
             }
             
             if (data.success && data.messages) {
-                // Clear chat display
+                // Clear chat display for THIS channel
                 const chatMessages = document.getElementById('chat-messages');
                 if (chatMessages) {
                     chatMessages.innerHTML = '';
                 }
                 
-                // Display all messages for this channel
+                // Add welcome message for the channel
+                this.addSystemMessage(`*** Loaded ${data.messages.length} messages from ${channel}`);
+                
+                // Display all messages for THIS specific channel
                 data.messages.forEach(msg => {
                     this.displayMessage(msg.user.username, msg.content, new Date(msg.createdAt));
                 });
@@ -1402,6 +1406,13 @@ class BasementApp {
                 }
                 
                 console.log(`✅ Loaded ${data.messages.length} messages for ${channel}`);
+            } else {
+                // No messages yet, show empty channel message
+                const chatMessages = document.getElementById('chat-messages');
+                if (chatMessages) {
+                    chatMessages.innerHTML = '';
+                }
+                this.addSystemMessage(`*** ${channel} - No messages yet. Be the first to chat!`);
             }
         } catch (error) {
             console.error('❌ Error loading messages:', error);
