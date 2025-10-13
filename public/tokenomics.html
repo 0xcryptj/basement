@@ -9,9 +9,60 @@
     <link rel="stylesheet" href="style.css">
     <style>
         .tokenomics-container {
-            max-width: 1200px;
+            max-width: 1400px;
             margin: 80px auto 40px;
             padding: 2rem;
+        }
+
+        /* Mobile responsive improvements */
+        @media (max-width: 768px) {
+            .tokenomics-container {
+                padding: 1rem;
+                margin-top: 70px;
+            }
+
+            .token-title {
+                font-size: 1.2rem;
+            }
+
+            .contract-address {
+                font-size: 0.5rem;
+                padding: 0.5rem 1rem;
+            }
+
+            .stats-grid {
+                grid-template-columns: 1fr;
+                gap: 1rem;
+            }
+
+            .stat-title {
+                font-size: 0.7rem;
+            }
+
+            .stat-value {
+                font-size: 1.3rem;
+            }
+
+            .terminal-row {
+                font-size: 0.65rem;
+            }
+
+            .dex-link {
+                font-size: 0.6rem;
+                padding: 0.6rem 1rem;
+            }
+
+            .section-title {
+                font-size: 1rem;
+            }
+
+            .feature-title {
+                font-size: 0.75rem;
+            }
+
+            .feature-description {
+                font-size: 0.65rem;
+            }
         }
 
         .token-header {
@@ -387,10 +438,10 @@
                 <div class="stat-description">Total market value</div>
             </div>
 
-            <div class="stat-card">
-                <div class="stat-title">Tokens Burned</div>
-                <div class="stat-value" id="tokens-burned">0</div>
-                <div class="stat-description">5 tokens burned per channel</div>
+            <div class="stat-card" style="border: 2px solid #ff4444; background: rgba(255, 68, 68, 0.05);">
+                <div class="stat-title" style="color: #ff4444;">🔥 Tokens Burned</div>
+                <div class="stat-value" id="tokens-burned" style="color: #ff4444;">0</div>
+                <div class="stat-description">5 tokens per channel = scarcity</div>
             </div>
         </div>
 
@@ -451,25 +502,16 @@
             </div>
         </div>
 
-        <!-- Chart Embeds -->
+        <!-- Chart Embed -->
         <div class="feature-section">
-            <h2 class="section-title">📊 Live Charts & Analytics</h2>
+            <h2 class="section-title">📊 Live Price Chart</h2>
             
             <!-- DexScreener Embed -->
-            <div class="allocation-chart" style="padding: 0; overflow: hidden; height: 600px;">
+            <div class="allocation-chart" style="padding: 0; overflow: hidden; height: 500px; border-radius: 12px;">
                 <iframe 
                     src="https://dexscreener.com/base/0xc5052d8910046279fd6633b288234c2366b019f9d372d75a08d8fe01c601a6b9?embed=1&theme=dark&trades=0&info=0"
-                    style="width: 100%; height: 100%; border: none;"
+                    style="width: 100%; height: 100%; border: none; border-radius: 12px;"
                     title="DexScreener Chart"
-                ></iframe>
-            </div>
-
-            <!-- BubbleMaps Embed -->
-            <div class="allocation-chart" style="padding: 0; overflow: hidden; height: 600px; margin-top: 2rem;">
-                <iframe 
-                    src="https://iframe.bubblemaps.io/map?partnerId=MEPFzGONpHyRb7DIadtA&address=0xcf4abb42b4b47eb242eabab5c9a9913bcad9ca23&chain=base&limit=80"
-                    style="width: 100%; height: 100%; border: none;"
-                    title="BubbleMaps Holder Distribution"
                 ></iframe>
             </div>
         </div>

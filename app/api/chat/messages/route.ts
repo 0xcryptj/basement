@@ -142,49 +142,9 @@ export async function POST(request: NextRequest) {
     
     console.log('👤 User type:', isAnonymous ? 'Anonymous' : 'Authenticated');
 
-    // TOKEN GATE: Check if authenticated users hold minimum required tokens
-    if (!isAnonymous && walletAddress) {
-      try {
-        const balance = await publicClient.readContract({
-          address: TOKEN_CONFIG.address as Address,
-          abi: TOKEN_CONFIG.abi,
-          functionName: 'balanceOf',
-          args: [walletAddress as Address],
-        }) as bigint;
-
-        const minRequired = BigInt(TOKEN_CONFIG.requirements.postMessage);
-        
-        if (balance < minRequired) {
-          const requiredFormatted = (Number(minRequired) / 1e18).toFixed(6);
-          const userBalance = (Number(balance) / 1e18).toFixed(6);
-          
-          console.log(`❌ Token gate failed: ${userBalance} < ${requiredFormatted}`);
-          
-          return NextResponse.json(
-            { 
-              error: 'Insufficient token balance',
-              message: `You need at least ${requiredFormatted} $BASEMENT tokens to post messages. Your balance: ${userBalance}`,
-              required: requiredFormatted,
-              balance: userBalance,
-              tokenAddress: TOKEN_CONFIG.address,
-              buyLinks: {
-                dexScreener: TOKEN_CONFIG.links.dexScreener,
-                geckoterminal: TOKEN_CONFIG.links.geckoterminal,
-              }
-            },
-            { status: 403 }
-          );
-        }
-        
-        console.log('✅ Token gate passed');
-      } catch (tokenError) {
-        console.error('❌ Error checking token balance:', tokenError);
-        return NextResponse.json(
-          { error: 'Failed to verify token holdings. Please try again.' },
-          { status: 500 }
-        );
-      }
-    }
+    // NO TOKEN GATE FOR MESSAGES - Allow all users to chat
+    // Only channel creation requires tokens and burns
+    console.log('✅ Message allowed for all users (anonymous or authenticated)');
 
     // Find or create user using Supabase
     let { data: user } = await supabase
