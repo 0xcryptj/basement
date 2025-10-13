@@ -416,28 +416,29 @@ body::before {
     display: none;
 }
 
-/* IRC Chat Area */
+/* IRC Chat Area - FIXED */
 .chat-area {
     flex: 1;
     display: flex;
     flex-direction: column;
-    height: calc(100vh - 60px - 60px);
+    min-height: 0; /* Critical for flex child scrolling */
     position: relative;
 }
 
 .chat-messages {
     flex: 1;
     overflow-y: auto;
-    padding: clamp(10px, 2.5vw, 15px);
+    overflow-x: hidden;
+    padding: 15px;
     background: rgba(0, 0, 0, 0.2);
     font-family: 'Courier New', monospace;
-    font-size: clamp(0.625rem, 1.5vw, 0.7rem);
-    line-height: 1.4;
+    font-size: 0.7rem;
+    line-height: 1.6;
     position: relative;
     scrollbar-width: thin;
     scrollbar-color: #0052ff99 rgba(0, 0, 0, 0.3);
-    min-height: 0;
-    max-height: calc(100vh - 200px);
+    min-height: 0; /* Critical for proper scrolling */
+    scroll-behavior: smooth;
 }
 
 .chat-messages::before {
