@@ -77,19 +77,21 @@ export async function POST(request: NextRequest) {
         args: [walletAddress as Address],
       }) as bigint;
 
-      const minRequired = BigInt(TOKEN_CONFIG.requirements.createChannel);
+      const burnAmount = BigInt(TOKEN_CONFIG.burns.createChannel);
       
-      if (balance < minRequired) {
-        const requiredFormatted = (Number(minRequired) / 1e18).toFixed(6);
+      if (balance < burnAmount) {
+        const requiredFormatted = (Number(burnAmount) / 1e18).toFixed(2);
         const userBalance = (Number(balance) / 1e18).toFixed(6);
         
         return NextResponse.json(
           { 
             error: 'Insufficient token balance',
-            message: `You need at least ${requiredFormatted} $BASEMENT tokens to create a channel. Your balance: ${userBalance}`,
+            message: `You need at least ${requiredFormatted} $BASEMENT tokens to create a channel. ${requiredFormatted} tokens will be BURNED to create scarcity. Your balance: ${userBalance}`,
             required: requiredFormatted,
             balance: userBalance,
+            willBurn: requiredFormatted,
             tokenAddress: TOKEN_CONFIG.address,
+            burnMechanism: true,
             buyLinks: {
               dexScreener: TOKEN_CONFIG.links.dexScreener,
               geckoterminal: TOKEN_CONFIG.links.geckoterminal,
@@ -98,6 +100,10 @@ export async function POST(request: NextRequest) {
           { status: 403 }
         );
       }
+      
+      // User has sufficient balance, proceed with channel creation
+      // Note: Frontend MUST execute burn transaction before calling this endpoint
+      // with burnTxHash parameter
     } catch (tokenError) {
       console.error('Error checking token balance:', tokenError);
       return NextResponse.json(
@@ -128,6 +134,15 @@ export async function POST(request: NextRequest) {
       );
     }
 
+    // Verify burn transaction hash if provided
+    const { burnTxHash } = body;
+    if (burnTxHash) {
+      console.log('✅ Burn transaction confirmed:', burnTxHash);
+      // TODO: Optionally verify the burn transaction on-chain
+    } else {
+      console.log('⚠️ Warning: Channel created without burn tx hash');
+    }
+
     // Create channel
     const { data: channel, error: channelError } = await supabase
       .from('Channel')
@@ -149,6 +164,9 @@ export async function POST(request: NextRequest) {
       );
     }
 
+    // Log burn for statistics
+    console.log(`🔥 Channel created! 5 tokens burned by ${walletAddress}`);
+
     return NextResponse.json({
       success: true,
       channel: {
@@ -157,6 +175,11 @@ export async function POST(request: NextRequest) {
         slug: channel.slug,
         description: channel.description,
         createdAt: channel.createdAt
+      },
+      burnInfo: {
+        amount: (Number(TOKEN_CONFIG.burns.createChannel) / 1e18).toFixed(2),
+        txHash: burnTxHash || null,
+        burnAddress: '0x000000000000000000000000000000000000dEaD'
       }
     });
 

@@ -721,6 +721,39 @@ class BasementApp {
         }
     }
 
+    async switchToBaseNetwork(provider) {
+        const BASE_CHAIN_ID = '0x2105'; // 8453 in hex
+        
+        try {
+            await provider.request({
+                method: 'wallet_switchEthereumChain',
+                params: [{ chainId: BASE_CHAIN_ID }],
+            });
+            console.log('✅ Switched to Base network');
+        } catch (switchError) {
+            // Chain not added, add it
+            if (switchError.code === 4902) {
+                await provider.request({
+                    method: 'wallet_addEthereumChain',
+                    params: [{
+                        chainId: BASE_CHAIN_ID,
+                        chainName: 'Base',
+                        nativeCurrency: {
+                            name: 'Ethereum',
+                            symbol: 'ETH',
+                            decimals: 18
+                        },
+                        rpcUrls: ['https://mainnet.base.org'],
+                        blockExplorerUrls: ['https://basescan.org']
+                    }],
+                });
+                console.log('✅ Added Base network');
+            } else {
+                throw switchError;
+            }
+        }
+    }
+
     async connectWallet(walletType) {
         try {
             console.log(`Connecting to ${walletType}...`);

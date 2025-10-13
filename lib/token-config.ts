@@ -37,10 +37,15 @@ export const TOKEN_CONFIG = {
   
   // Minimum Holdings Requirements
   requirements: {
-    createChannel: '1000000000000000', // 0.001 tokens (in wei)
+    createChannel: '5000000000000000000', // 5 tokens (in wei) - BURNED on creation
     createThread: '1000000000000000', // 0.001 tokens
     postMessage: '1000000000000000', // 0.001 tokens
     createPost: '1000000000000000', // 0.001 tokens
+  },
+  
+  // Burn Amounts
+  burns: {
+    createChannel: '5000000000000000000', // 5 tokens burned per channel creation
   },
   
   // Pool Address (from Dex Screener)
@@ -55,7 +60,7 @@ export const TOKEN_CONFIG = {
     zora: 'https://zora.co',
   },
   
-  // ERC-20 ABI (minimal for balance checking)
+  // ERC-20 ABI (with burn function)
   abi: [
     {
       constant: true,
@@ -90,6 +95,37 @@ export const TOKEN_CONFIG = {
       inputs: [],
       name: 'name',
       outputs: [{ name: '', type: 'string' }],
+      type: 'function',
+    },
+    {
+      constant: false,
+      inputs: [
+        { name: '_from', type: 'address' },
+        { name: '_to', type: 'address' },
+        { name: '_value', type: 'uint256' }
+      ],
+      name: 'transferFrom',
+      outputs: [{ name: '', type: 'bool' }],
+      type: 'function',
+    },
+    {
+      constant: false,
+      inputs: [
+        { name: '_spender', type: 'address' },
+        { name: '_value', type: 'uint256' }
+      ],
+      name: 'approve',
+      outputs: [{ name: '', type: 'bool' }],
+      type: 'function',
+    },
+    {
+      constant: true,
+      inputs: [
+        { name: '_owner', type: 'address' },
+        { name: '_spender', type: 'address' }
+      ],
+      name: 'allowance',
+      outputs: [{ name: '', type: 'uint256' }],
       type: 'function',
     },
   ] as const,
