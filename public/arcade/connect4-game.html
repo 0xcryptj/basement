@@ -2,10 +2,12 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
     <title>Connect 4 - The Basement Arcade</title>
-    <link rel="stylesheet" href="arcade.css?v=2">
-    <link rel="stylesheet" href="mobile-arcade.css?v=2">
+    <link rel="stylesheet" href="arcade.css?v=3">
+    <link rel="stylesheet" href="arcade-games.css?v=3">
+    <link rel="stylesheet" href="crt-boot.css?v=1">
+    <link rel="stylesheet" href="mobile-responsive.css?v=1">
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Press+Start+2P&display=swap" rel="stylesheet">
@@ -419,8 +421,14 @@
     </style>
 </head>
 <body>
+    <!-- CRT Boot Elements -->
+    <div class="static-noise"></div>
+    <div class="boot-loader"></div>
+    <div class="boot-status typewriter">INITIALIZING CONNECT 4...</div>
+    
     <!-- CRT Scanline Overlay -->
     <div class="crt-overlay"></div>
+    <div class="crt-vignette"></div>
     
     <!-- Pixel Grain Overlay -->
     <div class="grain-overlay"></div>
@@ -430,7 +438,7 @@
 
     <!-- Game Container -->
     <div id="game-container">
-        <div class="game-board-container">
+        <div class="game-board-container crt-boot power-on-glow">
             <div class="game-board-header">
                 <h3 class="neon">🔴 CONNECT 4 🟡</h3>
                 <div class="game-players">

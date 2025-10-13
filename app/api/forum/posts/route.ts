@@ -7,8 +7,17 @@ import { isRateLimited, getRateLimitReset } from '@/lib/forum/ratelimit';
 import { uploadImageWithThumb } from '@/lib/forum/storage';
 import { bumpThread } from '@/lib/forum/bump';
 import { CONFIG } from '@/lib/forum/constants';
+import { createPublicClient, http, Address } from 'viem';
+import { base } from 'viem/chains';
+import { TOKEN_CONFIG } from '@/lib/token-config';
 
 const prisma = new PrismaClient();
+
+// Create a public client for Base network
+const publicClient = createPublicClient({
+  chain: base,
+  transport: http('https://mainnet.base.org'),
+});
 
 /**
  * GET /api/forum/posts?thread=id&page=n
@@ -74,6 +83,44 @@ export async function POST(req: NextRequest) {
       return NextResponse.json(
         { error: 'Wallet not connected' },
         { status: 401 }
+      );
+    }
+
+    // TOKEN GATE: Check if wallet holds minimum required tokens
+    try {
+      const balance = await publicClient.readContract({
+        address: TOKEN_CONFIG.address as Address,
+        abi: TOKEN_CONFIG.abi,
+        functionName: 'balanceOf',
+        args: [wallet as Address],
+      });
+
+      const minRequired = BigInt(TOKEN_CONFIG.requirements.createPost);
+      
+      if (balance < minRequired) {
+        const requiredFormatted = (Number(minRequired) / 1e18).toFixed(6);
+        const userBalance = (Number(balance) / 1e18).toFixed(6);
+        
+        return NextResponse.json(
+          { 
+            error: 'Insufficient token balance',
+            message: `You need at least ${requiredFormatted} $BASEMENT tokens to create a post. Your balance: ${userBalance}`,
+            required: requiredFormatted,
+            balance: userBalance,
+            tokenAddress: TOKEN_CONFIG.address,
+            buyLinks: {
+              dexScreener: TOKEN_CONFIG.links.dexScreener,
+              geckoterminal: TOKEN_CONFIG.links.geckoterminal,
+            }
+          },
+          { status: 403 }
+        );
+      }
+    } catch (tokenError) {
+      console.error('Error checking token balance:', tokenError);
+      return NextResponse.json(
+        { error: 'Failed to verify token holdings. Please try again.' },
+        { status: 500 }
       );
     }
 

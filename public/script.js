@@ -997,12 +997,13 @@ class BasementApp {
             if (mobileWalletOptions) mobileWalletOptions.style.display = 'block';
             if (mobileWalletInfo) mobileWalletInfo.style.display = 'none';
             
-            // Disable chat functionality
+            // ✅ ENABLE anonymous chat - users can chat without wallet connection
             if (chatInput) {
-                chatInput.disabled = true;
-                chatInput.placeholder = 'Connect wallet to chat...';
+                chatInput.disabled = false;
+                chatInput.placeholder = 'Type message... (anonymous mode)';
             }
-            if (sendBtn) sendBtn.disabled = true;
+            if (sendBtn) sendBtn.disabled = false;
+            // Keep file upload disabled for anonymous users (requires authentication)
             if (fileUploadBtn) fileUploadBtn.disabled = true;
             
             // Clear wallet address

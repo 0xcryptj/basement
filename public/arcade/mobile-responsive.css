@@ -1,0 +1,444 @@
+/* ========================================
+   MOBILE RESPONSIVE FIXES FOR ARCADE GAMES
+   Comprehensive scaling and touch optimization
+   ======================================== */
+
+/* ========== VIEWPORT & BODY FIXES ========== */
+html {
+    font-size: 16px;
+    -webkit-text-size-adjust: 100%;
+    -moz-text-size-adjust: 100%;
+    text-size-adjust: 100%;
+}
+
+html, body {
+    overflow: hidden;
+    width: 100vw;
+    max-width: 100vw;
+    height: 100vh;
+    max-height: 100vh;
+    position: fixed;
+    margin: 0;
+    padding: 0;
+}
+
+body {
+    touch-action: manipulation;
+    -webkit-tap-highlight-color: transparent;
+}
+
+/* ========== MOBILE-FIRST RESPONSIVE CONTAINERS ========== */
+@media (max-width: 768px) {
+    /* Ensure proper container sizing */
+    #game-container {
+        position: fixed !important;
+        top: 0 !important;
+        left: 0 !important;
+        right: 0 !important;
+        bottom: 0 !important;
+        width: 100vw !important;
+        height: 100vh !important;
+        padding: max(10px, env(safe-area-inset-top)) max(10px, env(safe-area-inset-right)) max(10px, env(safe-area-inset-bottom)) max(10px, env(safe-area-inset-left)) !important;
+        display: flex !important;
+        align-items: center !important;
+        justify-content: center !important;
+        overflow: hidden !important;
+    }
+
+    /* Game board - optimized sizing */
+    .game-board-container {
+        width: calc(100vw - 20px) !important;
+        max-width: 95vw !important;
+        max-height: 85vh !important;
+        padding: clamp(0.75rem, 3vw, 1.25rem) !important;
+        margin: 0 auto !important;
+        overflow-y: auto !important;
+        -webkit-overflow-scrolling: touch !important;
+    }
+
+    /* Headers - readable text */
+    .game-board-header h3,
+    .game-title,
+    h1, h2, h3 {
+        font-size: clamp(0.875rem, 4vw, 1.25rem) !important;
+        line-height: 1.3 !important;
+        margin-bottom: 0.75rem !important;
+    }
+
+    /* Status indicators */
+    .turn-indicator,
+    .game-status,
+    #connect4-turn,
+    #war-status,
+    #rps-status {
+        font-size: clamp(0.625rem, 2.5vw, 0.875rem) !important;
+        padding: 0.75rem !important;
+        margin: 0.5rem 0 !important;
+        line-height: 1.4 !important;
+    }
+
+    /* Player indicators */
+    .player-indicator,
+    .game-players {
+        font-size: clamp(0.5rem, 2vw, 0.7rem) !important;
+        padding: 0.5rem 0.75rem !important;
+    }
+
+    /* Score displays */
+    .rps-score,
+    .score-container {
+        font-size: clamp(0.625rem, 2.5vw, 0.75rem) !important;
+        gap: 0.5rem !important;
+        flex-wrap: wrap !important;
+    }
+
+    .rps-score-item,
+    .score-box {
+        padding: 0.5rem 0.75rem !important;
+        min-width: auto !important;
+    }
+
+    /* ========== CONNECT 4 MOBILE OPTIMIZATION ========== */
+    .connect4-grid,
+    #board {
+        width: min(90vw, 400px) !important;
+        max-width: 90vw !important;
+        margin: 0 auto !important;
+        padding: clamp(8px, 2vw, 12px) !important;
+        gap: clamp(3px, 1vw, 6px) !important;
+        display: grid !important;
+        grid-template-columns: repeat(7, 1fr) !important;
+        grid-template-rows: repeat(6, 1fr) !important;
+    }
+
+    .connect4-cell,
+    .cell {
+        width: 100% !important;
+        aspect-ratio: 1 / 1 !important;
+        min-width: 35px !important;
+        max-width: 60px !important;
+        border-width: 2px !important;
+        font-size: clamp(1rem, 3vw, 1.5rem) !important;
+    }
+
+    /* Column arrows - bigger touch targets */
+    .connect4-column {
+        width: 100% !important;
+        min-width: 35px !important;
+        max-width: 60px !important;
+        padding: clamp(0.5rem, 2vw, 0.75rem) !important;
+        font-size: clamp(1.25rem, 4vw, 1.75rem) !important;
+        margin: 2px !important;
+        cursor: pointer !important;
+        touch-action: manipulation !important;
+    }
+
+    .connect4-columns {
+        margin-top: 0.75rem !important;
+        gap: 2px !important;
+    }
+
+    /* ========== COIN TOSS MOBILE OPTIMIZATION ========== */
+    .cointoss-game-screen {
+        padding: 70px 15px 20px !important;
+        gap: 1rem !important;
+    }
+
+    .choice-card {
+        width: clamp(110px, 35vw, 140px) !important;
+        height: clamp(140px, 40vw, 180px) !important;
+        border-width: 4px !important;
+    }
+
+    .choice-card img {
+        width: clamp(60px, 20vw, 90px) !important;
+        height: clamp(60px, 20vw, 90px) !important;
+    }
+
+    .choice-card span {
+        font-size: clamp(0.7rem, 2.5vw, 0.9rem) !important;
+    }
+
+    .stake-input-container input {
+        font-size: clamp(0.75rem, 2.5vw, 1rem) !important;
+        padding: 0.6rem 1rem !important;
+        width: min(180px, 80vw) !important;
+    }
+
+    /* ========== WAR GAME MOBILE OPTIMIZATION ========== */
+    .war-board {
+        min-width: auto !important;
+        padding: 0.5rem !important;
+    }
+
+    .war-cards {
+        gap: clamp(1rem, 5vw, 2rem) !important;
+        flex-wrap: wrap !important;
+        justify-content: center !important;
+    }
+
+    .war-card {
+        width: clamp(100px, 30vw, 140px) !important;
+        height: clamp(150px, 45vw, 210px) !important;
+        border-width: 4px !important;
+    }
+
+    .war-card-value {
+        font-size: clamp(2.5rem, 8vw, 3.5rem) !important;
+    }
+
+    .war-card-suit {
+        font-size: clamp(2rem, 6vw, 3rem) !important;
+    }
+
+    .war-vs {
+        font-size: clamp(1.25rem, 4vw, 1.75rem) !important;
+    }
+
+    /* ========== RPS MOBILE OPTIMIZATION ========== */
+    .rps-board {
+        min-width: auto !important;
+        padding: 0.5rem !important;
+    }
+
+    .rps-choices {
+        gap: clamp(0.75rem, 3vw, 1.5rem) !important;
+        flex-wrap: wrap !important;
+    }
+
+    .rps-choice-btn {
+        width: clamp(80px, 25vw, 110px) !important;
+        height: clamp(80px, 25vw, 110px) !important;
+        font-size: clamp(2.5rem, 8vw, 4rem) !important;
+        border-width: 4px !important;
+        min-width: 44px !important;
+        min-height: 44px !important;
+    }
+
+    .rps-player-choice .emoji {
+        font-size: clamp(3rem, 10vw, 5rem) !important;
+        padding: clamp(1rem, 3vw, 1.5rem) !important;
+    }
+
+    .rps-result {
+        gap: clamp(1rem, 4vw, 2rem) !important;
+        flex-wrap: wrap !important;
+    }
+
+    /* ========== BUTTON OPTIMIZATION ========== */
+    button,
+    .btn-primary,
+    .btn-play,
+    .play-button,
+    .game-button,
+    .war-flip-btn,
+    .close-game-btn {
+        min-width: 44px !important;
+        min-height: 44px !important;
+        font-size: clamp(0.5rem, 2vw, 0.75rem) !important;
+        padding: clamp(0.6rem, 2vw, 0.85rem) clamp(1rem, 3vw, 1.5rem) !important;
+        border-width: 3px !important;
+        touch-action: manipulation !important;
+        -webkit-tap-highlight-color: transparent !important;
+        line-height: 1.3 !important;
+    }
+
+    /* Back button */
+    .back-to-arcade,
+    .back-button {
+        top: max(10px, env(safe-area-inset-top)) !important;
+        left: max(10px, env(safe-area-inset-left)) !important;
+        font-size: clamp(0.5rem, 1.8vw, 0.65rem) !important;
+        padding: clamp(0.5rem, 2vw, 0.7rem) clamp(0.75rem, 2.5vw, 1rem) !important;
+        min-width: 44px !important;
+        min-height: 44px !important;
+    }
+
+    /* ========== REDUCE VISUAL EFFECTS ON MOBILE ========== */
+    .crt-overlay,
+    .grain-overlay,
+    .static-noise {
+        opacity: 0.015 !important;
+    }
+
+    /* Simplify animations */
+    * {
+        animation-duration: 0.3s !important;
+    }
+
+    .connect4-cell.dropping {
+        animation-duration: 0.5s !important;
+    }
+
+    /* Remove expensive shadows on very small screens */
+    @media (max-width: 480px) {
+        * {
+            text-shadow: 0 0 5px currentColor !important;
+            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.5) !important;
+        }
+
+        .connect4-cell.player1,
+        .connect4-cell.player2 {
+            box-shadow: 
+                0 0 15px currentColor,
+                inset 0 0 8px rgba(255, 255, 255, 0.2) !important;
+        }
+    }
+
+    /* ========== COIN FLIP FULLSCREEN MOBILE ========== */
+    .coin-flip-fullscreen {
+        padding: 20px !important;
+    }
+
+    .coin-3d-container {
+        width: min(80vw, 300px) !important;
+        height: min(80vw, 300px) !important;
+    }
+
+    .coin-3d {
+        width: min(70vw, 250px) !important;
+        height: min(70vw, 250px) !important;
+    }
+
+    .flip-status {
+        font-size: clamp(1rem, 4vw, 1.5rem) !important;
+    }
+
+    .flip-result {
+        font-size: clamp(1.75rem, 6vw, 2.75rem) !important;
+    }
+
+    .flip-result-sub {
+        font-size: clamp(0.75rem, 3vw, 1rem) !important;
+    }
+}
+
+/* ========== SMALL MOBILE (< 480px) ========== */
+@media (max-width: 480px) {
+    .game-board-container {
+        max-width: 98vw !important;
+        padding: 0.5rem !important;
+    }
+
+    .connect4-grid {
+        width: min(95vw, 350px) !important;
+        padding: 6px !important;
+        gap: 2px !important;
+    }
+
+    .connect4-cell {
+        min-width: 30px !important;
+        max-width: 48px !important;
+        border-width: 1px !important;
+    }
+
+    .connect4-column {
+        min-width: 30px !important;
+        max-width: 48px !important;
+        font-size: 1rem !important;
+    }
+}
+
+/* ========== VERY SMALL MOBILE (< 375px) ========== */
+@media (max-width: 375px) {
+    .game-board-container {
+        padding: 0.4rem !important;
+    }
+
+    .connect4-grid {
+        width: min(98vw, 320px) !important;
+        padding: 4px !important;
+        gap: 2px !important;
+    }
+
+    .connect4-cell {
+        min-width: 28px !important;
+        max-width: 44px !important;
+    }
+
+    .connect4-column {
+        min-width: 28px !important;
+        max-width: 44px !important;
+    }
+
+    .choice-card {
+        width: 100px !important;
+        height: 130px !important;
+    }
+
+    .war-card {
+        width: 90px !important;
+        height: 135px !important;
+    }
+
+    .rps-choice-btn {
+        width: 75px !important;
+        height: 75px !important;
+    }
+}
+
+/* ========== LANDSCAPE MOBILE ========== */
+@media (max-width: 768px) and (orientation: landscape) {
+    .game-board-container {
+        max-height: 92vh !important;
+        max-width: 85vw !important;
+    }
+
+    .connect4-grid {
+        width: min(70vw, 400px) !important;
+    }
+
+    #game-container {
+        padding: 5px !important;
+    }
+}
+
+/* ========== TABLET OPTIMIZATION (768px - 1024px) ========== */
+@media (min-width: 769px) and (max-width: 1024px) {
+    .game-board-container {
+        max-width: 85vw !important;
+        padding: 1.5rem !important;
+    }
+
+    .connect4-grid {
+        width: min(70vw, 500px) !important;
+    }
+
+    button,
+    .game-button {
+        font-size: 0.7rem !important;
+        padding: 0.75rem 1.25rem !important;
+    }
+}
+
+/* ========== ACCESSIBILITY ========== */
+@media (prefers-reduced-motion: reduce) {
+    *,
+    *::before,
+    *::after {
+        animation-duration: 0.01ms !important;
+        animation-iteration-count: 1 !important;
+        transition-duration: 0.01ms !important;
+    }
+}
+
+/* ========== HIGH DPI SCREENS ========== */
+@media (-webkit-min-device-pixel-ratio: 2), (min-resolution: 192dpi) {
+    .game-board-container {
+        border-width: 3px !important;
+    }
+
+    .connect4-cell,
+    button {
+        border-width: 2px !important;
+    }
+}
+
+/* ========== NOTCH SUPPORT ========== */
+@supports (padding: max(0px)) {
+    body {
+        padding-left: max(0px, env(safe-area-inset-left));
+        padding-right: max(0px, env(safe-area-inset-right));
+    }
+}
+

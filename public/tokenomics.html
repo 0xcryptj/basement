@@ -345,15 +345,18 @@
     <div class="tokenomics-container">
         <div class="token-header">
             <h1 class="token-title neon">💎 $BASEMENT TOKENOMICS 💎</h1>
+            <p style="font-size: 0.8rem; color: #00BFFF; margin-bottom: 1.5rem;">
+                Creator Coin on Zora • Base Network
+            </p>
             
             <div class="contract-info">
                 <span class="contract-label">Contract:</span>
-                <a href="https://basescan.org/token/0x0000000000000000000000000000000000000000" 
+                <a href="https://basescan.org/token/0xcf4abb42b4b47eb242eabab5c9a9913bcad9ca23" 
                    target="_blank" 
                    rel="noopener noreferrer" 
                    class="contract-address"
                    id="contract-link">
-                    <span id="ticker-text">$BASEMENT</span>
+                    <span id="ticker-text">0xcf4a...ca23</span>
                     <span style="font-size: 0.5rem;">↗</span>
                 </a>
                 
@@ -421,24 +424,53 @@
             </div>
             
             <div class="dex-links">
-                <a href="https://www.dexscreener.com/base/YOUR_PAIR_ADDRESS" 
+                <a href="https://dexscreener.com/base/0xc5052d8910046279fd6633b288234c2366b019f9d372d75a08d8fe01c601a6b9" 
                    target="_blank" 
                    rel="noopener noreferrer" 
                    class="dex-link">
                     📈 DexScreener
                 </a>
-                <a href="https://www.geckoterminal.com/base/pools/YOUR_PAIR_ADDRESS" 
+                <a href="https://www.geckoterminal.com/base/pools/0xc5052d8910046279fd6633b288234c2366b019f9d372d75a08d8fe01c601a6b9" 
                    target="_blank" 
                    rel="noopener noreferrer" 
                    class="dex-link">
                     🦎 GeckoTerminal
                 </a>
-                <a href="https://app.uniswap.org/#/swap?outputCurrency=YOUR_TOKEN_ADDRESS&chain=base" 
+                <a href="https://iframe.bubblemaps.io/map?partnerId=MEPFzGONpHyRb7DIadtA&address=0xcf4abb42b4b47eb242eabab5c9a9913bcad9ca23&chain=base&limit=80" 
                    target="_blank" 
                    rel="noopener noreferrer" 
                    class="dex-link">
-                    🦄 Trade on Uniswap
+                    🫧 BubbleMaps
                 </a>
+                <a href="https://zora.co" 
+                   target="_blank" 
+                   rel="noopener noreferrer" 
+                   class="dex-link">
+                    ⚡ Zora
+                </a>
+            </div>
+        </div>
+
+        <!-- Chart Embeds -->
+        <div class="feature-section">
+            <h2 class="section-title">📊 Live Charts & Analytics</h2>
+            
+            <!-- DexScreener Embed -->
+            <div class="allocation-chart" style="padding: 0; overflow: hidden; height: 600px;">
+                <iframe 
+                    src="https://dexscreener.com/base/0xc5052d8910046279fd6633b288234c2366b019f9d372d75a08d8fe01c601a6b9?embed=1&theme=dark&trades=0&info=0"
+                    style="width: 100%; height: 100%; border: none;"
+                    title="DexScreener Chart"
+                ></iframe>
+            </div>
+
+            <!-- BubbleMaps Embed -->
+            <div class="allocation-chart" style="padding: 0; overflow: hidden; height: 600px; margin-top: 2rem;">
+                <iframe 
+                    src="https://iframe.bubblemaps.io/map?partnerId=MEPFzGONpHyRb7DIadtA&address=0xcf4abb42b4b47eb242eabab5c9a9913bcad9ca23&chain=base&limit=80"
+                    style="width: 100%; height: 100%; border: none;"
+                    title="BubbleMaps Holder Distribution"
+                ></iframe>
             </div>
         </div>
 
@@ -496,21 +528,21 @@
             <h2 class="section-title">⚡ Utility & Features</h2>
             <div class="features-list">
                 <div class="feature-item">
-                    <div class="feature-title">🎮 Arcade Access</div>
+                    <div class="feature-title">🎮 Token-Gated Access</div>
                     <div class="feature-description">
-                        Use $BASEMENT to play games in the arcade. Stake tokens to enter tournaments and win prizes. Lower fees for token holders.
+                        Hold $BASEMENT tokens to access exclusive features. Token holders can create IRC channels, post in forums, and participate in community discussions.
                     </div>
                 </div>
                 <div class="feature-item">
-                    <div class="feature-title">🏆 Tournament Entry</div>
+                    <div class="feature-title">💬 IRC & Forum Access</div>
                     <div class="feature-description">
-                        Hold $BASEMENT to access exclusive tournaments with larger prize pools. Top players earn bonus token rewards.
+                        Must hold at least 0.001 $BASEMENT tokens to create channels, post messages, and create threads. Keeps spam out and community quality high.
                     </div>
                 </div>
                 <div class="feature-item">
-                    <div class="feature-title">💬 Community Governance</div>
+                    <div class="feature-title">🏆 Exclusive Community</div>
                     <div class="feature-description">
-                        Token holders vote on new games, features, and platform improvements. Your voice matters in The Basement community.
+                        Token holders gain access to special channels, early feature access, and community governance. Your tokens = your voice.
                     </div>
                 </div>
                 <div class="feature-item">
@@ -557,9 +589,9 @@
     <script src="security.js"></script>
     <script src="script.js"></script>
     <script>
-        // Configuration - UPDATE THESE WITH YOUR TOKEN INFO
-        const TOKEN_ADDRESS = "0x0000000000000000000000000000000000000000"; // Your token contract
-        const PAIR_ADDRESS = ""; // Your Uniswap pair address (leave empty if not deployed yet)
+        // Configuration - Basement Token on Base (Zora Creator Coin)
+        const TOKEN_ADDRESS = "0xcf4abb42b4b47eb242eabab5c9a9913bcad9ca23";
+        const PAIR_ADDRESS = "0xc5052d8910046279fd6633b288234c2366b019f9d372d75a08d8fe01c601a6b9";
         
         // Fetch token price and stats from DexScreener
         async function fetchTokenData() {

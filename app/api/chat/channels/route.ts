@@ -1,10 +1,19 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { createClient } from '@supabase/supabase-js';
+import { createPublicClient, http, Address } from 'viem';
+import { base } from 'viem/chains';
+import { TOKEN_CONFIG } from '@/lib/token-config';
 
 const supabase = createClient(
   process.env.NEXT_PUBLIC_SUPABASE_URL!,
   process.env.SUPABASE_SERVICE_ROLE_KEY!
 );
+
+// Create a public client for Base network
+const publicClient = createPublicClient({
+  chain: base,
+  transport: http('https://mainnet.base.org'),
+});
 
 // GET - List all public channels
 export async function GET(request: NextRequest) {
@@ -37,7 +46,7 @@ export async function GET(request: NextRequest) {
   }
 }
 
-// POST - Create a new channel
+// POST - Create a new channel (TOKEN-GATED)
 export async function POST(request: NextRequest) {
   try {
     const body = await request.json();
@@ -48,6 +57,52 @@ export async function POST(request: NextRequest) {
       return NextResponse.json(
         { error: 'Name, slug, and wallet address are required' },
         { status: 400 }
+      );
+    }
+
+    // Validate wallet address format
+    if (!/^0x[a-fA-F0-9]{40}$/.test(walletAddress)) {
+      return NextResponse.json(
+        { error: 'Invalid wallet address format' },
+        { status: 400 }
+      );
+    }
+
+    // TOKEN GATE: Check if wallet holds minimum required tokens
+    try {
+      const balance = await publicClient.readContract({
+        address: TOKEN_CONFIG.address as Address,
+        abi: TOKEN_CONFIG.abi,
+        functionName: 'balanceOf',
+        args: [walletAddress as Address],
+      }) as bigint;
+
+      const minRequired = BigInt(TOKEN_CONFIG.requirements.createChannel);
+      
+      if (balance < minRequired) {
+        const requiredFormatted = (Number(minRequired) / 1e18).toFixed(6);
+        const userBalance = (Number(balance) / 1e18).toFixed(6);
+        
+        return NextResponse.json(
+          { 
+            error: 'Insufficient token balance',
+            message: `You need at least ${requiredFormatted} $BASEMENT tokens to create a channel. Your balance: ${userBalance}`,
+            required: requiredFormatted,
+            balance: userBalance,
+            tokenAddress: TOKEN_CONFIG.address,
+            buyLinks: {
+              dexScreener: TOKEN_CONFIG.links.dexScreener,
+              geckoterminal: TOKEN_CONFIG.links.geckoterminal,
+            }
+          },
+          { status: 403 }
+        );
+      }
+    } catch (tokenError) {
+      console.error('Error checking token balance:', tokenError);
+      return NextResponse.json(
+        { error: 'Failed to verify token holdings. Please try again.' },
+        { status: 500 }
       );
     }
 

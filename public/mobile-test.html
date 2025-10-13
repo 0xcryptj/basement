@@ -1,0 +1,315 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Mobile Layout Test - The Basement</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            font-family: 'Courier New', monospace;
+            background: #0A0A0A;
+            color: #fff;
+            padding: 20px;
+        }
+        
+        .test-container {
+            max-width: 1200px;
+            margin: 0 auto;
+        }
+        
+        h1 {
+            color: #0052ff;
+            text-align: center;
+            margin-bottom: 30px;
+            font-size: clamp(1.25rem, 4vw, 2rem);
+        }
+        
+        .breakpoint-info {
+            background: rgba(0, 82, 255, 0.1);
+            border: 2px solid #0052ff;
+            padding: 20px;
+            margin-bottom: 30px;
+            border-radius: 8px;
+        }
+        
+        .breakpoint-info h2 {
+            color: #00BFFF;
+            margin-bottom: 15px;
+        }
+        
+        .viewport-size {
+            font-size: 1.2rem;
+            color: #00FF88;
+            margin-bottom: 10px;
+        }
+        
+        .test-section {
+            margin-bottom: 40px;
+            background: rgba(0, 0, 0, 0.6);
+            border: 1px solid rgba(0, 82, 255, 0.3);
+            padding: 20px;
+            border-radius: 8px;
+        }
+        
+        .test-section h3 {
+            color: #00BFFF;
+            margin-bottom: 15px;
+            border-bottom: 1px solid rgba(0, 82, 255, 0.3);
+            padding-bottom: 10px;
+        }
+        
+        .test-item {
+            padding: 10px;
+            margin: 10px 0;
+            background: rgba(0, 82, 255, 0.05);
+            border-left: 3px solid #0052ff;
+        }
+        
+        .status {
+            display: inline-block;
+            padding: 4px 12px;
+            border-radius: 4px;
+            font-size: 0.8rem;
+            margin-left: 10px;
+        }
+        
+        .status.pass {
+            background: #00FF88;
+            color: #000;
+        }
+        
+        .status.check {
+            background: #FFD700;
+            color: #000;
+        }
+        
+        /* Test Elements */
+        .test-navbar {
+            height: 60px;
+            background: rgba(10, 10, 10, 0.95);
+            border: 1px solid #0052ff;
+            margin: 15px 0;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 0 clamp(8px, 2vw, 16px);
+        }
+        
+        .test-logo {
+            height: clamp(32px, 8vw, 42px);
+            background: #0052ff;
+            width: 42px;
+        }
+        
+        .test-button {
+            padding: clamp(8px, 2vw, 10px) clamp(16px, 3vw, 20px);
+            background: #0052ff;
+            color: #fff;
+            border: none;
+            font-size: clamp(0.5rem, 1.5vw, 0.6rem);
+        }
+        
+        .test-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(clamp(200px, 40vw, 250px), 1fr));
+            gap: clamp(8px, 2vw, 16px);
+            margin: 15px 0;
+        }
+        
+        .test-grid-item {
+            background: rgba(0, 82, 255, 0.2);
+            padding: clamp(12px, 3vw, 16px);
+            border: 1px solid #0052ff;
+            min-height: 100px;
+        }
+        
+        .test-text {
+            font-size: clamp(0.75rem, 2vw, 1rem);
+            line-height: 1.4;
+            margin: 10px 0;
+        }
+        
+        /* Breakpoint Indicators */
+        .breakpoint-indicator {
+            position: fixed;
+            top: 10px;
+            right: 10px;
+            padding: 10px 20px;
+            background: #0052ff;
+            color: #fff;
+            border-radius: 4px;
+            font-weight: bold;
+            z-index: 9999;
+        }
+        
+        @media (max-width: 480px) {
+            .breakpoint-indicator::after {
+                content: ' (375px Mobile)';
+            }
+        }
+        
+        @media (min-width: 481px) and (max-width: 768px) {
+            .breakpoint-indicator::after {
+                content: ' (768px Tablet)';
+            }
+        }
+        
+        @media (min-width: 769px) {
+            .breakpoint-indicator::after {
+                content: ' (1024px+ Desktop)';
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="breakpoint-indicator">Current View</div>
+    
+    <div class="test-container">
+        <h1>📱 The Basement - Mobile Layout Test</h1>
+        
+        <div class="breakpoint-info">
+            <h2>Viewport Info</h2>
+            <div class="viewport-size" id="viewport-size">Loading...</div>
+            <p>This page tests responsive layouts at: 375px (iPhone), 768px (Tablet), and 1024px+ (Desktop)</p>
+        </div>
+        
+        <div class="test-section">
+            <h3>✅ Test Checklist - Mobile Layout (< 768px)</h3>
+            
+            <div class="test-item">
+                <strong>Navbar Height & Spacing:</strong>
+                <span class="status check">CHECK</span>
+                <p>• Height should be 56-60px on mobile</p>
+                <p>• Logo size: 32-42px</p>
+                <p>• "The Basement" text hidden on mobile</p>
+            </div>
+            
+            <div class="test-navbar">
+                <div class="test-logo"></div>
+                <div>
+                    <div class="test-button">Connect</div>
+                </div>
+                <div class="test-button">☰</div>
+            </div>
+            
+            <div class="test-item">
+                <strong>Hamburger Menu:</strong>
+                <span class="status check">CHECK</span>
+                <p>• Shows on mobile (< 768px)</p>
+                <p>• Wallet buttons inside dropdown</p>
+                <p>• Smooth slide animation</p>
+            </div>
+            
+            <div class="test-item">
+                <strong>Typography with clamp():</strong>
+                <span class="status pass">PASS</span>
+                <p class="test-text">This text uses clamp(0.75rem, 2vw, 1rem) - scales smoothly</p>
+                <p class="test-text">Main title: clamp(1.25rem, 4vw + 0.5rem, 2rem)</p>
+            </div>
+        </div>
+        
+        <div class="test-section">
+            <h3>📐 Flexbox & Grid Layouts</h3>
+            
+            <div class="test-item">
+                <strong>Responsive Grid:</strong>
+                <span class="status check">CHECK</span>
+                <p>• Single column on mobile (< 768px)</p>
+                <p>• 2 columns on tablet (768-1024px)</p>
+                <p>• Auto-fit on desktop (> 1024px)</p>
+            </div>
+            
+            <div class="test-grid">
+                <div class="test-grid-item">Grid Item 1</div>
+                <div class="test-grid-item">Grid Item 2</div>
+                <div class="test-grid-item">Grid Item 3</div>
+                <div class="test-grid-item">Grid Item 4</div>
+            </div>
+        </div>
+        
+        <div class="test-section">
+            <h3>🖼️ Background Image</h3>
+            
+            <div class="test-item">
+                <strong>Background Scaling:</strong>
+                <span class="status pass">PASS</span>
+                <p>• background-size: cover</p>
+                <p>• background-position: center center</p>
+                <p>• background-attachment: fixed</p>
+                <p>• No stretching or cropping of key details</p>
+            </div>
+        </div>
+        
+        <div class="test-section">
+            <h3>🎯 Touch Targets & Accessibility</h3>
+            
+            <div class="test-item">
+                <strong>Minimum Touch Target:</strong>
+                <span class="status pass">PASS</span>
+                <p>• All buttons/links: min 44x44px on mobile</p>
+                <p>• Proper spacing between interactive elements</p>
+            </div>
+        </div>
+        
+        <div class="test-section">
+            <h3>📱 Breakpoint Summary</h3>
+            
+            <div class="test-item">
+                <strong>375px (Small Mobile):</strong>
+                <p>• Logo: 32px</p>
+                <p>• Navbar: 56px</p>
+                <p>• Single column layout</p>
+                <p>• Hamburger menu visible</p>
+            </div>
+            
+            <div class="test-item">
+                <strong>768px (Tablet):</strong>
+                <p>• Logo: 42-48px</p>
+                <p>• Navbar: 60px</p>
+                <p>• 2-column grid</p>
+                <p>• Chat sidebar as overlay</p>
+            </div>
+            
+            <div class="test-item">
+                <strong>1024px+ (Desktop):</strong>
+                <p>• Logo: 56px</p>
+                <p>• Full nav links visible</p>
+                <p>• Multi-column grid</p>
+                <p>• Chat sidebar always visible</p>
+            </div>
+        </div>
+    </div>
+    
+    <script>
+        // Display viewport size
+        function updateViewportSize() {
+            const width = window.innerWidth;
+            const height = window.innerHeight;
+            const sizeElement = document.getElementById('viewport-size');
+            
+            let breakpoint = '';
+            if (width <= 480) {
+                breakpoint = '📱 Small Mobile';
+            } else if (width <= 768) {
+                breakpoint = '📱 Mobile/Tablet';
+            } else if (width <= 1024) {
+                breakpoint = '💻 Tablet/Small Desktop';
+            } else {
+                breakpoint = '🖥️ Desktop';
+            }
+            
+            sizeElement.innerHTML = `${breakpoint}<br>Viewport: ${width}px × ${height}px`;
+        }
+        
+        updateViewportSize();
+        window.addEventListener('resize', updateViewportSize);
+    </script>
+</body>
+</html>
+

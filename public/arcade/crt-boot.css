@@ -1,0 +1,353 @@
+/* ========================================
+   CRT BOOT ANIMATION - RETRO TERMINAL STARTUP
+   Flickering CRT effect when games load
+   ======================================== */
+
+/* CRT Boot Animation - Main Container */
+.crt-boot {
+    animation: crtBoot 1.5s cubic-bezier(0.4, 0, 0.2, 1) forwards;
+}
+
+@keyframes crtBoot {
+    0% {
+        opacity: 0;
+        filter: brightness(3) contrast(2);
+        transform: scaleY(0.01) scaleX(1);
+    }
+    20% {
+        opacity: 0.8;
+        filter: brightness(2) contrast(1.8);
+        transform: scaleY(0.5) scaleX(1.02);
+    }
+    40% {
+        opacity: 0;
+        filter: brightness(3) contrast(2);
+        transform: scaleY(0.8) scaleX(0.98);
+    }
+    60% {
+        opacity: 1;
+        filter: brightness(1.5) contrast(1.5);
+        transform: scaleY(1) scaleX(1.01);
+    }
+    80% {
+        opacity: 0.9;
+        filter: brightness(1.2) contrast(1.2);
+        transform: scaleY(1) scaleX(1);
+    }
+    100% {
+        opacity: 1;
+        filter: brightness(1) contrast(1);
+        transform: scaleY(1) scaleX(1);
+    }
+}
+
+/* CRT Flicker Effect */
+.crt-flicker {
+    animation: crtFlicker 0.15s infinite alternate;
+}
+
+@keyframes crtFlicker {
+    0% {
+        opacity: 0.95;
+        filter: brightness(1.02);
+    }
+    100% {
+        opacity: 1;
+        filter: brightness(0.98);
+    }
+}
+
+/* Boot Text Animation */
+.boot-text {
+    opacity: 0;
+    animation: bootTextReveal 2s ease-out forwards;
+    animation-delay: 0.5s;
+}
+
+@keyframes bootTextReveal {
+    0% {
+        opacity: 0;
+        transform: translateY(-10px);
+        filter: blur(5px);
+    }
+    50% {
+        opacity: 0.5;
+        filter: blur(2px);
+    }
+    100% {
+        opacity: 1;
+        transform: translateY(0);
+        filter: blur(0);
+    }
+}
+
+/* Terminal Scanline Effect */
+.crt-scanline {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: linear-gradient(
+        to bottom,
+        transparent 50%,
+        rgba(0, 0, 0, 0.3) 50%
+    );
+    background-size: 100% 4px;
+    pointer-events: none;
+    z-index: 9999;
+    animation: scanline 8s linear infinite;
+}
+
+@keyframes scanline {
+    0% {
+        background-position: 0 0;
+    }
+    100% {
+        background-position: 0 4px;
+    }
+}
+
+/* Power-On Glow */
+.power-on-glow {
+    animation: powerGlow 2s ease-out forwards;
+}
+
+@keyframes powerGlow {
+    0% {
+        box-shadow: 
+            0 0 0 rgba(0, 82, 255, 0),
+            inset 0 0 0 rgba(0, 82, 255, 0);
+    }
+    50% {
+        box-shadow: 
+            0 0 80px rgba(0, 82, 255, 1),
+            inset 0 0 40px rgba(0, 82, 255, 0.8);
+    }
+    100% {
+        box-shadow: 
+            0 0 20px rgba(0, 82, 255, 0.6),
+            inset 0 0 80px rgba(0, 82, 255, 0.1);
+    }
+}
+
+/* Static Noise Overlay */
+.static-noise {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background-image: url('data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHdpZHRoPSIzMDAiIGhlaWdodD0iMzAwIj48ZmlsdGVyIGlkPSJhIiB4PSIwIiB5PSIwIj48ZmVUdXJidWxlbmNlIGJhc2VGcmVxdWVuY3k9Ii45IiBzdGl0Y2hUaWxlcz0ic3RpdGNoIiB0eXBlPSJmcmFjdGFsTm9pc2UiLz48ZmVDb2xvck1hdHJpeCB0eXBlPSJzYXR1cmF0ZSIgdmFsdWVzPSIwIi8+PC9maWx0ZXI+PHBhdGggZD0iTTAgMGgzMDB2MzAwSDB6IiBmaWx0ZXI9InVybCgjYSkiIG9wYWNpdHk9Ii4xIi8+PC9zdmc+');
+    opacity: 0;
+    pointer-events: none;
+    z-index: 10000;
+    animation: staticFade 1.5s ease-out forwards;
+}
+
+@keyframes staticFade {
+    0% {
+        opacity: 0.4;
+    }
+    50% {
+        opacity: 0.2;
+    }
+    100% {
+        opacity: 0;
+    }
+}
+
+/* Boot Loading Bar */
+.boot-loader {
+    position: fixed;
+    bottom: 20px;
+    left: 50%;
+    transform: translateX(-50%);
+    width: 60%;
+    max-width: 400px;
+    height: 4px;
+    background: rgba(0, 82, 255, 0.2);
+    border: 1px solid #0052ff99;
+    z-index: 10001;
+    overflow: hidden;
+    opacity: 0;
+    animation: loaderReveal 0.5s ease-out forwards, loaderFade 0.5s ease-out 1.5s forwards;
+}
+
+.boot-loader::after {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: -100%;
+    width: 100%;
+    height: 100%;
+    background: linear-gradient(90deg, 
+        transparent,
+        #0052ff99,
+        #00BFFF,
+        #0052ff99,
+        transparent
+    );
+    animation: loaderProgress 1.5s ease-in-out forwards;
+}
+
+@keyframes loaderReveal {
+    0% {
+        opacity: 0;
+        transform: translateX(-50%) scaleX(0);
+    }
+    100% {
+        opacity: 1;
+        transform: translateX(-50%) scaleX(1);
+    }
+}
+
+@keyframes loaderProgress {
+    0% {
+        left: -100%;
+    }
+    100% {
+        left: 100%;
+    }
+}
+
+@keyframes loaderFade {
+    to {
+        opacity: 0;
+        transform: translateX(-50%) translateY(20px);
+    }
+}
+
+/* Boot Status Text */
+.boot-status {
+    position: fixed;
+    top: 20px;
+    left: 20px;
+    font-family: 'Press Start 2P', monospace;
+    font-size: 0.5rem;
+    color: #00FF88;
+    text-shadow: 0 0 10px rgba(0, 255, 136, 0.8);
+    z-index: 10001;
+    opacity: 0;
+    animation: statusReveal 0.5s ease-out 0.3s forwards, statusFade 0.5s ease-out 1.8s forwards;
+}
+
+@keyframes statusReveal {
+    to {
+        opacity: 1;
+    }
+}
+
+@keyframes statusFade {
+    to {
+        opacity: 0;
+    }
+}
+
+/* Typewriter Effect for Boot Messages */
+.typewriter {
+    overflow: hidden;
+    border-right: 2px solid #00FF88;
+    white-space: nowrap;
+    animation: 
+        typing 1s steps(30, end) forwards,
+        blink-caret 0.75s step-end infinite;
+}
+
+@keyframes typing {
+    from {
+        width: 0;
+    }
+    to {
+        width: 100%;
+    }
+}
+
+@keyframes blink-caret {
+    from, to {
+        border-color: transparent;
+    }
+    50% {
+        border-color: #00FF88;
+    }
+}
+
+/* CRT Vignette Effect */
+.crt-vignette {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: radial-gradient(
+        ellipse at center,
+        transparent 0%,
+        transparent 50%,
+        rgba(0, 0, 0, 0.3) 100%
+    );
+    pointer-events: none;
+    z-index: 9997;
+}
+
+/* Screen Curvature Effect */
+.crt-curve {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    perspective: 1000px;
+    pointer-events: none;
+}
+
+.crt-curve::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: radial-gradient(
+        ellipse at center,
+        rgba(0, 82, 255, 0.05) 0%,
+        transparent 70%
+    );
+    transform: translateZ(-50px);
+}
+
+/* Disable animations on mobile for performance */
+@media (max-width: 768px) {
+    .crt-boot {
+        animation-duration: 1s;
+    }
+    
+    .static-noise,
+    .crt-scanline,
+    .crt-curve {
+        display: none;
+    }
+    
+    .boot-loader {
+        width: 80%;
+    }
+}
+
+/* Prefers reduced motion - disable animations */
+@media (prefers-reduced-motion: reduce) {
+    .crt-boot,
+    .crt-flicker,
+    .boot-text,
+    .power-on-glow,
+    .static-noise,
+    .boot-loader,
+    .boot-status,
+    .typewriter {
+        animation: none !important;
+    }
+    
+    .crt-scanline,
+    .static-noise {
+        display: none;
+    }
+}
+
