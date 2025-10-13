@@ -375,7 +375,6 @@
         <div class="footer-content">
             <div class="footer-left">
                 <p class="footer-text">The Basement • Base Network • Zora Creator Coin</p>
-                <p class="footer-subtext">Contract: 0xcf4a...ca23</p>
             </div>
             <div class="footer-right">
                 <div class="social-links">
@@ -392,15 +391,16 @@
 
     <style>
         .site-footer {
-            position: fixed;
+            position: relative;
             bottom: 0;
             left: 0;
             right: 0;
-            background: rgba(0, 0, 0, 0.85);
+            background: rgba(0, 0, 0, 0.95);
             backdrop-filter: blur(15px);
             border-top: 1px solid rgba(0, 82, 255, 0.3);
-            padding: 1rem 2rem;
-            z-index: 100;
+            padding: 1.5rem 2rem;
+            margin-top: 3rem;
+            z-index: 50;
             box-shadow: 0 -4px 20px rgba(0, 82, 255, 0.2);
         }
 
@@ -422,14 +422,7 @@
             font-size: 0.7rem;
             color: #00BFFF;
             text-shadow: 0 0 5px rgba(0, 191, 255, 0.5);
-            margin-bottom: 0.25rem;
             font-family: 'Press Start 2P', monospace;
-        }
-
-        .footer-subtext {
-            font-size: 0.5rem;
-            color: rgba(255, 255, 255, 0.6);
-            font-family: 'Courier New', monospace;
         }
 
         .footer-right {
@@ -443,42 +436,35 @@
         }
 
         .social-link {
-            display: flex;
+            display: inline-flex;
             align-items: center;
             justify-content: center;
-            width: 40px;
-            height: 40px;
-            background: rgba(0, 82, 255, 0.1);
-            border: 2px solid #0052ff99;
-            border-radius: 50%;
             transition: all 0.3s ease;
-            padding: 8px;
-            box-shadow: 0 0 10px rgba(0, 82, 255, 0.3);
+            opacity: 0.8;
         }
 
         .social-link:hover {
-            background: rgba(0, 82, 255, 0.3);
-            border-color: #00BFFF;
-            box-shadow: 0 0 20px rgba(0, 191, 255, 0.6);
+            opacity: 1;
             transform: translateY(-3px);
         }
 
         .social-icon {
-            width: 24px;
-            height: 24px;
+            width: 32px;
+            height: 32px;
             filter: invert(1) drop-shadow(0 0 5px rgba(0, 191, 255, 0.6));
             transition: all 0.3s ease;
         }
 
         .social-link:hover .social-icon {
-            filter: invert(1) drop-shadow(0 0 10px rgba(0, 191, 255, 0.9));
-            transform: scale(1.1);
+            filter: invert(1) drop-shadow(0 0 15px rgba(0, 191, 255, 1));
+            transform: scale(1.15);
         }
 
         /* Mobile adjustments */
         @media (max-width: 768px) {
             .site-footer {
-                padding: 0.75rem 1rem;
+                padding: 1rem;
+                margin-top: 2rem;
             }
 
             .footer-content {
@@ -491,24 +477,22 @@
                 font-size: 0.5rem;
             }
 
-            .footer-subtext {
-                font-size: 0.4rem;
-            }
-
-            .social-link {
-                width: 36px;
-                height: 36px;
-            }
-
             .social-icon {
-                width: 20px;
-                height: 20px;
+                width: 28px;
+                height: 28px;
             }
         }
 
-        /* Add padding to main content so footer doesn't overlap */
+        /* Remove body padding since footer is no longer fixed */
         body {
-            padding-bottom: 80px;
+            padding-bottom: 0;
+        }
+
+        /* Add extra space after main content for scrolling into void */
+        main::after {
+            content: '';
+            display: block;
+            height: 100vh;
         }
     </style>
 
