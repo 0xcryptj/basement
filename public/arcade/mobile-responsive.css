@@ -48,9 +48,9 @@ body {
     /* Game board - optimized sizing */
     .game-board-container {
         width: calc(100vw - 20px) !important;
-        max-width: 95vw !important;
-        max-height: 85vh !important;
-        padding: clamp(0.75rem, 3vw, 1.25rem) !important;
+        max-width: 92vw !important;
+        max-height: 75vh !important;
+        padding: 0.75rem !important;
         margin: 0 auto !important;
         overflow-y: auto !important;
         -webkit-overflow-scrolling: touch !important;
@@ -101,11 +101,11 @@ body {
     /* ========== CONNECT 4 MOBILE OPTIMIZATION ========== */
     .connect4-grid,
     #board {
-        width: min(90vw, 400px) !important;
-        max-width: 90vw !important;
+        width: min(85vw, 350px) !important;
+        max-width: 85vw !important;
         margin: 0 auto !important;
-        padding: clamp(8px, 2vw, 12px) !important;
-        gap: clamp(3px, 1vw, 6px) !important;
+        padding: 6px !important;
+        gap: 3px !important;
         display: grid !important;
         grid-template-columns: repeat(7, 1fr) !important;
         grid-template-rows: repeat(6, 1fr) !important;
@@ -115,10 +115,10 @@ body {
     .cell {
         width: 100% !important;
         aspect-ratio: 1 / 1 !important;
-        min-width: 35px !important;
-        max-width: 60px !important;
+        min-width: 32px !important;
+        max-width: 50px !important;
         border-width: 2px !important;
-        font-size: clamp(1rem, 3vw, 1.5rem) !important;
+        font-size: 1rem !important;
     }
 
     /* Column arrows - bigger touch targets */

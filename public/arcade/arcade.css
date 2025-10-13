@@ -1249,8 +1249,8 @@ body {
 .coin-3d-container {
     perspective: 1500px;
     perspective-origin: center center;
-    width: 350px;
-    height: 350px;
+    width: min(300px, 70vw);
+    height: min(300px, 70vw);
     display: flex;
     align-items: center;
     justify-content: center;
@@ -1258,8 +1258,8 @@ body {
 }
 
 .coin-3d {
-    width: 300px;
-    height: 300px;
+    width: min(250px, 60vw);
+    height: min(250px, 60vw);
     position: relative;
     transform-style: preserve-3d;
     transform: translateZ(0);
@@ -1791,24 +1791,25 @@ body {
 
 /* Connect 4 Board Styles - 3D PIXEL ARCADE */
 .connect4-board {
-    margin: 2rem auto;
+    margin: 1rem auto;
 }
 
 .connect4-grid {
     display: grid;
-    grid-template-columns: repeat(7, 70px);
-    grid-template-rows: repeat(6, 70px);
-    gap: 5px;
+    grid-template-columns: repeat(7, minmax(40px, 55px));
+    grid-template-rows: repeat(6, minmax(40px, 55px));
+    gap: 4px;
     background: linear-gradient(145deg, #1a1a3e, #0a0a1e);
-    padding: 20px;
+    padding: 12px;
     border-radius: 5px;
-    border: 6px solid #0052ff;
+    border: 4px solid #0052ff;
     box-shadow: 
         inset 4px 4px 8px rgba(0, 0, 0, 0.8),
         inset -4px -4px 8px rgba(255, 255, 255, 0.05),
-        0 8px 0 #001a4d,
-        0 12px 20px rgba(0, 0, 0, 0.8);
+        0 6px 0 #001a4d,
+        0 10px 15px rgba(0, 0, 0, 0.8);
     position: relative;
+    max-width: 90%;
 }
 
 .connect4-grid::before {
@@ -1826,21 +1827,21 @@ body {
 }
 
 .connect4-cell {
-    width: 70px;
-    height: 70px;
+    width: 100%;
+    height: 100%;
     background: 
         linear-gradient(145deg, #1a1a2e 0%, #0f0f1e 100%);
-    border: 3px solid #0052ff;
+    border: 2px solid #0052ff;
     border-radius: 50%;
     display: flex;
     align-items: center;
     justify-content: center;
-    font-size: 3rem;
+    font-size: 2rem;
     transition: all 0.2s ease;
     box-shadow: 
         inset 2px 2px 5px rgba(0, 0, 0, 0.8),
         inset -2px -2px 5px rgba(255, 255, 255, 0.1),
-        0 4px 0 rgba(0, 0, 0, 0.5);
+        0 3px 0 rgba(0, 0, 0, 0.5);
     position: relative;
 }
 
@@ -1891,20 +1892,20 @@ body {
 }
 
 .connect4-column {
-    width: 70px;
-    padding: 0.8rem;
+    width: 100%;
+    padding: 0.5rem;
     text-align: center;
     cursor: pointer;
-    font-size: 2rem;
+    font-size: 1.5rem;
     color: #00ffff;
     transition: all 0.2s ease;
     background: linear-gradient(145deg, #0052ff, #003399);
-    border: 3px solid #00ffff;
-    margin: 0 2.5px;
+    border: 2px solid #00ffff;
+    margin: 0 1px;
     box-shadow: 
-        0 4px 0 #001a4d,
-        0 6px 15px rgba(0, 0, 0, 0.6);
-    filter: drop-shadow(0 0 8px rgba(0, 255, 255, 0.4));
+        0 3px 0 #001a4d,
+        0 5px 12px rgba(0, 0, 0, 0.6);
+    filter: drop-shadow(0 0 6px rgba(0, 255, 255, 0.4));
 }
 
 .connect4-column:hover {
@@ -1928,9 +1929,10 @@ body {
     display: flex;
     flex-direction: column;
     align-items: center;
-    gap: 2rem;
-    min-width: 600px;
-    padding: 2rem;
+    gap: 1.5rem;
+    min-width: auto;
+    max-width: 100%;
+    padding: 1rem;
 }
 
 .war-cards {
@@ -1943,20 +1945,20 @@ body {
 }
 
 .war-card {
-    width: 160px;
-    height: 220px;
+    width: clamp(120px, 30vw, 140px);
+    height: clamp(170px, 42vw, 200px);
     background: linear-gradient(145deg, #ffffff, #f0f0f0);
-    border: 6px solid #0052ff;
+    border: 4px solid #0052ff;
     border-radius: 8px;
     display: flex;
     flex-direction: column;
     align-items: center;
     justify-content: center;
-    font-size: 4rem;
+    font-size: clamp(2.5rem, 8vw, 3.5rem);
     color: #000;
     box-shadow: 
-        0 8px 0 #001a4d,
-        0 12px 30px rgba(0, 0, 0, 0.8),
+        0 6px 0 #001a4d,
+        0 10px 25px rgba(0, 0, 0, 0.8),
         inset 2px 2px 4px rgba(255, 255, 255, 0.8),
         inset -2px -2px 4px rgba(0, 0, 0, 0.2);
     transition: all 0.5s ease;
@@ -2072,8 +2074,9 @@ body {
     display: flex;
     flex-direction: column;
     align-items: center;
-    gap: 2rem;
-    min-width: 500px;
+    gap: 1.5rem;
+    min-width: auto;
+    max-width: 100%;
 }
 
 .rps-choices {
@@ -2085,24 +2088,24 @@ body {
 
 /* RPS Buttons - 3D PIXEL ARCADE */
 .rps-choice-btn {
-    width: 140px;
-    height: 140px;
+    width: clamp(90px, 25vw, 120px);
+    height: clamp(90px, 25vw, 120px);
     background: linear-gradient(145deg, #0052ff, #003399);
-    border: 6px solid #00ffff;
+    border: 4px solid #00ffff;
     border-radius: 50%;
-    font-size: 5rem;
+    font-size: clamp(3rem, 8vw, 4rem);
     cursor: pointer;
     transition: all 0.2s ease;
     display: flex;
     align-items: center;
     justify-content: center;
     box-shadow: 
-        0 8px 0 #001a4d,
-        0 12px 30px rgba(0, 0, 0, 0.8),
+        0 6px 0 #001a4d,
+        0 10px 25px rgba(0, 0, 0, 0.8),
         inset 2px 2px 8px rgba(255, 255, 255, 0.3),
         inset -2px -2px 8px rgba(0, 0, 0, 0.5);
     position: relative;
-    filter: drop-shadow(0 0 10px rgba(0, 255, 255, 0.5));
+    filter: drop-shadow(0 0 8px rgba(0, 255, 255, 0.5));
 }
 
 .rps-choice-btn::before {
