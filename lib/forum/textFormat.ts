@@ -9,11 +9,11 @@
  * @param threadId - Current thread ID for quote link generation
  * @returns HTML-formatted text
  */
-export function formatPostText(text: string, threadId?: string): string {
+export function formatPostText(text: string, _threadId?: string): string {
   if (!text) return '';
 
   // Escape HTML to prevent XSS
-  let formatted = escapeHtml(text);
+  const formatted = escapeHtml(text);
 
   // Split into lines for processing
   const lines = formatted.split('\n');

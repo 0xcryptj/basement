@@ -8,11 +8,27 @@ import { getExtensionFromMime } from './sanitize';
  * Use this when SUPABASE_SERVICE_ROLE_KEY is available
  */
 
+interface SupabaseUploadOptions {
+  contentType?: string;
+  cacheControl?: string;
+  upsert?: boolean;
+}
+
+interface SupabaseUploadResponse {
+  data: { path: string } | null;
+  error: Error | null;
+}
+
+interface SupabaseRemoveResponse {
+  data: unknown;
+  error: Error | null;
+}
+
 interface SupabaseClient {
   storage: {
     from: (bucket: string) => {
-      upload: (path: string, file: Buffer, options?: any) => Promise<any>;
-      remove: (paths: string[]) => Promise<any>;
+      upload: (path: string, file: Buffer, options?: SupabaseUploadOptions) => Promise<SupabaseUploadResponse>;
+      remove: (paths: string[]) => Promise<SupabaseRemoveResponse>;
       getPublicUrl: (path: string) => { data: { publicUrl: string } };
     };
   };

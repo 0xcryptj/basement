@@ -45,14 +45,20 @@ export function isValidWalletAddress(address: string): boolean {
  * Get wallet address from session/request
  * This should integrate with your existing wallet auth system
  */
-export function getWalletFromSession(req: any): string | null {
+export function getWalletFromSession(req: unknown): string | null {
   // TODO: Integrate with existing wagmi/viem wallet session
   // For now, check for wallet in session, headers, or cookies
   
+  const request = req as { 
+    session?: { wallet?: string };
+    headers?: { get?: (key: string) => string | null };
+    cookies?: { wallet?: string };
+  };
+  
   const wallet = 
-    req.session?.wallet ||
-    req.headers?.['x-wallet-address'] ||
-    req.cookies?.wallet;
+    request.session?.wallet ||
+    (request.headers?.get ? request.headers.get('x-wallet-address') : null) ||
+    request.cookies?.wallet;
 
   if (wallet && isValidWalletAddress(wallet)) {
     return wallet;

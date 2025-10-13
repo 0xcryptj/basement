@@ -65,7 +65,7 @@ export default async function CatalogPage({
         </div>
       ) : (
         <div className="catalog-grid">
-          {threads.map((thread: any) => (
+          {threads.map((thread: Thread) => (
             <CatalogItem key={thread.id} thread={thread} boardSlug={boardSlug} />
           ))}
         </div>
@@ -76,8 +76,24 @@ export default async function CatalogPage({
   );
 }
 
+interface Thread {
+  id: string;
+  subject: string | null;
+  opText: string;
+  opImageUrl: string | null;
+  opThumbUrl: string | null;
+  anonId: string;
+  tripSig: string | null;
+  isSticky: boolean;
+  isLocked: boolean;
+  views: number;
+  createdAt: string;
+  bumpAt: string;
+  _count: { posts: number };
+}
+
 interface CatalogItemProps {
-  thread: any;
+  thread: Thread;
   boardSlug: string;
 }
 

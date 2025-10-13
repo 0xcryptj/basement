@@ -3,6 +3,22 @@ import ThreadCard from '@/components/forum/ThreadCard';
 import NewThreadForm from '@/components/forum/NewThreadForm';
 import { BOARD_INFO } from '@/lib/forum/constants';
 
+interface Thread {
+  id: string;
+  subject: string | null;
+  opText: string;
+  opImageUrl: string | null;
+  opThumbUrl: string | null;
+  anonId: string;
+  tripSig: string | null;
+  isSticky: boolean;
+  isLocked: boolean;
+  views: number;
+  createdAt: string;
+  bumpAt: string;
+  _count: { posts: number };
+}
+
 async function getThreads(boardSlug: string, page: number = 1) {
   const res = await fetch(
     `${process.env.NEXT_PUBLIC_URL || 'http://localhost:8000'}/api/forum/threads?board=${boardSlug}&page=${page}`,
@@ -76,7 +92,7 @@ export default async function BoardPage({
             <p className="text-gray-600">No threads yet. Be the first to post!</p>
           </div>
         ) : (
-          threads.map((thread: any) => (
+          threads.map((thread: Thread) => (
             <ThreadCard key={thread.id} thread={thread} boardSlug={boardSlug} />
           ))
         )}

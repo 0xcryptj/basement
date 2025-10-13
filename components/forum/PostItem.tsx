@@ -44,7 +44,7 @@ export default function PostItem({ post, postNumber }: PostItemProps) {
 
   // Format text with greentext support
   useEffect(() => {
-    let formatted = post.text;
+    const formatted = post.text;
     
     // Split into lines and process each
     const lines = formatted.split('\n');

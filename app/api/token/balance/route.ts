@@ -80,12 +80,12 @@ export async function GET(request: NextRequest) {
       isHolder: balance > BigInt(0),
       meetsMinimumRequirements: canCreateChannel && canCreateThread && canPostMessage && canCreatePost,
     });
-  } catch (error: any) {
+  } catch (error: unknown) {
     console.error('Error checking token balance:', error);
     return NextResponse.json(
       { 
         error: 'Failed to check token balance',
-        details: error.message 
+        details: error instanceof Error ? error.message : 'Unknown error'
       },
       { status: 500 }
     );
@@ -132,7 +132,7 @@ export async function POST(request: NextRequest) {
             isHolder: balance > BigInt(0),
             meetsMinimum: balance >= BigInt(TOKEN_CONFIG.requirements.createChannel),
           };
-        } catch (error) {
+        } catch {
           return {
             address,
             error: 'Failed to fetch balance',
@@ -142,12 +142,12 @@ export async function POST(request: NextRequest) {
     );
 
     return NextResponse.json({ balances });
-  } catch (error: any) {
+  } catch (error: unknown) {
     console.error('Error checking token balances:', error);
     return NextResponse.json(
       { 
         error: 'Failed to check token balances',
-        details: error.message 
+        details: error instanceof Error ? error.message : 'Unknown error'
       },
       { status: 500 }
     );

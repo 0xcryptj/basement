@@ -147,7 +147,7 @@ export default function ReplyForm({ threadId, onSuccess }: ReplyFormProps) {
             disabled={loading}
             className="w-4 h-4"
           />
-          Sage (don't bump thread)
+          Sage (don&apos;t bump thread)
         </label>
         <label className="flex items-center gap-2 text-sm text-gray-300">
           <input

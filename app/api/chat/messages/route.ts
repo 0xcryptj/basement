@@ -187,7 +187,7 @@ export async function POST(request: NextRequest) {
     }
 
     // Find or create user using Supabase
-    let { data: user, error: userFindError } = await supabase
+    let { data: user } = await supabase
       .from('User')
       .select('id, username, walletAddress')
       .eq('walletAddress', effectiveWallet)
@@ -237,7 +237,7 @@ export async function POST(request: NextRequest) {
     }
 
     // Find or create channel using Supabase
-    let { data: channel, error: channelFindError } = await supabase
+    let { data: channel } = await supabase
       .from('Channel')
       .select('id, name, slug')
       .eq('slug', channelSlug)

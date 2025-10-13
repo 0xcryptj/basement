@@ -22,7 +22,7 @@ export default function ForumPage() {
     // Check if wallet is connected (looking for common wallet detection)
     const checkWallet = () => {
       if (typeof window !== 'undefined') {
-        const hasEthereum = !!(window as any).ethereum;
+        const hasEthereum = !!(window as Window & { ethereum?: unknown }).ethereum;
         setWalletConnected(hasEthereum);
       }
     };

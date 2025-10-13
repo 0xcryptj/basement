@@ -10,6 +10,43 @@ import AnonIdBadge from '@/components/forum/AnonIdBadge';
 import QuickReply from '@/components/forum/QuickReply';
 import { BOARD_INFO } from '@/lib/forum/constants';
 
+interface Thread {
+  id: string;
+  subject: string | null;
+  opText: string;
+  opImageUrl: string | null;
+  opThumbUrl: string | null;
+  anonId: string;
+  tripSig: string | null;
+  isSticky: boolean;
+  isLocked: boolean;
+  views: number;
+  createdAt: string;
+  bumpAt: string;
+  _count: { posts: number };
+}
+
+interface Post {
+  id: string;
+  postNumber: number;
+  text: string;
+  imageUrl: string | null;
+  thumbUrl: string | null;
+  anonId: string;
+  tripSig: string | null;
+  sage: boolean;
+  likes: number;
+  dislikes: number;
+  createdAt: string;
+}
+
+interface Pagination {
+  currentPage: number;
+  totalPages: number;
+  totalCount: number;
+  perPage: number;
+}
+
 export default function ThreadPage({
   params,
   searchParams,
@@ -21,9 +58,9 @@ export default function ThreadPage({
   const { page: pageParam } = use(searchParams);
   const page = parseInt(pageParam || '1');
 
-  const [thread, setThread] = useState<any>(null);
-  const [posts, setPosts] = useState<any[]>([]);
-  const [pagination, setPagination] = useState<any>({ totalPages: 1 });
+  const [thread, setThread] = useState<Thread | null>(null);
+  const [posts, setPosts] = useState<Post[]>([]);
+  const [pagination, setPagination] = useState<Pagination>({ currentPage: 1, totalPages: 1, totalCount: 0, perPage: 0 });
   const [loading, setLoading] = useState(true);
   const [showFullImage, setShowFullImage] = useState(false);
   const [formattedOpText, setFormattedOpText] = useState('');
@@ -95,7 +132,7 @@ export default function ThreadPage({
           `/api/forum/threads?board=${boardSlug}`
         );
         const threadData = await threadRes.json();
-        const foundThread = threadData.threads?.find((t: any) => t.id === threadId);
+        const foundThread = threadData.threads?.find((t: Thread) => t.id === threadId);
         
         if (!foundThread) {
           setLoading(false);
@@ -274,7 +311,7 @@ export default function ThreadPage({
             No replies yet.
           </div>
         ) : (
-          posts.map((post: any, index: number) => (
+          posts.map((post: Post, index: number) => (
             <PostItem key={post.id} post={post} postNumber={index + 2} />
           ))
         )}

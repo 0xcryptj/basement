@@ -43,7 +43,7 @@ export default function ThreadCard({ thread, boardSlug }: ThreadCardProps) {
 
   // Format text preview with greentext
   useEffect(() => {
-    let text = thread.opText.length > 300
+    const text = thread.opText.length > 300
       ? thread.opText.slice(0, 300) + '...'
       : thread.opText;
     
