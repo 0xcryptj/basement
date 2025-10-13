@@ -2144,6 +2144,12 @@ class BasementApp {
 
     // Channel creation methods
     showChannelDialog() {
+        // REQUIRE WALLET CONNECTION  
+        if (!this.isConnected || !this.walletAddress) {
+            alert('❌ Connect your wallet first!\n\nCreating channels requires:\n• Connected wallet\n• 5 $BASEMENT tokens (will be burned)');
+            return;
+        }
+        
         const dialog = document.getElementById('channel-dialog');
         if (dialog) {
             dialog.classList.remove('hidden');
@@ -2158,6 +2164,13 @@ class BasementApp {
     }
 
     createChannel() {
+        // REQUIRE WALLET CONNECTION
+        if (!this.isConnected || !this.walletAddress) {
+            alert('❌ You must connect your wallet to create a channel!\n\n5 $BASEMENT tokens will be burned.');
+            this.hideChannelDialog();
+            return;
+        }
+
         const channelName = document.getElementById('channel-name').value.trim();
         const channelDesc = document.getElementById('channel-description').value.trim();
         const isPrivate = document.getElementById('channel-private').checked;
@@ -2183,6 +2196,10 @@ class BasementApp {
             alert('Channel already exists');
             return;
         }
+
+        // TODO: Execute token burn transaction here
+        // Use window.BasementWallet.burnTokens() when ready
+        alert('⚠️ Token burn transaction not yet wired up.\n\nIn production, this will burn 5 $BASEMENT tokens.');
 
         // Create the channel
         this.channels[channelName] = {

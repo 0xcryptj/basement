@@ -1796,20 +1796,20 @@ body {
 
 .connect4-grid {
     display: grid;
-    grid-template-columns: repeat(7, minmax(40px, 55px));
-    grid-template-rows: repeat(6, minmax(40px, 55px));
-    gap: 4px;
+    grid-template-columns: repeat(7, minmax(35px, 48px));
+    grid-template-rows: repeat(6, minmax(35px, 48px));
+    gap: 3px;
     background: linear-gradient(145deg, #1a1a3e, #0a0a1e);
-    padding: 12px;
+    padding: 10px;
     border-radius: 5px;
-    border: 4px solid #0052ff;
+    border: 3px solid #0052ff;
     box-shadow: 
-        inset 4px 4px 8px rgba(0, 0, 0, 0.8),
-        inset -4px -4px 8px rgba(255, 255, 255, 0.05),
-        0 6px 0 #001a4d,
-        0 10px 15px rgba(0, 0, 0, 0.8);
+        inset 3px 3px 6px rgba(0, 0, 0, 0.8),
+        inset -3px -3px 6px rgba(255, 255, 255, 0.05),
+        0 5px 0 #001a4d,
+        0 8px 12px rgba(0, 0, 0, 0.8);
     position: relative;
-    max-width: 90%;
+    max-width: 95%;
 }
 
 .connect4-grid::before {

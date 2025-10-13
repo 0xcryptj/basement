@@ -163,20 +163,20 @@ body {
 
 /* ========== CONNECT 4 BOARD - SQUARE ASPECT RATIO ========== */
 #board, .connect4-grid {
-    width: min(70vw, 450px);
+    width: min(65vw, 380px);
     aspect-ratio: 7/6;
     display: grid;
     grid-template-columns: repeat(7, 1fr);
     grid-template-rows: repeat(6, 1fr);
-    gap: clamp(3px, 0.8vw, 6px);
-    padding: clamp(6px, 1.5vw, 10px);
+    gap: clamp(2px, 0.6vw, 4px);
+    padding: clamp(5px, 1.2vw, 8px);
     background: rgba(0, 0, 0, 0.8);
-    border: 3px solid #0052ff99;
-    border-radius: 12px;
+    border: 2px solid #0052ff99;
+    border-radius: 8px;
     margin: 0 auto;
     box-shadow: 
-        0 0 20px rgba(0, 82, 255, 0.4),
-        inset 0 0 30px rgba(0, 82, 255, 0.1);
+        0 0 15px rgba(0, 82, 255, 0.4),
+        inset 0 0 20px rgba(0, 82, 255, 0.1);
 }
 
 .connect4-cell, .cell {
