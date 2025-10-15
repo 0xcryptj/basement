@@ -58,6 +58,12 @@ contract LuckyBlock is ReentrancyGuard, Ownable {
     mapping(address => Affiliate) public affiliates;
     mapping(address => address) public referrals; // Player => Referrer
     
+    // Global statistics
+    uint256 public totalWagered;        // Total ETH wagered all-time
+    uint256 public totalRoundsPlayed;   // Total rounds completed
+    uint256 public totalUniquePlayers;  // Total unique players
+    mapping(address => bool) public hasPlayed; // Track unique players
+    
     // Current round tracking
     uint256 public currentEntryFee = 0.001 ether;
     
@@ -135,6 +141,13 @@ contract LuckyBlock is ReentrancyGuard, Ownable {
         // Update player stats
         playerStats[msg.sender]++;
         
+        // Update global stats
+        totalWagered += msg.value;
+        if (!hasPlayed[msg.sender]) {
+            hasPlayed[msg.sender] = true;
+            totalUniquePlayers++;
+        }
+        
         emit PlayerEntered(currentRoundId, msg.sender, round.players.length, actualReferrer);
         
         // Auto-draw if max players reached
@@ -203,6 +216,9 @@ contract LuckyBlock is ReentrancyGuard, Ownable {
         
         // Update player wins
         playerWins[winner]++;
+        
+        // Update global stats
+        totalRoundsPlayed++;
         
         // Pay winner
         uint256 payout = round.pot;
@@ -338,6 +354,26 @@ contract LuckyBlock is ReentrancyGuard, Ownable {
     ) {
         Affiliate storage aff = affiliates[affiliate];
         return (aff.totalReferred, aff.totalEarned, aff.isActive);
+    }
+    
+    /**
+     * @notice Get global statistics
+     */
+    function getGlobalStats() external view returns (
+        uint256 wagered,
+        uint256 roundsCompleted,
+        uint256 uniquePlayers,
+        uint256 currentRound,
+        uint256 activePlayers
+    ) {
+        Round storage round = rounds[currentRoundId];
+        return (
+            totalWagered,
+            totalRoundsPlayed,
+            totalUniquePlayers,
+            currentRoundId,
+            round.players.length
+        );
     }
 }
 
