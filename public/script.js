@@ -755,15 +755,47 @@ class BasementApp {
                 } else {
                     throw new Error('MetaMask not installed. Please install MetaMask to continue.');
                 }
+            } else if (walletType === 'coinbase') {
+                // Coinbase Wallet for Base network
+                if (typeof window.ethereum !== 'undefined' && window.ethereum.isCoinbaseWallet) {
+                    // Switch to Base network
+                    try {
+                        await this.switchToBaseNetwork(window.ethereum);
+                        console.log('✅ Switched to Base network');
+                    } catch (networkError) {
+                        throw new Error('Please switch to Base network in Coinbase Wallet to continue');
+                    }
+                    
+                    const accounts = await window.ethereum.request({ 
+                        method: 'eth_requestAccounts' 
+                    });
+                    address = accounts[0];
+                    
+                    // Request signature for verification
+                    try {
+                        const message = `Connect to The Basement\n\nTimestamp: ${Date.now()}`;
+                        const signature = await window.ethereum.request({
+                            method: 'personal_sign',
+                            params: [message, address]
+                        });
+                        console.log('Coinbase Wallet connected:', address);
+                        console.log('Signature verified:', signature.substring(0, 10) + '...');
+                    } catch (signError) {
+                        console.warn('⚠️ Signature rejected, but continuing connection');
+                        console.log('Coinbase Wallet connected:', address);
+                    }
+                } else {
+                    throw new Error('Coinbase Wallet not installed. Please install Coinbase Wallet to continue.');
+                }
             } else if (walletType === 'phantom') {
-                // Phantom supports Ethereum/Base - use ethereum provider
+                // Phantom supports Ethereum/Base via ethereum provider
                 if (typeof window.phantom !== 'undefined' && window.phantom.ethereum) {
-                    // MUST switch to Base network
+                    // Switch to Base network
                     try {
                         await this.switchToBaseNetwork(window.phantom.ethereum);
                         console.log('✅ Switched to Base network');
                     } catch (networkError) {
-                        throw new Error('Please switch to Base network in Phantom wallet to continue');
+                        throw new Error('Please switch to Base network in Phantom wallet');
                     }
                     
                     const accounts = await window.phantom.ethereum.request({ 
@@ -771,21 +803,21 @@ class BasementApp {
                     });
                     address = accounts[0];
                     
-                    // Request signature for verification (optional for better UX)
+                    // Request signature for verification
                     try {
                         const message = `Connect to The Basement\n\nTimestamp: ${Date.now()}`;
                         const signature = await window.phantom.ethereum.request({
                             method: 'personal_sign',
                             params: [message, address]
                         });
-                        console.log('Phantom connected with signature:', address);
+                        console.log('Phantom connected on Base:', address);
                         console.log('Signature verified:', signature.substring(0, 10) + '...');
                     } catch (signError) {
                         console.warn('⚠️ Signature rejected, but continuing connection');
                         console.log('Phantom connected:', address);
                     }
                 } else {
-                    throw new Error('Phantom not installed. Please install Phantom to continue.');
+                    throw new Error('Phantom wallet not installed. Please install Phantom to continue.');
                 }
             } else if (walletType === 'base') {
                 if (typeof window.ethereum !== 'undefined') {

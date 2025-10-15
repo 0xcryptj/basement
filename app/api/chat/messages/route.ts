@@ -152,14 +152,14 @@ export async function POST(request: NextRequest) {
         );
       }
       user = newUser;
-      console.log('✅ User created:', user.id);
+      console.log('✅ User created:', user!.id);
     } else {
-      console.log('👤 User exists:', user.id);
+      console.log('👤 User exists:', user!.id);
       // Update last seen
       await supabase
         .from('User')
         .update({ lastSeenAt: new Date().toISOString() })
-        .eq('id', user.id);
+        .eq('id', user!.id);
     }
 
     // Find or create channel using Supabase
@@ -190,9 +190,9 @@ export async function POST(request: NextRequest) {
         );
       }
       channel = newChannel;
-      console.log('✅ Channel created:', channel.id);
+      console.log('✅ Channel created:', channel!.id);
     } else {
-      console.log('📢 Channel exists:', channel.id);
+      console.log('📢 Channel exists:', channel!.id);
     }
 
     // Create message using Supabase
@@ -200,8 +200,8 @@ export async function POST(request: NextRequest) {
     const { data: message, error: messageError } = await supabase
       .from('Message')
       .insert({
-        channelId: channel.id,
-        userId: user.id,
+        channelId: channel!.id,
+        userId: user!.id,
         content,
         imageUrl
       })
@@ -231,8 +231,8 @@ export async function POST(request: NextRequest) {
         imageUrl: message.imageUrl,
         createdAt: message.createdAt,
         user: {
-          username: user.username,
-          walletAddress: user.walletAddress
+          username: user!.username,
+          walletAddress: user!.walletAddress
         }
       }
     });

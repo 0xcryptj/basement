@@ -27,16 +27,29 @@ async function main() {
     const warAddress = await war.getAddress();
     console.log("✅ War deployed to:", warAddress);
 
+    // Deploy Lucky Block
+    console.log("\n4️⃣  Deploying LuckyBlock...");
+    const LuckyBlock = await ethers.getContractFactory("LuckyBlock");
+    const luckyBlock = await LuckyBlock.deploy();
+    await luckyBlock.waitForDeployment();
+    const luckyBlockAddress = await luckyBlock.getAddress();
+    console.log("✅ LuckyBlock deployed to:", luckyBlockAddress);
+
     console.log("\n" + "=".repeat(60));
     console.log("🎉 ALL CONTRACTS DEPLOYED!");
     console.log("=".repeat(60));
-    console.log("\n📋 UPDATE THESE ADDRESSES IN arcade.js:");
+    console.log("\n📋 UPDATE THESE ADDRESSES:");
+    console.log("\nIn arcade.js:");
     console.log(`const COIN_TOSS_ADDRESS = "${coinTossAddress}";`);
     console.log(`const CONNECT4_ADDRESS = "${connect4Address}";`);
     console.log(`const WAR_ADDRESS = "${warAddress}";`);
+    console.log("\nIn luckyblock.html:");
+    console.log(`const CONTRACT_ADDRESS = "${luckyBlockAddress}";`);
     console.log("\n💰 House wallet: 0x5Da407f983e0f11B3f7F67Acd64877b42B22068D");
-    console.log("🎮 Fee: 5% per player (not shown to users)");
-    console.log("\n🚀 Test at: http://localhost:8000/arcade/arcade.html");
+    console.log("🎮 Fee: 5% per player/entry");
+    console.log("\n🚀 Test games at:");
+    console.log("   - http://localhost:8000/arcade/arcade.html");
+    console.log("   - http://localhost:8000/arcade/luckyblock.html");
 }
 
 main()
