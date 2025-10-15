@@ -973,8 +973,26 @@
             <div class="warning-title" style="color: #ff9900;">⚠️ BASE NETWORK REQUIRED ⚠️</div>
             <p class="warning-text" style="color: #fff;">This game runs on <strong>Base Mainnet (Chain ID: 8453)</strong>. Your wallet MUST be switched to Base network before playing.</p>
             <p class="warning-text" style="margin-top: 10px; font-size: 0.5rem; color: #00FF88;">
-                ✅ Live Contract: 0x3041...8EB1 | Playing with REAL ETH | 5% house fee | Provably fair
+                ✅ Live Contract: 0x0601...d440 | Playing with REAL ETH | 5% house fee | Provably fair
             </p>
+        </div>
+        
+        <!-- Live Stats Banner -->
+        <div style="background: rgba(0, 82, 255, 0.1); border: 2px solid #0052ff99; border-radius: 8px; padding: 15px; margin-bottom: 20px;">
+            <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(120px, 1fr)); gap: 15px; text-align: center;">
+                <div>
+                    <div style="font-family: 'Press Start 2P', monospace; font-size: 0.9rem; color: #00BFFF;" id="online-users-stat">0</div>
+                    <div style="font-family: 'Courier Prime', monospace; font-size: 0.6rem; color: #888; margin-top: 5px;">👥 Online Now</div>
+                </div>
+                <div>
+                    <div style="font-family: 'Press Start 2P', monospace; font-size: 0.9rem; color: #ffd700;" id="total-wagers-stat">0</div>
+                    <div style="font-family: 'Courier Prime', monospace; font-size: 0.6rem; color: #888; margin-top: 5px;">🎲 Total Wagers</div>
+                </div>
+                <div>
+                    <div style="font-family: 'Press Start 2P', monospace; font-size: 0.9rem; color: #00FF88;" id="total-wagered-display">0 ETH</div>
+                    <div style="font-family: 'Courier Prime', monospace; font-size: 0.6rem; color: #888; margin-top: 5px;">💰 Total Wagered</div>
+                </div>
+            </div>
         </div>
         
         <div class="game-layout">
@@ -1135,9 +1153,12 @@
     <script src="https://cdn.jsdelivr.net/npm/ethers@6.10.0/dist/ethers.umd.min.js"></script>
     <script>
         // Config
-        const CONTRACT_ADDRESS = '0x3041638a8a4393c13ad1A7E4173741e183518EB1'; // ✅ LIVE ON BASE MAINNET (with bet tracking)
+        const CONTRACT_ADDRESS = '0x06016295030CC73ef860056aF22E1Cee3CFFd440'; // ✅ LIVE ON BASE MAINNET (with wager count)
         const BASE_CHAIN_ID = '0x2105'; // 8453 in decimal
         const BASE_CHAIN_ID_DECIMAL = 8453;
+        
+        // Track online users
+        let onlineWallets = new Set();
         
         // Contract ABI
         const CONTRACT_ABI = [
@@ -1146,7 +1167,7 @@
             "function getRoundPlayers(uint256 roundId) external view returns (address[] memory)",
             "function getRoundBets(uint256 roundId) external view returns (uint256[] memory)",
             "function getPlayerStats(address player) external view returns (uint256 roundsPlayed, uint256 roundsWon, uint256 winRate)",
-            "function getGlobalStats() external view returns (uint256 wagered, uint256 roundsCompleted, uint256 uniquePlayers, uint256 currentRound, uint256 activePlayers)",
+            "function getGlobalStats() external view returns (uint256 wagered, uint256 roundsCompleted, uint256 uniquePlayers, uint256 currentRound, uint256 activePlayers, uint256 wagerCount)",
             "event PlayerEntered(uint256 indexed roundId, address indexed player, uint256 entryNumber, address indexed referrer)",
             "event WinnerDrawn(uint256 indexed roundId, address indexed winner, uint256 payout, uint256 randomSeed)"
         ];
@@ -1186,6 +1207,115 @@
             }
         }
         
+        // Track online users
+        function trackOnlineUser(address) {
+            if (address) {
+                onlineWallets.add(address.toLowerCase());
+                updateOnlineStats();
+            }
+        }
+        
+        function updateOnlineStats() {
+            document.getElementById('online-users-stat').textContent = onlineWallets.size;
+        }
+        
+        // Load global stats from contract
+        async function loadGlobalStatsFromContract() {
+            if (!contract) return;
+            
+            try {
+                const stats = await contract.getGlobalStats();
+                const [wagered, rounds, players, currentRound, active, wagerCount] = stats;
+                
+                document.getElementById('total-wagers-stat').textContent = wagerCount.toString();
+                document.getElementById('total-wagered-display').textContent = parseFloat(ethers.formatEther(wagered)).toFixed(4) + ' ETH';
+                
+            } catch (error) {
+                console.error('Failed to load global stats:', error);
+            }
+        }
+        
+        // Auto-restore wallet session
+        async function restoreWalletSession() {
+            const savedWallet = localStorage.getItem('basement_walletAddress');
+            const savedUsername = localStorage.getItem('basement_username');
+            
+            if (!savedWallet) {
+                console.log('No saved wallet session');
+                return;
+            }
+            
+            console.log('🔄 Restoring wallet session...', savedWallet.substring(0, 10) + '...');
+            
+            try {
+                // Try to auto-connect based on saved wallet type
+                if (window.ethereum && window.ethereum.isMetaMask) {
+                    // Get current accounts without prompting
+                    const accounts = await window.ethereum.request({ method: 'eth_accounts' });
+                    if (accounts.length > 0 && accounts[0].toLowerCase() === savedWallet.toLowerCase()) {
+                        console.log('✅ Auto-restoring MetaMask connection');
+                        userAddress = accounts[0];
+                        provider = new ethers.BrowserProvider(window.ethereum);
+                        signer = await provider.getSigner();
+                        
+                        // Check network
+                        const network = await provider.getNetwork();
+                        if (Number(network.chainId) === BASE_CHAIN_ID_DECIMAL) {
+                            isOnBaseNetwork = true;
+                            
+                            if (contractDeployed) {
+                                contract = new ethers.Contract(CONTRACT_ADDRESS, CONTRACT_ABI, provider);
+                                await loadUserStats();
+                                await loadGlobalStatsFromContract();
+                            }
+                            
+                            // Track online
+                            trackOnlineUser(userAddress);
+                            
+                            // Update UI
+                            document.getElementById('wallet-btn').style.display = 'none';
+                            document.getElementById('wallet-connected').style.display = 'flex';
+                            document.getElementById('wallet-address').textContent = savedUsername || shortenAddress(userAddress);
+                            document.getElementById('enter-btn').disabled = false;
+                            
+                            showToast('✅ Wallet reconnected!', 'success');
+                        }
+                    }
+                } else if (window.phantom && window.phantom.ethereum) {
+                    const accounts = await window.phantom.ethereum.request({ method: 'eth_accounts' });
+                    if (accounts.length > 0 && accounts[0].toLowerCase() === savedWallet.toLowerCase()) {
+                        console.log('✅ Auto-restoring Phantom connection');
+                        userAddress = accounts[0];
+                        provider = new ethers.BrowserProvider(window.phantom.ethereum);
+                        signer = await provider.getSigner();
+                        
+                        const network = await provider.getNetwork();
+                        if (Number(network.chainId) === BASE_CHAIN_ID_DECIMAL) {
+                            isOnBaseNetwork = true;
+                            
+                            if (contractDeployed) {
+                                contract = new ethers.Contract(CONTRACT_ADDRESS, CONTRACT_ABI, provider);
+                                await loadUserStats();
+                                await loadGlobalStatsFromContract();
+                            }
+                            
+                            trackOnlineUser(userAddress);
+                            
+                            document.getElementById('wallet-btn').style.display = 'none';
+                            document.getElementById('wallet-connected').style.display = 'flex';
+                            document.getElementById('wallet-address').textContent = savedUsername || shortenAddress(userAddress);
+                            document.getElementById('enter-btn').disabled = false;
+                            
+                            showToast('✅ Wallet reconnected!', 'success');
+                        }
+                    }
+                }
+            } catch (error) {
+                console.log('⚠️ Auto-restore failed:', error.message);
+                // Silent fail - user can manually connect
+            }
+        }
+        
         // Initialize
         window.addEventListener('load', async () => {
             initWheel();
@@ -1197,6 +1327,8 @@
             if (CONTRACT_ADDRESS !== '0x0000000000000000000000000000000000000000') {
                 contractDeployed = true;
                 await initContract();
+                await loadGlobalStatsFromContract(); // Load stats
+                setInterval(loadGlobalStatsFromContract, 10000); // Update every 10s
                 startContractSync(); // Sync with blockchain
             } else {
                 // Contract not deployed - show message
@@ -1205,6 +1337,9 @@
                 document.getElementById('enter-btn').disabled = true;
                 document.getElementById('enter-btn').textContent = '⏸️ CONTRACT NOT DEPLOYED';
             }
+            
+            // Auto-restore wallet if previously connected
+            await restoreWalletSession();
         });
         
         // Initialize contract connection
@@ -1782,6 +1917,10 @@
                 
                 // Load user stats
                 await loadUserStats();
+                await loadGlobalStatsFromContract();
+                
+                // Track online
+                trackOnlineUser(userAddress);
                 
                 document.getElementById('wallet-modal').classList.remove('show');
                 showToast('Connected!', 'success');
@@ -1848,6 +1987,10 @@
                     
                     // Load user stats
                     await loadUserStats();
+                    await loadGlobalStatsFromContract();
+                    
+                    // Track online
+                    trackOnlineUser(userAddress);
                     
                     document.getElementById('wallet-modal').classList.remove('show');
                     showToast('Connected!', 'success');
@@ -1922,6 +2065,10 @@
                     
                     // Load user stats
                     await loadUserStats();
+                    await loadGlobalStatsFromContract();
+                    
+                    // Track online
+                    trackOnlineUser(userAddress);
                     
                     document.getElementById('wallet-modal').classList.remove('show');
                     showToast('Connected!', 'success');

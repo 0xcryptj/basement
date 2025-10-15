@@ -62,6 +62,7 @@ contract LuckyBlock is ReentrancyGuard, Ownable {
     uint256 public totalWagered;        // Total ETH wagered all-time
     uint256 public totalRoundsPlayed;   // Total rounds completed
     uint256 public totalUniquePlayers;  // Total unique players
+    uint256 public totalWagers;         // Total number of wagers placed (count)
     mapping(address => bool) public hasPlayed; // Track unique players
     
     // Current round tracking
@@ -143,6 +144,7 @@ contract LuckyBlock is ReentrancyGuard, Ownable {
         
         // Update global stats
         totalWagered += msg.value;
+        totalWagers++; // Increment wager count
         if (!hasPlayed[msg.sender]) {
             hasPlayed[msg.sender] = true;
             totalUniquePlayers++;
@@ -371,7 +373,8 @@ contract LuckyBlock is ReentrancyGuard, Ownable {
         uint256 roundsCompleted,
         uint256 uniquePlayers,
         uint256 currentRound,
-        uint256 activePlayers
+        uint256 activePlayers,
+        uint256 wagerCount
     ) {
         Round storage round = rounds[currentRoundId];
         return (
@@ -379,7 +382,8 @@ contract LuckyBlock is ReentrancyGuard, Ownable {
             totalRoundsPlayed,
             totalUniquePlayers,
             currentRoundId,
-            round.players.length
+            round.players.length,
+            totalWagers
         );
     }
 }
