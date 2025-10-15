@@ -968,12 +968,12 @@
     </nav>
     
     <div class="container">
-        <!-- Live Status -->
-        <div class="warning-banner" style="border-color: #00FF88; background: rgba(0, 255, 136, 0.1);">
-            <div class="warning-title" style="color: #00FF88;">✅ LIVE ON BASE MAINNET ✅</div>
-            <p class="warning-text" style="color: #00FF88;">Playing with REAL ETH. Timer starts after 2+ players enter. All players see synced 60s countdown.</p>
-            <p class="warning-text" style="margin-top: 10px; font-size: 0.45rem; color: #888;">
-                Contract: 0x3041...8EB1 | Verified on Basescan | 5% house fee | Provably fair randomness
+        <!-- Network Warning -->
+        <div class="warning-banner" style="border-color: #ff9900; background: rgba(255, 153, 0, 0.2);">
+            <div class="warning-title" style="color: #ff9900;">⚠️ BASE NETWORK REQUIRED ⚠️</div>
+            <p class="warning-text" style="color: #fff;">This game runs on <strong>Base Mainnet (Chain ID: 8453)</strong>. Your wallet MUST be switched to Base network before playing.</p>
+            <p class="warning-text" style="margin-top: 10px; font-size: 0.5rem; color: #00FF88;">
+                ✅ Live Contract: 0x3041...8EB1 | Playing with REAL ETH | 5% house fee | Provably fair
             </p>
         </div>
         
@@ -1136,7 +1136,8 @@
     <script>
         // Config
         const CONTRACT_ADDRESS = '0x3041638a8a4393c13ad1A7E4173741e183518EB1'; // ✅ LIVE ON BASE MAINNET (with bet tracking)
-        const BASE_CHAIN_ID = '0x2105';
+        const BASE_CHAIN_ID = '0x2105'; // 8453 in decimal
+        const BASE_CHAIN_ID_DECIMAL = 8453;
         
         // Contract ABI
         const CONTRACT_ABI = [
@@ -1162,7 +1163,8 @@
         let timerInterval;
         let wheelRotation = 0;
         let isSpinning = false;
-        let contractDeployed = false; // Flag for contract status
+        let contractDeployed = true; // Contract is deployed
+        let isOnBaseNetwork = false; // Track if user is on correct network
         
         // Sound effects
         const sounds = {
@@ -1492,6 +1494,24 @@
                 return;
             }
             
+            // Double check network before transaction
+            if (!isOnBaseNetwork) {
+                showToast('⚠️ Switch to Base network!', 'error');
+                return;
+            }
+            
+            try {
+                const network = await provider.getNetwork();
+                if (Number(network.chainId) !== BASE_CHAIN_ID_DECIMAL) {
+                    showToast('⚠️ Wrong network! Switch to Base (8453)', 'error');
+                    isOnBaseNetwork = false;
+                    return;
+                }
+            } catch (error) {
+                showToast('⚠️ Network check failed', 'error');
+                return;
+            }
+            
             // Check if already entered
             if (currentPlayers.some(p => p.address.toLowerCase() === userAddress.toLowerCase())) {
                 showToast('Already entered this round!', 'error');
@@ -1688,12 +1708,46 @@
                     return;
                 }
                 
+                // Check and switch to Base network FIRST
+                try {
+                    await window.ethereum.request({
+                        method: 'wallet_switchEthereumChain',
+                        params: [{ chainId: BASE_CHAIN_ID }],
+                    });
+                } catch (switchError) {
+                    // If network doesn't exist, add it
+                    if (switchError.code === 4902) {
+                        await window.ethereum.request({
+                            method: 'wallet_addEthereumChain',
+                            params: [{
+                                chainId: BASE_CHAIN_ID,
+                                chainName: 'Base Mainnet',
+                                nativeCurrency: { name: 'ETH', symbol: 'ETH', decimals: 18 },
+                                rpcUrls: ['https://mainnet.base.org'],
+                                blockExplorerUrls: ['https://basescan.org']
+                            }],
+                        });
+                    } else {
+                        throw new Error('Please switch to Base network in MetaMask');
+                    }
+                }
+                
                 const accounts = await window.ethereum.request({ method: 'eth_requestAccounts' });
                 userAddress = accounts[0];
                 
                 // Initialize provider and signer
                 provider = new ethers.BrowserProvider(window.ethereum);
                 signer = await provider.getSigner();
+                
+                // Verify we're on Base network
+                const network = await provider.getNetwork();
+                if (Number(network.chainId) !== BASE_CHAIN_ID_DECIMAL) {
+                    showToast('⚠️ MUST be on Base network!', 'error');
+                    disconnectWallet();
+                    return;
+                }
+                
+                isOnBaseNetwork = true;
                 
                 // Initialize contract if deployed
                 if (contractDeployed && CONTRACT_ADDRESS !== '0x0000000000000000000000000000000000000000') {
@@ -1722,12 +1776,45 @@
         async function connectCoinbase() {
             try {
                 if (typeof window.ethereum !== 'undefined' && window.ethereum.isCoinbaseWallet) {
+                    // Check and switch to Base network FIRST
+                    try {
+                        await window.ethereum.request({
+                            method: 'wallet_switchEthereumChain',
+                            params: [{ chainId: BASE_CHAIN_ID }],
+                        });
+                    } catch (switchError) {
+                        if (switchError.code === 4902) {
+                            await window.ethereum.request({
+                                method: 'wallet_addEthereumChain',
+                                params: [{
+                                    chainId: BASE_CHAIN_ID,
+                                    chainName: 'Base Mainnet',
+                                    nativeCurrency: { name: 'ETH', symbol: 'ETH', decimals: 18 },
+                                    rpcUrls: ['https://mainnet.base.org'],
+                                    blockExplorerUrls: ['https://basescan.org']
+                                }],
+                            });
+                        } else {
+                            throw new Error('Please switch to Base network in Coinbase Wallet');
+                        }
+                    }
+                    
                     const accounts = await window.ethereum.request({ method: 'eth_requestAccounts' });
                     userAddress = accounts[0];
                     
                     // Initialize provider and signer
                     provider = new ethers.BrowserProvider(window.ethereum);
                     signer = await provider.getSigner();
+                    
+                    // Verify we're on Base network
+                    const network = await provider.getNetwork();
+                    if (Number(network.chainId) !== BASE_CHAIN_ID_DECIMAL) {
+                        showToast('⚠️ MUST be on Base network!', 'error');
+                        disconnectWallet();
+                        return;
+                    }
+                    
+                    isOnBaseNetwork = true;
                     
                     // Initialize contract if deployed
                     if (contractDeployed && CONTRACT_ADDRESS !== '0x0000000000000000000000000000000000000000') {
@@ -1793,6 +1880,16 @@
                     provider = new ethers.BrowserProvider(window.phantom.ethereum);
                     signer = await provider.getSigner();
                     
+                    // Verify we're on Base network
+                    const network = await provider.getNetwork();
+                    if (Number(network.chainId) !== BASE_CHAIN_ID_DECIMAL) {
+                        showToast('⚠️ MUST be on Base network!', 'error');
+                        disconnectWallet();
+                        return;
+                    }
+                    
+                    isOnBaseNetwork = true;
+                    
                     // Initialize contract if deployed
                     if (contractDeployed && CONTRACT_ADDRESS !== '0x0000000000000000000000000000000000000000') {
                         contract = new ethers.Contract(CONTRACT_ADDRESS, CONTRACT_ABI, provider);
@@ -1820,8 +1917,13 @@
         
         function disconnectWallet() {
             userAddress = null;
+            isOnBaseNetwork = false;
+            provider = null;
+            signer = null;
+            contract = null;
             document.getElementById('wallet-btn').style.display = 'block';
             document.getElementById('wallet-connected').style.display = 'none';
+            document.getElementById('enter-btn').disabled = true;
             showToast('Disconnected', 'success');
         }
         
