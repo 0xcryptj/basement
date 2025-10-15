@@ -1153,7 +1153,7 @@
     <script src="https://cdn.jsdelivr.net/npm/ethers@6.10.0/dist/ethers.umd.min.js"></script>
     <script>
         // Config
-        const CONTRACT_ADDRESS = '0x06016295030CC73ef860056aF22E1Cee3CFFd440'; // ✅ LIVE ON BASE MAINNET (with wager count)
+        const CONTRACT_ADDRESS = '0x3041638a8a4393c13ad1A7E4173741e183518EB1'; // ✅ LIVE ON BASE MAINNET - LuckyBlock
         const BASE_CHAIN_ID = '0x2105'; // 8453 in decimal
         const BASE_CHAIN_ID_DECIMAL = 8453;
         
@@ -1660,6 +1660,17 @@
                     return;
                 }
                 
+                // Verify contract exists at address
+                console.log('🔍 Verifying contract at address:', CONTRACT_ADDRESS);
+                const code = await provider.getCode(CONTRACT_ADDRESS);
+                if (code === '0x' || code === '0x0') {
+                    console.error('❌ No contract found at address:', CONTRACT_ADDRESS);
+                    showToast('❌ Contract not deployed on this network!', 'error');
+                    addChatMessage('SYSTEM', '⚠️ Contract not found on Base network. Please verify deployment.');
+                    return;
+                }
+                console.log('✅ Contract verified at address');
+                
                 // Get fresh signer for transaction
                 signer = await provider.getSigner();
                 console.log('✅ Signer ready:', await signer.getAddress());
@@ -1721,6 +1732,9 @@
                 // User-friendly error messages
                 if (error.code === 'ACTION_REJECTED' || error.code === 4001) {
                     showToast('❌ Transaction cancelled', 'error');
+                } else if (error.code === 'CALL_EXCEPTION') {
+                    showToast('❌ Contract call failed - verify you are on Base network (Chain ID: 8453)', 'error');
+                    addChatMessage('SYSTEM', '⚠️ Make sure you are connected to Base Mainnet (Chain ID: 8453)');
                 } else if (error.message && error.message.includes('insufficient funds')) {
                     showToast('❌ Insufficient ETH balance', 'error');
                 } else if (error.message && error.message.includes('Already entered')) {
@@ -1729,6 +1743,9 @@
                     showToast('❌ You rejected the transaction', 'error');
                 } else if (error.message && error.message.includes('gas')) {
                     showToast('❌ Gas estimation failed - check network', 'error');
+                } else if (error.message && error.message.includes('missing revert data')) {
+                    showToast('❌ Contract not found on Base network!', 'error');
+                    addChatMessage('SYSTEM', '⚠️ Verify contract is deployed at: ' + CONTRACT_ADDRESS);
                 } else {
                     showToast(`❌ Transaction failed: ${error.message || 'Unknown error'}`, 'error');
                 }
@@ -1906,9 +1923,20 @@
                 // Initialize contract if deployed
                 if (contractDeployed && CONTRACT_ADDRESS !== '0x0000000000000000000000000000000000000000') {
                     contract = new ethers.Contract(CONTRACT_ADDRESS, CONTRACT_ABI, provider);
-                    // Enable enter button
-                    document.getElementById('enter-btn').disabled = false;
-                    document.getElementById('enter-btn').textContent = '🎰 ENTER 🎰';
+                    
+                    // Verify contract exists at address
+                    const code = await provider.getCode(CONTRACT_ADDRESS);
+                    if (code === '0x' || code === '0x0') {
+                        console.error('❌ No contract found at address:', CONTRACT_ADDRESS);
+                        showToast('⚠️ Contract not deployed on Base network!', 'error');
+                        addChatMessage('SYSTEM', '⚠️ Contract verification failed. Please contact support.');
+                        contractDeployed = false;
+                    } else {
+                        console.log('✅ Contract verified at address:', CONTRACT_ADDRESS);
+                        // Enable enter button only if contract is verified
+                        document.getElementById('enter-btn').disabled = false;
+                        document.getElementById('enter-btn').textContent = '🎰 ENTER 🎰';
+                    }
                 }
                 
                 document.getElementById('wallet-btn').style.display = 'none';
@@ -1977,8 +2005,19 @@
                     // Initialize contract if deployed
                     if (contractDeployed && CONTRACT_ADDRESS !== '0x0000000000000000000000000000000000000000') {
                         contract = new ethers.Contract(CONTRACT_ADDRESS, CONTRACT_ABI, provider);
-                        document.getElementById('enter-btn').disabled = false;
-                        document.getElementById('enter-btn').textContent = '🎰 ENTER 🎰';
+                        
+                        // Verify contract exists at address
+                        const code = await provider.getCode(CONTRACT_ADDRESS);
+                        if (code === '0x' || code === '0x0') {
+                            console.error('❌ No contract found at address:', CONTRACT_ADDRESS);
+                            showToast('⚠️ Contract not deployed on Base network!', 'error');
+                            addChatMessage('SYSTEM', '⚠️ Contract verification failed. Please contact support.');
+                            contractDeployed = false;
+                        } else {
+                            console.log('✅ Contract verified at address:', CONTRACT_ADDRESS);
+                            document.getElementById('enter-btn').disabled = false;
+                            document.getElementById('enter-btn').textContent = '🎰 ENTER 🎰';
+                        }
                     }
                     
                     document.getElementById('wallet-btn').style.display = 'none';
@@ -2055,8 +2094,19 @@
                     // Initialize contract if deployed
                     if (contractDeployed && CONTRACT_ADDRESS !== '0x0000000000000000000000000000000000000000') {
                         contract = new ethers.Contract(CONTRACT_ADDRESS, CONTRACT_ABI, provider);
-                        document.getElementById('enter-btn').disabled = false;
-                        document.getElementById('enter-btn').textContent = '🎰 ENTER 🎰';
+                        
+                        // Verify contract exists at address
+                        const code = await provider.getCode(CONTRACT_ADDRESS);
+                        if (code === '0x' || code === '0x0') {
+                            console.error('❌ No contract found at address:', CONTRACT_ADDRESS);
+                            showToast('⚠️ Contract not deployed on Base network!', 'error');
+                            addChatMessage('SYSTEM', '⚠️ Contract verification failed. Please contact support.');
+                            contractDeployed = false;
+                        } else {
+                            console.log('✅ Contract verified at address:', CONTRACT_ADDRESS);
+                            document.getElementById('enter-btn').disabled = false;
+                            document.getElementById('enter-btn').textContent = '🎰 ENTER 🎰';
+                        }
                     }
                     
                     document.getElementById('wallet-btn').style.display = 'none';

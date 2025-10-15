@@ -1,5 +1,13 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { createClient } from '@supabase/supabase-js';
+import { randomBytes } from 'crypto';
+
+// Helper function to generate cuid-like IDs
+function generateId(): string {
+  const timestamp = Date.now().toString(36);
+  const randomPart = randomBytes(12).toString('base64url').substring(0, 16);
+  return `${timestamp}${randomPart}`;
+}
 
 const supabase = createClient(
   process.env.NEXT_PUBLIC_SUPABASE_URL!,
@@ -134,9 +142,11 @@ export async function POST(request: NextRequest) {
 
     if (!user) {
       console.log('👤 Creating new user:', effectiveWallet);
+      const newUserId = generateId(); // Generate ID manually
       const { data: newUser, error: userCreateError } = await supabase
         .from('User')
         .insert({
+          id: newUserId, // Explicitly set the ID
           walletAddress: effectiveWallet,
           username: username,
           lastSeenAt: new Date().toISOString()
@@ -171,9 +181,11 @@ export async function POST(request: NextRequest) {
 
     if (!channel) {
       console.log('📢 Creating new channel:', channelSlug);
+      const newChannelId = generateId(); // Generate ID manually
       const { data: newChannel, error: channelCreateError } = await supabase
         .from('Channel')
         .insert({
+          id: newChannelId, // Explicitly set the ID
           name: `#${channelSlug}`,
           slug: channelSlug,
           description: `${channelSlug} channel`,
@@ -197,9 +209,11 @@ export async function POST(request: NextRequest) {
 
     // Create message using Supabase
     console.log('💬 Creating message...');
+    const newMessageId = generateId(); // Generate ID manually
     const { data: message, error: messageError } = await supabase
       .from('Message')
       .insert({
+        id: newMessageId, // Explicitly set the ID
         channelId: channel!.id,
         userId: user!.id,
         content,
