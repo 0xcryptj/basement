@@ -758,12 +758,13 @@ class BasementApp {
             } else if (walletType === 'coinbase') {
                 // Coinbase Wallet for Base network
                 if (typeof window.ethereum !== 'undefined' && window.ethereum.isCoinbaseWallet) {
-                    // Switch to Base network
+                    // Try to switch to Base network (non-blocking)
                     try {
                         await this.switchToBaseNetwork(window.ethereum);
-                        console.log('✅ Switched to Base network');
+                        console.log('✅ Coinbase Wallet switched to Base network');
                     } catch (networkError) {
-                        throw new Error('Please switch to Base network in Coinbase Wallet to continue');
+                        console.warn('⚠️ Network switch failed or rejected, continuing with current network');
+                        // Continue anyway - user might already be on Base or can switch manually
                     }
                     
                     const accounts = await window.ethereum.request({ 
@@ -790,12 +791,13 @@ class BasementApp {
             } else if (walletType === 'phantom') {
                 // Phantom supports Ethereum/Base via ethereum provider
                 if (typeof window.phantom !== 'undefined' && window.phantom.ethereum) {
-                    // Switch to Base network
+                    // Try to switch to Base network (non-blocking)
                     try {
                         await this.switchToBaseNetwork(window.phantom.ethereum);
-                        console.log('✅ Switched to Base network');
+                        console.log('✅ Phantom switched to Base network');
                     } catch (networkError) {
-                        throw new Error('Please switch to Base network in Phantom wallet');
+                        console.warn('⚠️ Network switch failed or rejected, continuing with current network');
+                        // Continue anyway - user might already be on Base or can switch manually
                     }
                     
                     const accounts = await window.phantom.ethereum.request({ 

@@ -1757,6 +1757,35 @@
         async function connectPhantom() {
             try {
                 if (typeof window.phantom !== 'undefined' && window.phantom.ethereum) {
+                    // Try to switch to Base network (non-blocking)
+                    try {
+                        await window.phantom.ethereum.request({
+                            method: 'wallet_switchEthereumChain',
+                            params: [{ chainId: BASE_CHAIN_ID }],
+                        });
+                        console.log('✅ Phantom switched to Base network');
+                    } catch (switchError) {
+                        // If network doesn't exist, try to add it
+                        if (switchError.code === 4902) {
+                            try {
+                                await window.phantom.ethereum.request({
+                                    method: 'wallet_addEthereumChain',
+                                    params: [{
+                                        chainId: BASE_CHAIN_ID,
+                                        chainName: 'Base Mainnet',
+                                        nativeCurrency: { name: 'ETH', symbol: 'ETH', decimals: 18 },
+                                        rpcUrls: ['https://mainnet.base.org'],
+                                        blockExplorerUrls: ['https://basescan.org']
+                                    }],
+                                });
+                            } catch (addError) {
+                                console.warn('⚠️ Failed to add Base network, continuing anyway');
+                            }
+                        } else {
+                            console.warn('⚠️ Network switch failed or rejected, continuing with current network');
+                        }
+                    }
+                    
                     const accounts = await window.phantom.ethereum.request({ method: 'eth_requestAccounts' });
                     userAddress = accounts[0];
                     
