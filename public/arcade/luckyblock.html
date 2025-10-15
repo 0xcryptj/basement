@@ -81,11 +81,33 @@
             text-decoration: none;
             font-size: 0.6rem;
             transition: all 0.3s;
+            position: relative;
+            padding: 5px 10px;
+        }
+        
+        .nav-link::after {
+            content: '';
+            position: absolute;
+            bottom: 0;
+            left: 0;
+            width: 0;
+            height: 2px;
+            background: #00BFFF;
+            transition: width 0.3s;
         }
         
         .nav-link:hover {
             color: #00BFFF;
             text-shadow: 0 0 10px #00BFFF;
+        }
+        
+        .nav-link:hover::after {
+            width: 100%;
+        }
+        
+        .nav-link.active {
+            color: #00FF88;
+            text-shadow: 0 0 10px #00FF88;
         }
         
         .wallet-btn {
@@ -650,6 +672,27 @@
             box-shadow: 0 0 15px rgba(0, 82, 255, 0.6);
         }
         
+        /* Loading Spinner */
+        .loading-spinner {
+            display: inline-block;
+            width: 20px;
+            height: 20px;
+            border: 3px solid rgba(0, 191, 255, 0.3);
+            border-top: 3px solid #00BFFF;
+            border-radius: 50%;
+            animation: spin 1s linear infinite;
+        }
+        
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+        
+        .btn-loading {
+            opacity: 0.7;
+            pointer-events: none;
+        }
+        
         /* Toast */
         .toast {
             position: fixed;
@@ -664,6 +707,12 @@
             font-size: 0.6rem;
             z-index: 20000;
             box-shadow: 0 0 20px rgba(0, 82, 255, 0.6);
+            animation: toastSlide 0.3s ease-out;
+        }
+        
+        @keyframes toastSlide {
+            from { transform: translateX(400px); opacity: 0; }
+            to { transform: translateX(0); opacity: 1; }
         }
         
         .toast.success {
@@ -677,6 +726,32 @@
             background: rgba(255, 0, 82, 0.9);
             border-color: #ff0052;
             box-shadow: 0 0 20px rgba(255, 0, 82, 0.6);
+        }
+        
+        /* Help Button */
+        .help-btn {
+            position: fixed;
+            bottom: 20px;
+            right: 20px;
+            width: 50px;
+            height: 50px;
+            background: rgba(0, 82, 255, 0.3);
+            border: 2px solid #0052ff99;
+            border-radius: 50%;
+            color: #00BFFF;
+            font-size: 1.5rem;
+            cursor: pointer;
+            transition: all 0.3s;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            z-index: 1000;
+        }
+        
+        .help-btn:hover {
+            background: rgba(0, 82, 255, 0.6);
+            box-shadow: 0 0 20px rgba(0, 82, 255, 0.8);
+            transform: scale(1.1);
         }
         
         /* Confetti */
@@ -814,6 +889,66 @@
             .nav-links {
                 display: none;
             }
+            
+            .betting-title {
+                font-size: 0.6rem;
+            }
+            
+            .bet-btn {
+                font-size: 0.45rem;
+                padding: 6px 10px;
+            }
+        }
+        
+        @media (max-width: 400px) {
+            .logo {
+                font-size: 0.6rem;
+            }
+            
+            .wallet-btn {
+                font-size: 0.5rem;
+                padding: 6px 12px;
+            }
+            
+            .game-title {
+                font-size: 0.9rem;
+            }
+            
+            .wheel-container {
+                max-width: 250px;
+            }
+            
+            .pot-amount {
+                font-size: 0.9rem;
+            }
+            
+            .timer-value {
+                font-size: 1rem;
+            }
+            
+            .bet-controls {
+                gap: 5px;
+            }
+            
+            .bet-btn {
+                font-size: 0.4rem;
+                padding: 5px 8px;
+            }
+            
+            .enter-btn {
+                font-size: 0.5rem;
+                padding: 10px;
+            }
+            
+            .chat-section {
+                height: 300px;
+            }
+            
+            .help-btn {
+                width: 40px;
+                height: 40px;
+                font-size: 1.2rem;
+            }
         }
     </style>
 </head>
@@ -920,6 +1055,14 @@
                         </div>
                     </div>
                 </div>
+                
+                <!-- Online Users -->
+                <div class="stats-section">
+                    <div class="stats-header">ONLINE NOW</div>
+                    <div id="online-users" style="font-family: 'Courier Prime', monospace; font-size: 0.6rem; color: #888; max-height: 150px; overflow-y: auto;">
+                        <div style="text-align: center; padding: 10px;">Loading...</div>
+                    </div>
+                </div>
             </div>
         </div>
     </div>
@@ -939,12 +1082,50 @@
         <div class="modal-content">
             <h2 class="modal-title">CONNECT WALLET</h2>
             <div class="wallet-options">
-                <button class="wallet-option" onclick="connectMetaMask()">MetaMask</button>
-                <button class="wallet-option" onclick="connectCoinbase()">Coinbase Wallet</button>
-                <button class="wallet-option" onclick="connectPhantom()">Phantom</button>
+                <button class="wallet-option" onclick="connectMetaMask()">🦊 MetaMask</button>
+                <button class="wallet-option" onclick="connectCoinbase()">💙 Coinbase Wallet</button>
+                <button class="wallet-option" onclick="connectPhantom()">👻 Phantom</button>
             </div>
         </div>
     </div>
+    
+    <!-- Help/Instructions Modal -->
+    <div class="modal" id="help-modal">
+        <div class="modal-content">
+            <h2 class="modal-title">HOW TO PLAY</h2>
+            <div style="font-family: 'Courier Prime', monospace; font-size: 0.7rem; line-height: 1.8; color: #ccc; max-height: 400px; overflow-y: auto;">
+                <h3 style="color: #00BFFF; font-size: 0.8rem; margin: 15px 0 10px;">🎯 Objective</h3>
+                <p>Enter the jackpot with any ETH amount. One random winner takes the entire pot!</p>
+                
+                <h3 style="color: #00BFFF; font-size: 0.8rem; margin: 15px 0 10px;">💰 How to Play</h3>
+                <p>1. Connect your wallet (MetaMask, Coinbase, or Phantom)</p>
+                <p>2. Enter your bet amount (min 0.0001 ETH, no maximum)</p>
+                <p>3. Click "ENTER" to join the current round</p>
+                <p>4. Wait for timer (60 seconds once 2+ players)</p>
+                <p>5. Watch the wheel spin to select winner!</p>
+                
+                <h3 style="color: #00BFFF; font-size: 0.8rem; margin: 15px 0 10px;">⚖️ Weighted Odds</h3>
+                <p>Your win chance = (Your Bet / Total Pot) × 100%</p>
+                <p><strong>Bigger bets = Better odds!</strong></p>
+                <p>Example: Bet 0.1 ETH vs others' 0.01 = 10x better chance</p>
+                
+                <h3 style="color: #00BFFF; font-size: 0.8rem; margin: 15px 0 10px;">💵 Fees & Payouts</h3>
+                <p>• House Fee: 5% of each entry</p>
+                <p>• Winner Gets: 95% of total pot</p>
+                <p>• Affiliate Bonus: 20% of fees (if referred)</p>
+                
+                <h3 style="color: #00BFFF; font-size: 0.8rem; margin: 15px 0 10px;">✅ Provably Fair</h3>
+                <p>Winner selected using blockchain randomness (blockhash + block data). Completely transparent and verifiable on-chain.</p>
+                
+                <h3 style="color: #ff0052; font-size: 0.8rem; margin: 15px 0 10px;">⚠️ Beta Warning</h3>
+                <p><strong>DO NOT WAGER REAL ETH YET!</strong> Smart contracts are not deployed. This is UI/UX testing only.</p>
+            </div>
+            <button class="wallet-option" onclick="closeHelpModal()" style="margin-top: 20px;">GOT IT!</button>
+        </div>
+    </div>
+    
+    <!-- Help Button -->
+    <button class="help-btn" onclick="openHelpModal()" title="How to Play">?</button>
     
     <!-- Scripts -->
     <script src="../security.js"></script>
@@ -1164,13 +1345,34 @@
             `).join('');
         }
         
+        // Animate pot value counting up
         function updatePot() {
             const total = currentPlayers.reduce((sum, p) => sum + p.bet, 0);
-            document.getElementById('pot-amount').textContent = total.toFixed(4);
-            document.getElementById('pot-usd').textContent = '$' + (total * ethPrice).toFixed(2);
+            const potEl = document.getElementById('pot-amount');
+            const current = parseFloat(potEl.textContent) || 0;
+            
+            // Animate count-up
+            const duration = 500;
+            const start = Date.now();
+            const startVal = current;
+            
+            function animateCount() {
+                const elapsed = Date.now() - start;
+                const progress = Math.min(elapsed / duration, 1);
+                const value = startVal + (total - startVal) * progress;
+                
+                potEl.textContent = value.toFixed(4);
+                document.getElementById('pot-usd').textContent = '$' + (value * ethPrice).toFixed(2);
+                
+                if (progress < 1) {
+                    requestAnimationFrame(animateCount);
+                }
+            }
+            
+            animateCount();
         }
         
-        // Timer
+        // Timer with sound effects
         function startTimer() {
             if (timerInterval) clearInterval(timerInterval);
             roundTimer = 60;
@@ -1182,8 +1384,12 @@
                 const timerEl = document.getElementById('timer');
                 timerEl.textContent = `${minutes}:${seconds.toString().padStart(2, '0')}`;
                 
-                if (roundTimer <= 10) {
+                // Play tick sound at 10, 5, 4, 3, 2, 1
+                if (roundTimer <= 10 && roundTimer > 0) {
                     timerEl.classList.add('warning');
+                    if (roundTimer <= 5) {
+                        playSound('tick');
+                    }
                 } else {
                     timerEl.classList.remove('warning');
                 }
@@ -1304,9 +1510,17 @@
             document.getElementById('player-count').textContent = '0';
         }
         
-        // Wallet
+        // Modals
         function openWalletModal() {
             document.getElementById('wallet-modal').classList.add('show');
+        }
+        
+        function openHelpModal() {
+            document.getElementById('help-modal').classList.add('show');
+        }
+        
+        function closeHelpModal() {
+            document.getElementById('help-modal').classList.remove('show');
         }
         
         async function connectMetaMask() {
@@ -1381,8 +1595,9 @@
             showToast('Disconnected', 'success');
         }
         
-        // Chat - Supabase Integration
+        // Chat - Supabase Integration with online users
         let chatPollInterval;
+        let onlineUsers = new Set();
         
         async function loadChatMessages() {
             try {
@@ -1392,14 +1607,17 @@
                 
                 const data = await response.json();
                 const messagesDiv = document.getElementById('chat-messages');
-                messagesDiv.innerHTML = '<div class="chat-system">Connected to chat</div>';
+                messagesDiv.innerHTML = '<div class="chat-system">🟢 Connected to #luckyblock</div>';
                 
                 if (data.messages && data.messages.length > 0) {
                     data.messages.forEach(msg => {
                         const username = msg.user?.username || shortenAddress(msg.user?.walletAddress);
                         addChatMessage(username, msg.content, false);
+                        onlineUsers.add(username);
                     });
                 }
+                
+                updateOnlineCount();
                 
                 // Start polling for new messages every 3 seconds
                 if (chatPollInterval) clearInterval(chatPollInterval);
@@ -1407,8 +1625,29 @@
                 
             } catch (error) {
                 console.error('Chat load error:', error);
-                addChatMessage('SYSTEM', 'Chat offline - local mode');
+                addChatMessage('SYSTEM', '🔴 Chat offline - local mode');
             }
+        }
+        
+        function updateOnlineCount() {
+            // Update chat header
+            const header = document.querySelector('.chat-header');
+            const count = onlineUsers.size + currentPlayers.length;
+            header.textContent = `💬 CHAT (${count} online) 💬`;
+            
+            // Update online users list
+            const onlineUsersDiv = document.getElementById('online-users');
+            if (onlineUsers.size === 0 && currentPlayers.length === 0) {
+                onlineUsersDiv.innerHTML = '<div style="text-align: center; padding: 10px;">No users yet</div>';
+                return;
+            }
+            
+            const allUsers = new Set([...Array.from(onlineUsers), ...currentPlayers.map(p => shortenAddress(p.address))]);
+            onlineUsersDiv.innerHTML = Array.from(allUsers).map(user => `
+                <div style="padding: 5px; border-bottom: 1px solid rgba(0, 82, 255, 0.2);">
+                    <span style="color: #00FF88;">●</span> ${user}
+                </div>
+            `).join('');
         }
         
         let lastMessageId = null;
