@@ -972,6 +972,9 @@
         <div class="warning-banner">
             <div class="warning-title">⚠️ BETA - DO NOT WAGER ⚠️</div>
             <p class="warning-text">Smart contracts NOT deployed. All gameplay simulated. For testing only.</p>
+            <p class="warning-text" style="margin-top: 10px; font-size: 0.45rem; color: #888;">
+                ℹ️ When live: Timer starts ONLY after 2+ players make on-chain transactions. All players see same synced 60-second countdown from blockchain.
+            </p>
         </div>
         
         <div class="game-layout">
@@ -1132,18 +1135,31 @@
     <script src="https://cdn.jsdelivr.net/npm/ethers@6.10.0/dist/ethers.umd.min.js"></script>
     <script>
         // Config
-        const CONTRACT_ADDRESS = '0x0000000000000000000000000000000000000000';
+        const CONTRACT_ADDRESS = '0x0000000000000000000000000000000000000000'; // DEPLOY CONTRACT FIRST
         const BASE_CHAIN_ID = '0x2105';
+        
+        // Contract ABI
+        const CONTRACT_ABI = [
+            "function enterRound(address referrer) external payable",
+            "function getCurrentRound() external view returns (uint256 id, uint256 playerCount, uint256 pot, uint256 timeLeft, bool isActive, uint8 state)",
+            "function getRoundPlayers(uint256 roundId) external view returns (address[] memory)",
+            "event PlayerEntered(uint256 indexed roundId, address indexed player, uint256 entryNumber, address indexed referrer)",
+            "event WinnerDrawn(uint256 indexed roundId, address indexed winner, uint256 payout, uint256 randomSeed)"
+        ];
         
         // State
         let currentBetAmount = 0.001;
         let userAddress;
+        let provider;
+        let signer;
+        let contract;
         let ethPrice = 0;
         let currentPlayers = [];
-        let roundTimer = 60;
+        let roundTimer = 0;
         let timerInterval;
         let wheelRotation = 0;
         let isSpinning = false;
+        let contractDeployed = false; // Flag for contract status
         
         // Sound effects
         const sounds = {
@@ -1170,9 +1186,166 @@
             initWheel();
             await fetchETHPrice();
             updateBetDisplay();
-            startTimer();
             loadChatMessages();
+            
+            // Check if contract is deployed
+            if (CONTRACT_ADDRESS !== '0x0000000000000000000000000000000000000000') {
+                contractDeployed = true;
+                await initContract();
+                startContractSync(); // Sync with blockchain
+            } else {
+                // Contract not deployed - show message
+                addChatMessage('SYSTEM', '⚠️ Contract not deployed. Gameplay is simulated for UI testing.');
+                document.getElementById('timer').textContent = 'WAITING';
+                document.getElementById('enter-btn').disabled = true;
+                document.getElementById('enter-btn').textContent = '⏸️ CONTRACT NOT DEPLOYED';
+            }
         });
+        
+        // Initialize contract connection
+        async function initContract() {
+            try {
+                if (typeof window.ethereum === 'undefined') {
+                    console.log('No wallet detected yet');
+                    return;
+                }
+                
+                provider = new ethers.BrowserProvider(window.ethereum);
+                
+                // Check network
+                const network = await provider.getNetwork();
+                if (network.chainId !== BigInt(8453)) { // Base mainnet
+                    console.warn('Not on Base network');
+                    return;
+                }
+                
+                // Initialize read-only contract
+                contract = new ethers.Contract(CONTRACT_ADDRESS, CONTRACT_ABI, provider);
+                console.log('✅ Contract initialized');
+                
+            } catch (error) {
+                console.error('Contract init error:', error);
+            }
+        }
+        
+        // Sync game state from blockchain
+        async function startContractSync() {
+            if (!contract) return;
+            
+            // Initial load
+            await loadGameStateFromContract();
+            
+            // Poll contract every 2 seconds for updates
+            setInterval(async () => {
+                await loadGameStateFromContract();
+            }, 2000);
+            
+            // Listen for events
+            contract.on('PlayerEntered', async (roundId, player, entryNumber, referrer) => {
+                console.log('Player entered:', player);
+                await loadGameStateFromContract();
+                addChatMessage('SYSTEM', `Player #${entryNumber} entered!`);
+                playSound('enter');
+            });
+            
+            contract.on('WinnerDrawn', async (roundId, winner, payout, randomSeed) => {
+                console.log('Winner:', winner);
+                const payoutETH = ethers.formatEther(payout);
+                await loadGameStateFromContract();
+                addChatMessage('SYSTEM', `🎉 Winner: ${shortenAddress(winner)} won ${payoutETH} ETH!`);
+            });
+        }
+        
+        // Load game state from smart contract
+        async function loadGameStateFromContract() {
+            if (!contract) return;
+            
+            try {
+                const round = await contract.getCurrentRound();
+                const [id, playerCount, pot, timeLeft, isActive, state] = round;
+                
+                // Update UI with blockchain data
+                document.getElementById('round-number').textContent = id.toString();
+                document.getElementById('player-count').textContent = `${playerCount}/20`;
+                
+                const potETH = ethers.formatEther(pot);
+                document.getElementById('pot-amount').textContent = parseFloat(potETH).toFixed(4);
+                document.getElementById('pot-usd').textContent = '$' + (parseFloat(potETH) * ethPrice).toFixed(2);
+                
+                // Update timer from contract
+                const timeLeftNum = Number(timeLeft);
+                roundTimer = timeLeftNum;
+                
+                if (isActive && timeLeftNum > 0) {
+                    updateTimerDisplay();
+                    if (!timerInterval) {
+                        startSyncedTimer();
+                    }
+                } else if (playerCount < 2) {
+                    document.getElementById('timer').textContent = 'WAITING';
+                    if (timerInterval) {
+                        clearInterval(timerInterval);
+                        timerInterval = null;
+                    }
+                }
+                
+                // Load players
+                const players = await contract.getRoundPlayers(id);
+                currentPlayers = players.map(addr => ({
+                    address: addr,
+                    bet: 0.001, // Will get actual bet amounts in enhanced version
+                    chance: (100 / players.length).toFixed(2)
+                }));
+                
+                updatePlayersList();
+                drawWheel();
+                
+            } catch (error) {
+                console.error('Failed to load game state:', error);
+            }
+        }
+        
+        // Synced timer that matches blockchain state
+        function startSyncedTimer() {
+            if (timerInterval) clearInterval(timerInterval);
+            
+            timerInterval = setInterval(async () => {
+                if (!contract) return;
+                
+                try {
+                    const round = await contract.getCurrentRound();
+                    const [, , , timeLeft, isActive] = round;
+                    const timeLeftNum = Number(timeLeft);
+                    
+                    roundTimer = timeLeftNum;
+                    updateTimerDisplay();
+                    
+                    if (timeLeftNum <= 0) {
+                        clearInterval(timerInterval);
+                        timerInterval = null;
+                        document.getElementById('timer').textContent = 'DRAWING...';
+                    }
+                } catch (error) {
+                    console.error('Timer sync error:', error);
+                }
+            }, 1000);
+        }
+        
+        function updateTimerDisplay() {
+            const minutes = Math.floor(roundTimer / 60);
+            const seconds = roundTimer % 60;
+            const timerEl = document.getElementById('timer');
+            timerEl.textContent = `${minutes}:${seconds.toString().padStart(2, '0')}`;
+            
+            if (roundTimer <= 10 && roundTimer > 0) {
+                timerEl.classList.add('warning');
+                if (roundTimer <= 5) {
+                    playSound('tick');
+                }
+            } else {
+                timerEl.classList.remove('warning');
+            }
+        }
         
         // Wheel
         let canvas, ctx;
@@ -1274,8 +1447,13 @@
             document.getElementById('bet-usd').textContent = '~$' + (currentBetAmount * ethPrice).toFixed(2);
         }
         
-        // Enter round (simulated)
-        function enterRound() {
+        // Enter round - BLOCKCHAIN TRANSACTION
+        async function enterRound() {
+            if (!contractDeployed) {
+                showToast('⚠️ Contract not deployed yet!', 'error');
+                return;
+            }
+            
             if (!userAddress) {
                 showToast('Connect wallet first', 'error');
                 openWalletModal();
@@ -1283,31 +1461,71 @@
             }
             
             // Check if already entered
-            if (currentPlayers.some(p => p.address === userAddress)) {
-                showToast('Already entered!', 'error');
+            if (currentPlayers.some(p => p.address.toLowerCase() === userAddress.toLowerCase())) {
+                showToast('Already entered this round!', 'error');
                 return;
             }
             
-            currentPlayers.push({
-                address: userAddress,
-                bet: currentBetAmount,
-                chance: 0
-            });
-            
-            recalculateChances();
-            updatePlayersList();
-            animateWheelUpdate();
-            updatePot();
-            
-            playSound('enter');
-            addChatMessage(shortenAddress(userAddress), `Entered with ${currentBetAmount.toFixed(4)} ETH!`);
-            showToast('Entered round!', 'success');
-            
-            document.getElementById('player-count').textContent = currentPlayers.length;
-            
-            if (currentPlayers.length === 2 && !timerInterval) {
-                startTimer();
-                addChatMessage('SYSTEM', '⏱️ 60 second countdown started!');
+            try {
+                // Get signer
+                if (!signer) {
+                    signer = await provider.getSigner();
+                }
+                
+                // Connect contract with signer for transactions
+                const contractWithSigner = contract.connect(signer);
+                
+                // Show loading state
+                const enterBtn = document.getElementById('enter-btn');
+                const originalText = enterBtn.textContent;
+                enterBtn.disabled = true;
+                enterBtn.innerHTML = '⏳ SENDING TX... <span class="loading-spinner"></span>';
+                enterBtn.classList.add('btn-loading');
+                
+                // Get referrer from URL if exists
+                const urlParams = new URLSearchParams(window.location.search);
+                const referrer = urlParams.get('ref') || ethers.ZeroAddress;
+                
+                // Send transaction
+                const betAmount = ethers.parseEther(currentBetAmount.toString());
+                const tx = await contractWithSigner.enterRound(referrer, { value: betAmount });
+                
+                showToast('Transaction sent! Waiting for confirmation...', 'success');
+                enterBtn.textContent = '⏳ CONFIRMING...';
+                
+                // Wait for confirmation
+                const receipt = await tx.wait();
+                
+                showToast('✅ Successfully entered the round!', 'success');
+                playSound('enter');
+                
+                // Reset button
+                enterBtn.disabled = false;
+                enterBtn.textContent = originalText;
+                enterBtn.classList.remove('btn-loading');
+                
+                // Reload game state
+                await loadGameStateFromContract();
+                
+            } catch (error) {
+                console.error('Enter round error:', error);
+                
+                // Reset button
+                const enterBtn = document.getElementById('enter-btn');
+                enterBtn.disabled = false;
+                enterBtn.textContent = '🎰 ENTER 🎰';
+                enterBtn.classList.remove('btn-loading');
+                
+                // User-friendly error messages
+                if (error.code === 'ACTION_REJECTED') {
+                    showToast('Transaction cancelled', 'error');
+                } else if (error.message.includes('insufficient funds')) {
+                    showToast('Insufficient ETH balance', 'error');
+                } else if (error.message.includes('Already entered')) {
+                    showToast('Already entered this round!', 'error');
+                } else {
+                    showToast('Transaction failed', 'error');
+                }
             }
         }
         
@@ -1324,13 +1542,6 @@
             animate();
         }
         
-        function recalculateChances() {
-            const total = currentPlayers.reduce((sum, p) => sum + p.bet, 0);
-            currentPlayers.forEach(p => {
-                p.chance = ((p.bet / total) * 100).toFixed(2);
-            });
-        }
-        
         function updatePlayersList() {
             const list = document.getElementById('players-list');
             if (currentPlayers.length === 0) {
@@ -1345,90 +1556,9 @@
             `).join('');
         }
         
-        // Animate pot value counting up
-        function updatePot() {
-            const total = currentPlayers.reduce((sum, p) => sum + p.bet, 0);
-            const potEl = document.getElementById('pot-amount');
-            const current = parseFloat(potEl.textContent) || 0;
-            
-            // Animate count-up
-            const duration = 500;
-            const start = Date.now();
-            const startVal = current;
-            
-            function animateCount() {
-                const elapsed = Date.now() - start;
-                const progress = Math.min(elapsed / duration, 1);
-                const value = startVal + (total - startVal) * progress;
-                
-                potEl.textContent = value.toFixed(4);
-                document.getElementById('pot-usd').textContent = '$' + (value * ethPrice).toFixed(2);
-                
-                if (progress < 1) {
-                    requestAnimationFrame(animateCount);
-                }
-            }
-            
-            animateCount();
-        }
-        
-        // Timer with sound effects
-        function startTimer() {
-            if (timerInterval) clearInterval(timerInterval);
-            roundTimer = 60;
-            
-            timerInterval = setInterval(() => {
-                roundTimer--;
-                const minutes = Math.floor(roundTimer / 60);
-                const seconds = roundTimer % 60;
-                const timerEl = document.getElementById('timer');
-                timerEl.textContent = `${minutes}:${seconds.toString().padStart(2, '0')}`;
-                
-                // Play tick sound at 10, 5, 4, 3, 2, 1
-                if (roundTimer <= 10 && roundTimer > 0) {
-                    timerEl.classList.add('warning');
-                    if (roundTimer <= 5) {
-                        playSound('tick');
-                    }
-                } else {
-                    timerEl.classList.remove('warning');
-                }
-                
-                if (roundTimer <= 0) {
-                    endRound();
-                }
-            }, 1000);
-        }
-        
-        // End round
-        function endRound() {
-            if (currentPlayers.length < 2) {
-                showToast('Not enough players', 'error');
-                resetRound();
-                return;
-            }
-            
-            clearInterval(timerInterval);
-            selectWinner();
-        }
-        
-        function selectWinner() {
-            const totalBets = currentPlayers.reduce((sum, p) => sum + p.bet, 0);
-            const rand = Math.random() * totalBets;
-            let cumulative = 0;
-            let winnerIndex = 0;
-            
-            for (let i = 0; i < currentPlayers.length; i++) {
-                cumulative += currentPlayers[i].bet;
-                if (rand <= cumulative) {
-                    winnerIndex = i;
-                    break;
-                }
-            }
-            
-            // Animate spinning wheel to winner
-            animateWheelSpin(winnerIndex);
-        }
+        // Note: updatePot() is now handled by loadGameStateFromContract()
+        // Note: Timer is now synced from blockchain via startSyncedTimer()
+        // Note: Winner selection is handled by smart contract
         
         // Spinning wheel animation
         function animateWheelSpin(winnerIndex) {
@@ -1497,17 +1627,10 @@
         
         function closeWinnerAnnouncement() {
             document.getElementById('winner-overlay').classList.remove('show');
-            resetRound();
-        }
-        
-        function resetRound() {
-            currentPlayers = [];
-            roundTimer = 60;
-            updatePlayersList();
-            drawWheel();
-            updatePot();
-            document.getElementById('round-number').textContent = parseInt(document.getElementById('round-number').textContent) + 1;
-            document.getElementById('player-count').textContent = '0';
+            // Game state will auto-reload from contract (new round auto-created)
+            if (contractDeployed) {
+                loadGameStateFromContract();
+            }
         }
         
         // Modals
@@ -1533,6 +1656,18 @@
                 const accounts = await window.ethereum.request({ method: 'eth_requestAccounts' });
                 userAddress = accounts[0];
                 
+                // Initialize provider and signer
+                provider = new ethers.BrowserProvider(window.ethereum);
+                signer = await provider.getSigner();
+                
+                // Initialize contract if deployed
+                if (contractDeployed && CONTRACT_ADDRESS !== '0x0000000000000000000000000000000000000000') {
+                    contract = new ethers.Contract(CONTRACT_ADDRESS, CONTRACT_ABI, provider);
+                    // Enable enter button
+                    document.getElementById('enter-btn').disabled = false;
+                    document.getElementById('enter-btn').textContent = '🎰 ENTER 🎰';
+                }
+                
                 document.getElementById('wallet-btn').style.display = 'none';
                 document.getElementById('wallet-connected').style.display = 'flex';
                 document.getElementById('wallet-address').textContent = shortenAddress(userAddress);
@@ -1551,6 +1686,17 @@
                 if (typeof window.ethereum !== 'undefined' && window.ethereum.isCoinbaseWallet) {
                     const accounts = await window.ethereum.request({ method: 'eth_requestAccounts' });
                     userAddress = accounts[0];
+                    
+                    // Initialize provider and signer
+                    provider = new ethers.BrowserProvider(window.ethereum);
+                    signer = await provider.getSigner();
+                    
+                    // Initialize contract if deployed
+                    if (contractDeployed && CONTRACT_ADDRESS !== '0x0000000000000000000000000000000000000000') {
+                        contract = new ethers.Contract(CONTRACT_ADDRESS, CONTRACT_ABI, provider);
+                        document.getElementById('enter-btn').disabled = false;
+                        document.getElementById('enter-btn').textContent = '🎰 ENTER 🎰';
+                    }
                     
                     document.getElementById('wallet-btn').style.display = 'none';
                     document.getElementById('wallet-connected').style.display = 'flex';
@@ -1572,6 +1718,17 @@
                 if (typeof window.phantom !== 'undefined' && window.phantom.ethereum) {
                     const accounts = await window.phantom.ethereum.request({ method: 'eth_requestAccounts' });
                     userAddress = accounts[0];
+                    
+                    // Initialize provider and signer
+                    provider = new ethers.BrowserProvider(window.phantom.ethereum);
+                    signer = await provider.getSigner();
+                    
+                    // Initialize contract if deployed
+                    if (contractDeployed && CONTRACT_ADDRESS !== '0x0000000000000000000000000000000000000000') {
+                        contract = new ethers.Contract(CONTRACT_ADDRESS, CONTRACT_ABI, provider);
+                        document.getElementById('enter-btn').disabled = false;
+                        document.getElementById('enter-btn').textContent = '🎰 ENTER 🎰';
+                    }
                     
                     document.getElementById('wallet-btn').style.display = 'none';
                     document.getElementById('wallet-connected').style.display = 'flex';
