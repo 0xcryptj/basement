@@ -2351,4 +2351,96 @@ document.addEventListener('DOMContentLoaded', () => {
             window.basementApp.createCategory();
         });
     }
+
+    // ===================================
+    // LIVE STATS DASHBOARD
+    // ===================================
+    
+    async function loadGlobalStats() {
+        // Check if elements exist
+        const wageredEl = document.getElementById('total-wagered-stat');
+        const playersEl = document.getElementById('total-players-stat');
+        const roundsEl = document.getElementById('total-rounds-stat');
+        const activeEl = document.getElementById('active-now-stat');
+        
+        if (!wageredEl || !playersEl || !roundsEl || !activeEl) {
+            return; // Stats dashboard not on this page
+        }
+        
+        // Check if ethers is available
+        if (typeof ethers === 'undefined') {
+            console.log('Ethers.js not loaded, stats unavailable');
+            return;
+        }
+        
+        try {
+            // Initialize provider
+            let provider;
+            if (window.ethereum) {
+                provider = new ethers.BrowserProvider(window.ethereum);
+            } else {
+                // Use public RPC if no wallet
+                provider = new ethers.JsonRpcProvider('https://mainnet.base.org');
+            }
+            
+            // Lucky Block contract
+            const CONTRACT_ADDRESS = '0xBD39484E23b7f4c838A6eF1E2e140E01646991F3';
+            const CONTRACT_ABI = [
+                'function getGlobalStats() external view returns (uint256 wagered, uint256 roundsCompleted, uint256 uniquePlayers, uint256 currentRound, uint256 activePlayers)'
+            ];
+            
+            const contract = new ethers.Contract(CONTRACT_ADDRESS, CONTRACT_ABI, provider);
+            
+            // Fetch stats
+            const stats = await contract.getGlobalStats();
+            
+            // Update UI with animations
+            animateValue('total-wagered-stat', 0, parseFloat(ethers.formatEther(stats[0])), 1000);
+            animateValue('total-players-stat', 0, Number(stats[2]), 1000);
+            animateValue('total-rounds-stat', 0, Number(stats[1]), 1000);
+            activeEl.textContent = stats[4].toString();
+            
+        } catch (error) {
+            console.error('Stats load error:', error);
+            // Show placeholder if error
+            wageredEl.textContent = '---';
+            playersEl.textContent = '---';
+            roundsEl.textContent = '---';
+            activeEl.textContent = '---';
+        }
+    }
+    
+    function animateValue(elementId, start, end, duration) {
+        const obj = document.getElementById(elementId);
+        if (!obj) return;
+        
+        const range = end - start;
+        const startTime = Date.now();
+        
+        function update() {
+            const elapsed = Date.now() - startTime;
+            const progress = Math.min(elapsed / duration, 1);
+            const value = start + (range * progress);
+            
+            if (value >= 1000) {
+                obj.textContent = (value / 1000).toFixed(2) + 'K';
+            } else if (value >= 1) {
+                obj.textContent = Math.floor(value);
+            } else {
+                obj.textContent = value.toFixed(4);
+            }
+            
+            if (progress < 1) {
+                requestAnimationFrame(update);
+            }
+        }
+        
+        update();
+    }
+    
+    // Load stats on page load
+    if (document.getElementById('total-wagered-stat')) {
+        setTimeout(loadGlobalStats, 1000); // Wait 1s for ethers to load
+        setInterval(loadGlobalStats, 15000); // Refresh every 15 seconds
+    }
 });

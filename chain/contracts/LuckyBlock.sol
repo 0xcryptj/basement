@@ -1,7 +1,7 @@
 // SPDX-License-Identifier: MIT
 pragma solidity ^0.8.24;
 
-import {ReentrancyGuard} from "@openzeppelin/contracts/security/ReentrancyGuard.sol";
+import {ReentrancyGuard} from "@openzeppelin/contracts/utils/ReentrancyGuard.sol";
 import {Ownable} from "@openzeppelin/contracts/access/Ownable.sol";
 
 /**
@@ -264,12 +264,11 @@ contract LuckyBlock is ReentrancyGuard, Ownable {
         Round storage newRound = rounds[currentRoundId];
         
         newRound.id = currentRoundId;
-        newRound.entryFee = currentEntryFee;
         newRound.startTime = block.timestamp;
         newRound.endTime = block.timestamp + ROUND_DURATION;
         newRound.state = State.Open;
         
-        emit RoundCreated(currentRoundId, currentEntryFee, newRound.startTime, newRound.endTime);
+        emit RoundCreated(currentRoundId, 0, newRound.startTime, newRound.endTime);
     }
     
     /**

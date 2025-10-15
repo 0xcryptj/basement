@@ -968,12 +968,12 @@
     </nav>
     
     <div class="container">
-        <!-- Warning -->
-        <div class="warning-banner">
-            <div class="warning-title">⚠️ BETA - DO NOT WAGER ⚠️</div>
-            <p class="warning-text">Smart contracts NOT deployed. All gameplay simulated. For testing only.</p>
+        <!-- Live Status -->
+        <div class="warning-banner" style="border-color: #00FF88; background: rgba(0, 255, 136, 0.1);">
+            <div class="warning-title" style="color: #00FF88;">✅ LIVE ON BASE MAINNET ✅</div>
+            <p class="warning-text" style="color: #00FF88;">Playing with REAL ETH. Timer starts after 2+ players enter. All players see synced 60s countdown.</p>
             <p class="warning-text" style="margin-top: 10px; font-size: 0.45rem; color: #888;">
-                ℹ️ When live: Timer starts ONLY after 2+ players make on-chain transactions. All players see same synced 60-second countdown from blockchain.
+                Contract: 0xBD39...91F3 | Verified on Basescan | 5% house fee | Provably fair randomness
             </p>
         </div>
         
@@ -1135,7 +1135,7 @@
     <script src="https://cdn.jsdelivr.net/npm/ethers@6.10.0/dist/ethers.umd.min.js"></script>
     <script>
         // Config
-        const CONTRACT_ADDRESS = '0x0000000000000000000000000000000000000000'; // DEPLOY CONTRACT FIRST
+        const CONTRACT_ADDRESS = '0xBD39484E23b7f4c838A6eF1E2e140E01646991F3'; // ✅ LIVE ON BASE MAINNET
         const BASE_CHAIN_ID = '0x2105';
         
         // Contract ABI

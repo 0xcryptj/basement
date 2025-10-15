@@ -1,7 +1,7 @@
 // SPDX-License-Identifier: MIT
 pragma solidity ^0.8.24;
 
-import {ReentrancyGuard} from "@openzeppelin/contracts/security/ReentrancyGuard.sol";
+import {ReentrancyGuard} from "@openzeppelin/contracts/utils/ReentrancyGuard.sol";
 import {Ownable} from "@openzeppelin/contracts/access/Ownable.sol";
 
 /**
@@ -168,30 +168,34 @@ contract Connect4 is ReentrancyGuard, Ownable {
             startR = -startC;
             startC = 0;
         }
-        for (; startC < int8(COLS) && startR < int8(ROWS); startC++, startR++) {
+        for (; startC < int8(int256(COLS)) && startR < int8(int256(ROWS)); ) {
             if (g.board[uint8(startC)][uint8(startR)] == piece) {
                 count++;
                 if (count >= 4) return true;
             } else {
                 count = 0;
             }
+            startC++;
+            startR++;
         }
         
         // Check diagonal (top-left to bottom-right)
         count = 0;
         startC = int8(col) + int8(row);
         startR = 0;
-        if (startC >= int8(COLS)) {
-            startR = startC - int8(COLS) + 1;
-            startC = int8(COLS) - 1;
+        if (startC >= int8(int256(COLS))) {
+            startR = startC - int8(int256(COLS)) + 1;
+            startC = int8(int256(COLS)) - 1;
         }
-        for (; startC >= 0 && startR < int8(ROWS); startC--, startR++) {
+        for (; startC >= 0 && startR < int8(int256(ROWS)); ) {
             if (g.board[uint8(startC)][uint8(startR)] == piece) {
                 count++;
                 if (count >= 4) return true;
             } else {
                 count = 0;
             }
+            startC--;
+            startR++;
         }
         
         return false;
