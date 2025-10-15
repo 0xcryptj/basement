@@ -1160,14 +1160,14 @@
         // Track online users
         let onlineWallets = new Set();
         
-        // Contract ABI
+        // Contract ABI (matches deployed contract - older version without wagerCount)
         const CONTRACT_ABI = [
             "function enterRound(address referrer) external payable",
             "function getCurrentRound() external view returns (uint256 id, uint256 playerCount, uint256 pot, uint256 timeLeft, bool isActive, uint8 state)",
             "function getRoundPlayers(uint256 roundId) external view returns (address[] memory)",
             "function getRoundBets(uint256 roundId) external view returns (uint256[] memory)",
             "function getPlayerStats(address player) external view returns (uint256 roundsPlayed, uint256 roundsWon, uint256 winRate)",
-            "function getGlobalStats() external view returns (uint256 wagered, uint256 roundsCompleted, uint256 uniquePlayers, uint256 currentRound, uint256 activePlayers, uint256 wagerCount)",
+            "function getGlobalStats() external view returns (uint256 wagered, uint256 roundsCompleted, uint256 uniquePlayers, uint256 currentRound, uint256 activePlayers)",
             "event PlayerEntered(uint256 indexed roundId, address indexed player, uint256 entryNumber, address indexed referrer)",
             "event WinnerDrawn(uint256 indexed roundId, address indexed winner, uint256 payout, uint256 randomSeed)"
         ];
@@ -1225,9 +1225,10 @@
             
             try {
                 const stats = await contract.getGlobalStats();
-                const [wagered, rounds, players, currentRound, active, wagerCount] = stats;
+                const [wagered, rounds, players, currentRound, active] = stats;
                 
-                document.getElementById('total-wagers-stat').textContent = wagerCount.toString();
+                // Note: Deployed contract doesn't have wagerCount, so we'll use rounds as fallback
+                document.getElementById('total-wagers-stat').textContent = rounds.toString();
                 document.getElementById('total-wagered-display').textContent = parseFloat(ethers.formatEther(wagered)).toFixed(4) + ' ETH';
                 
             } catch (error) {
