@@ -1519,13 +1519,19 @@
             }
             
             try {
-                // Get signer
-                if (!signer) {
-                    signer = await provider.getSigner();
+                // Ensure we have signer and provider
+                if (!provider) {
+                    showToast('⚠️ Reconnect your wallet', 'error');
+                    return;
                 }
+                
+                // Get fresh signer for transaction
+                signer = await provider.getSigner();
+                console.log('✅ Signer ready:', await signer.getAddress());
                 
                 // Connect contract with signer for transactions
                 const contractWithSigner = contract.connect(signer);
+                console.log('✅ Contract connected with signer');
                 
                 // Show loading state
                 const enterBtn = document.getElementById('enter-btn');
@@ -1540,13 +1546,19 @@
                 
                 // Send transaction
                 const betAmount = ethers.parseEther(currentBetAmount.toString());
+                console.log('💰 Bet amount:', betAmount.toString(), 'wei');
+                console.log('📝 Referrer:', referrer);
+                console.log('📤 Sending transaction...');
+                
                 const tx = await contractWithSigner.enterRound(referrer, { value: betAmount });
+                console.log('✅ Transaction sent:', tx.hash);
                 
                 showToast('Transaction sent! Waiting for confirmation...', 'success');
                 enterBtn.textContent = '⏳ CONFIRMING...';
                 
                 // Wait for confirmation
                 const receipt = await tx.wait();
+                console.log('✅ Transaction confirmed:', receipt.transactionHash);
                 
                 showToast('✅ Successfully entered the round!', 'success');
                 playSound('enter');
@@ -1560,7 +1572,10 @@
                 await loadGameStateFromContract();
                 
             } catch (error) {
-                console.error('Enter round error:', error);
+                console.error('❌ Enter round error:', error);
+                console.error('Error code:', error.code);
+                console.error('Error message:', error.message);
+                console.error('Error data:', error.data);
                 
                 // Reset button
                 const enterBtn = document.getElementById('enter-btn');
@@ -1569,14 +1584,18 @@
                 enterBtn.classList.remove('btn-loading');
                 
                 // User-friendly error messages
-                if (error.code === 'ACTION_REJECTED') {
-                    showToast('Transaction cancelled', 'error');
-                } else if (error.message.includes('insufficient funds')) {
-                    showToast('Insufficient ETH balance', 'error');
-                } else if (error.message.includes('Already entered')) {
-                    showToast('Already entered this round!', 'error');
+                if (error.code === 'ACTION_REJECTED' || error.code === 4001) {
+                    showToast('❌ Transaction cancelled', 'error');
+                } else if (error.message && error.message.includes('insufficient funds')) {
+                    showToast('❌ Insufficient ETH balance', 'error');
+                } else if (error.message && error.message.includes('Already entered')) {
+                    showToast('❌ Already entered this round!', 'error');
+                } else if (error.message && error.message.includes('user rejected')) {
+                    showToast('❌ You rejected the transaction', 'error');
+                } else if (error.message && error.message.includes('gas')) {
+                    showToast('❌ Gas estimation failed - check network', 'error');
                 } else {
-                    showToast('Transaction failed', 'error');
+                    showToast(`❌ Transaction failed: ${error.message || 'Unknown error'}`, 'error');
                 }
             }
         }
@@ -1933,11 +1952,20 @@
         
         async function loadChatMessages() {
             try {
+                console.log('📥 Loading chat messages...');
                 // Fetch messages from Supabase
                 const response = await fetch('/api/chat/messages?channel=luckyblock&limit=50');
-                if (!response.ok) throw new Error('Failed to load chat');
+                console.log('📥 Chat response status:', response.status);
+                
+                if (!response.ok) {
+                    const errorText = await response.text();
+                    console.error('❌ Chat load error:', response.status, errorText);
+                    throw new Error(`Failed to load chat: ${response.status}`);
+                }
                 
                 const data = await response.json();
+                console.log('✅ Chat data loaded:', data.messages?.length || 0, 'messages');
+                
                 const messagesDiv = document.getElementById('chat-messages');
                 messagesDiv.innerHTML = '<div class="chat-system">🟢 Connected to #luckyblock</div>';
                 
@@ -1947,6 +1975,7 @@
                         addChatMessage(username, msg.content, false);
                         onlineUsers.add(username);
                     });
+                    console.log('✅ Loaded', data.messages.length, 'messages');
                 }
                 
                 updateOnlineCount();
@@ -1956,8 +1985,8 @@
                 chatPollInterval = setInterval(loadNewMessages, 3000);
                 
             } catch (error) {
-                console.error('Chat load error:', error);
-                addChatMessage('SYSTEM', '🔴 Chat offline - local mode');
+                console.error('❌ Chat load error:', error);
+                addChatMessage('SYSTEM', '🔴 Chat offline - Enable chat in settings or check network');
             }
         }
         
@@ -2043,12 +2072,13 @@
             // Send to Supabase
             try {
                 const username = localStorage.getItem('basement_username') || shortenAddress(userAddress);
+                console.log('📤 Sending message:', text.substring(0, 50));
                 
                 const response = await fetch('/api/chat/messages', {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
                     body: JSON.stringify({
-                        channel: 'luckyblock',
+                        channelSlug: 'luckyblock',
                         content: text,
                         walletAddress: userAddress,
                         username: username,
@@ -2056,19 +2086,27 @@
                     })
                 });
                 
+                console.log('📤 Message response status:', response.status);
+                
                 if (response.ok) {
+                    const data = await response.json();
+                    console.log('✅ Message sent:', data);
                     input.value = '';
                     // Message will appear via polling
                 } else {
+                    const errorText = await response.text();
+                    console.error('❌ Message failed:', response.status, errorText);
                     // Fallback to local display
-                    addChatMessage(shortenAddress(userAddress), text);
+                    addChatMessage(username, text);
                     input.value = '';
+                    showToast('⚠️ Chat server unavailable - message sent locally', 'error');
                 }
             } catch (error) {
-                console.error('Send message error:', error);
+                console.error('❌ Send message error:', error);
                 // Fallback to local
                 addChatMessage(shortenAddress(userAddress), text);
                 input.value = '';
+                showToast('⚠️ Message sent locally only', 'error');
             }
         }
         
