@@ -2384,7 +2384,7 @@ document.addEventListener('DOMContentLoaded', () => {
             }
             
             // Lucky Block contract
-            const CONTRACT_ADDRESS = '0xBD39484E23b7f4c838A6eF1E2e140E01646991F3';
+            const CONTRACT_ADDRESS = '0x3041638a8a4393c13ad1A7E4173741e183518EB1';
             const CONTRACT_ABI = [
                 'function getGlobalStats() external view returns (uint256 wagered, uint256 roundsCompleted, uint256 uniquePlayers, uint256 currentRound, uint256 activePlayers)'
             ];

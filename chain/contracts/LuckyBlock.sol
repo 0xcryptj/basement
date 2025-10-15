@@ -331,6 +331,14 @@ contract LuckyBlock is ReentrancyGuard, Ownable {
     }
     
     /**
+     * @notice Get round bets (amount each player wagered)
+     */
+    function getRoundBets(uint256 roundId) external view returns (uint256[] memory) {
+        Round storage round = rounds[roundId];
+        return round.bets;
+    }
+    
+    /**
      * @notice Get player statistics
      */
     function getPlayerStats(address player) external view returns (

@@ -973,7 +973,7 @@
             <div class="warning-title" style="color: #00FF88;">✅ LIVE ON BASE MAINNET ✅</div>
             <p class="warning-text" style="color: #00FF88;">Playing with REAL ETH. Timer starts after 2+ players enter. All players see synced 60s countdown.</p>
             <p class="warning-text" style="margin-top: 10px; font-size: 0.45rem; color: #888;">
-                Contract: 0xBD39...91F3 | Verified on Basescan | 5% house fee | Provably fair randomness
+                Contract: 0x3041...8EB1 | Verified on Basescan | 5% house fee | Provably fair randomness
             </p>
         </div>
         
@@ -1135,7 +1135,7 @@
     <script src="https://cdn.jsdelivr.net/npm/ethers@6.10.0/dist/ethers.umd.min.js"></script>
     <script>
         // Config
-        const CONTRACT_ADDRESS = '0xBD39484E23b7f4c838A6eF1E2e140E01646991F3'; // ✅ LIVE ON BASE MAINNET
+        const CONTRACT_ADDRESS = '0x3041638a8a4393c13ad1A7E4173741e183518EB1'; // ✅ LIVE ON BASE MAINNET (with bet tracking)
         const BASE_CHAIN_ID = '0x2105';
         
         // Contract ABI
@@ -1143,6 +1143,9 @@
             "function enterRound(address referrer) external payable",
             "function getCurrentRound() external view returns (uint256 id, uint256 playerCount, uint256 pot, uint256 timeLeft, bool isActive, uint8 state)",
             "function getRoundPlayers(uint256 roundId) external view returns (address[] memory)",
+            "function getRoundBets(uint256 roundId) external view returns (uint256[] memory)",
+            "function getPlayerStats(address player) external view returns (uint256 roundsPlayed, uint256 roundsWon, uint256 winRate)",
+            "function getGlobalStats() external view returns (uint256 wagered, uint256 roundsCompleted, uint256 uniquePlayers, uint256 currentRound, uint256 activePlayers)",
             "event PlayerEntered(uint256 indexed roundId, address indexed player, uint256 entryNumber, address indexed referrer)",
             "event WinnerDrawn(uint256 indexed roundId, address indexed winner, uint256 payout, uint256 randomSeed)"
         ];
@@ -1256,6 +1259,22 @@
             });
         }
         
+        // Load user personal stats
+        async function loadUserStats() {
+            if (!contract || !userAddress) return;
+            
+            try {
+                const stats = await contract.getPlayerStats(userAddress);
+                const [roundsPlayed, roundsWon, winRate] = stats;
+                
+                document.getElementById('rounds-played').textContent = roundsPlayed.toString();
+                document.getElementById('rounds-won').textContent = roundsWon.toString();
+                
+            } catch (error) {
+                console.error('Failed to load user stats:', error);
+            }
+        }
+        
         // Load game state from smart contract
         async function loadGameStateFromContract() {
             if (!contract) return;
@@ -1289,13 +1308,26 @@
                     }
                 }
                 
-                // Load players
+                // Load players and their bet amounts
                 const players = await contract.getRoundPlayers(id);
-                currentPlayers = players.map(addr => ({
-                    address: addr,
-                    bet: 0.001, // Will get actual bet amounts in enhanced version
-                    chance: (100 / players.length).toFixed(2)
-                }));
+                const bets = await contract.getRoundBets(id);
+                
+                const totalWagered = bets.reduce((sum, bet) => sum + bet, 0n);
+                
+                currentPlayers = players.map((addr, index) => {
+                    const betAmount = bets[index];
+                    const betETH = parseFloat(ethers.formatEther(betAmount));
+                    const chance = totalWagered > 0n 
+                        ? ((Number(betAmount) / Number(totalWagered)) * 100).toFixed(2)
+                        : (100 / players.length).toFixed(2);
+                    
+                    return {
+                        address: addr,
+                        bet: betETH,
+                        betWei: betAmount,
+                        chance: chance
+                    };
+                });
                 
                 updatePlayersList();
                 drawWheel();
@@ -1548,10 +1580,13 @@
                 list.innerHTML = '<div style="text-align: center; color: #888; font-size: 0.6rem;">Waiting...</div>';
                 return;
             }
-            list.innerHTML = currentPlayers.map(p => `
-                <div class="player-item">
-                    <span class="player-address">${shortenAddress(p.address)}</span>
-                    <span class="player-chance">${p.chance}%</span>
+            list.innerHTML = currentPlayers.map((p, index) => `
+                <div class="player-item" style="display: flex; justify-content: space-between; align-items: center;">
+                    <div style="display: flex; flex-direction: column; gap: 3px;">
+                        <span class="player-address">${shortenAddress(p.address)}</span>
+                        <span style="font-size: 0.5rem; color: #888;">${p.bet.toFixed(4)} ETH wagered</span>
+                    </div>
+                    <span class="player-chance" style="font-size: 0.7rem; font-weight: bold; color: #00BFFF;">${p.chance}%</span>
                 </div>
             `).join('');
         }
@@ -1672,6 +1707,9 @@
                 document.getElementById('wallet-connected').style.display = 'flex';
                 document.getElementById('wallet-address').textContent = shortenAddress(userAddress);
                 
+                // Load user stats
+                await loadUserStats();
+                
                 document.getElementById('wallet-modal').classList.remove('show');
                 showToast('Connected!', 'success');
                 
@@ -1701,6 +1739,9 @@
                     document.getElementById('wallet-btn').style.display = 'none';
                     document.getElementById('wallet-connected').style.display = 'flex';
                     document.getElementById('wallet-address').textContent = shortenAddress(userAddress);
+                    
+                    // Load user stats
+                    await loadUserStats();
                     
                     document.getElementById('wallet-modal').classList.remove('show');
                     showToast('Connected!', 'success');
@@ -1733,6 +1774,9 @@
                     document.getElementById('wallet-btn').style.display = 'none';
                     document.getElementById('wallet-connected').style.display = 'flex';
                     document.getElementById('wallet-address').textContent = shortenAddress(userAddress);
+                    
+                    // Load user stats
+                    await loadUserStats();
                     
                     document.getElementById('wallet-modal').classList.remove('show');
                     showToast('Connected!', 'success');
