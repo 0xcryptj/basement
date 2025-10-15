@@ -21,7 +21,7 @@
 ```
 - **Purpose:** Used to deploy all smart contracts to Base mainnet
 - **Deployed Contracts:**
-  - LuckyBlock: `0x3041638a8a4393c13ad1A7E4173741e183518EB1`
+  - LuckyBlock: `0xf7Cd6fcc391ad2c771c84159E60BDAEeE9BA821e` (Oct 15, 2025)
   - CoinToss: `0xE5Bb0d6cD62BaE2EE4ece101D46B64C737385BE2`
   - Connect4: `0x959812ed75211C6e9e2376bc61a6d2B832954B2e`
   - War: `0x267540F44ceAAB3e854e8e6944B1d68Ff5c9BD60`
@@ -34,13 +34,14 @@
 
 ### **Lucky Block (Jackpot Game)** ✅
 ```
-Contract: 0x3041638a8a4393c13ad1A7E4173741e183518EB1
+Contract: 0xf7Cd6fcc391ad2c771c84159E60BDAEeE9BA821e
 Network: Base Mainnet (Chain ID: 8453)
 Status: LIVE & FUNCTIONAL
-Features: Variable bet amounts, weighted probability, 60s timer
+Features: Variable bet amounts, weighted probability, 60s timer, wager count tracking
+Deployed: October 15, 2025
 ```
-- **View on Basescan:** https://basescan.org/address/0x3041638a8a4393c13ad1A7E4173741e183518EB1
-- **Verification:** `npx hardhat verify --network base 0x3041638a8a4393c13ad1A7E4173741e183518EB1`
+- **View on Basescan:** https://basescan.org/address/0xf7Cd6fcc391ad2c771c84159E60BDAEeE9BA821e
+- **Verification:** `npx hardhat verify --network base 0xf7Cd6fcc391ad2c771c84159E60BDAEeE9BA821e`
 
 ### **Coin Toss (PvP)** ✅
 ```
@@ -124,8 +125,8 @@ View: All incoming transactions from game contracts
 ```javascript
 // Get global stats from Lucky Block
 const luckyBlock = new ethers.Contract(
-    '0x3041638a8a4393c13ad1A7E4173741e183518EB1',
-    ['function getGlobalStats() view returns (uint256,uint256,uint256,uint256,uint256)'],
+    '0xf7Cd6fcc391ad2c771c84159E60BDAEeE9BA821e',
+    ['function getGlobalStats() view returns (uint256,uint256,uint256,uint256,uint256,uint256)'],
     provider
 );
 
@@ -194,7 +195,7 @@ console.log('Total wagered:', ethers.formatEther(totalWagered), 'ETH');
 ### **Basescan (Block Explorer):**
 - House Wallet: https://basescan.org/address/0x5Da407f983e0f11B3f7F67Acd64877b42B22068D
 - Deployment Wallet: https://basescan.org/address/0x22B33DbF8c4a07d37E86A8Bcc7dC156D6ecBe220
-- Lucky Block Contract: https://basescan.org/address/0x3041638a8a4393c13ad1A7E4173741e183518EB1
+- Lucky Block Contract: https://basescan.org/address/0xf7Cd6fcc391ad2c771c84159E60BDAEeE9BA821e
 
 ### **Project:**
 - GitHub: https://github.com/0xcryptj/basement
