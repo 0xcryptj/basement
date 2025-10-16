@@ -1156,6 +1156,12 @@
     <script src="../security.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/ethers@6.10.0/dist/ethers.umd.min.js"></script>
     <script>
+        // Check if ethers loaded
+        if (typeof ethers === 'undefined') {
+            console.error('❌ Ethers.js failed to load!');
+            alert('Failed to load required libraries. Please refresh the page.');
+        }
+        
         // Config
         const CONTRACT_ADDRESS = '0xf7Cd6fcc391ad2c771c84159E60BDAEeE9BA821e'; // ✅ LIVE ON BASE MAINNET - LuckyBlock (Deployed Oct 15, 2025)
         const BASE_CHAIN_ID = '0x2105'; // 8453 in decimal
@@ -1178,14 +1184,14 @@
         
         // State
         let currentBetAmount = 0.001;
-        let userAddress;
-        let provider;
-        let signer;
-        let contract;
+        let userAddress = null;
+        let provider = null;
+        let signer = null;
+        let contract = null;
         let ethPrice = 0;
         let currentPlayers = [];
         let roundTimer = 0;
-        let timerInterval;
+        let timerInterval = null;
         let wheelRotation = 0;
         let isSpinning = false;
         let contractDeployed = true; // Contract is deployed
@@ -1323,6 +1329,23 @@
         
         // Initialize
         window.addEventListener('load', async () => {
+            // Wait a moment for ethers to fully load
+            await new Promise(resolve => setTimeout(resolve, 100));
+            
+            // Verify ethers is available
+            if (typeof ethers === 'undefined') {
+                console.error('❌ Ethers.js not loaded - retrying...');
+                showToast('Loading libraries...', 'error');
+                await new Promise(resolve => setTimeout(resolve, 1000));
+                
+                if (typeof ethers === 'undefined') {
+                    alert('Failed to load required libraries. Please refresh the page.');
+                    return;
+                }
+            }
+            
+            console.log('✅ Ethers.js loaded successfully');
+            
             initWheel();
             await fetchETHPrice();
             updateBetDisplay();
@@ -2266,8 +2289,12 @@
         
         async function sendMessage() {
             const input = document.getElementById('chat-input');
-            const text = input.value.trim();
+            if (!input) {
+                console.error('❌ Chat input not found');
+                return;
+            }
             
+            const text = input.value.trim();
             if (!text) return;
             
             if (!userAddress) {
@@ -2275,9 +2302,11 @@
                 return;
             }
             
+            // Get username safely
+            const username = localStorage.getItem('basement_username') || shortenAddress(userAddress);
+            
             // Send to Supabase
             try {
-                const username = localStorage.getItem('basement_username') || shortenAddress(userAddress);
                 console.log('📤 Sending message:', text.substring(0, 50));
                 
                 const response = await fetch('/api/chat/messages', {
@@ -2286,9 +2315,7 @@
                     body: JSON.stringify({
                         channelSlug: 'luckyblock',
                         content: text,
-                        walletAddress: userAddress,
-                        username: username,
-                        isAnonymous: false
+                        walletAddress: userAddress
                     })
                 });
                 
@@ -2300,17 +2327,17 @@
                     input.value = '';
                     // Message will appear via polling
                 } else {
-                    const errorText = await response.text();
-                    console.error('❌ Message failed:', response.status, errorText);
+                    const errorData = await response.json().catch(() => ({ error: 'Unknown error' }));
+                    console.error('❌ Message failed:', response.status, errorData);
                     // Fallback to local display
                     addChatMessage(username, text);
                     input.value = '';
-                    showToast('⚠️ Chat server unavailable - message sent locally', 'error');
+                    showToast('⚠️ Chat server unavailable', 'error');
                 }
             } catch (error) {
                 console.error('❌ Send message error:', error);
                 // Fallback to local
-                addChatMessage(shortenAddress(userAddress), text);
+                addChatMessage(username, text);
                 input.value = '';
                 showToast('⚠️ Message sent locally only', 'error');
             }
