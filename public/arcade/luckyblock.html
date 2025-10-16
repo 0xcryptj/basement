@@ -1198,7 +1198,7 @@
             <h2 class="modal-title">CONNECT WALLET</h2>
             <div class="wallet-options">
                 <button class="wallet-option" onclick="connectMetaMask()">🦊 MetaMask</button>
-                <button class="wallet-option" onclick="connectCoinbase()">💙 Coinbase Wallet</button>
+                <button class="wallet-option" onclick="connectBaseWallet()">🔵 Base Wallet</button>
                 <button class="wallet-option" onclick="connectPhantom()">👻 Phantom</button>
             </div>
         </div>
@@ -1213,7 +1213,7 @@
                 <p>Enter the jackpot with any ETH amount. One random winner takes the entire pot!</p>
                 
                 <h3 style="color: #00BFFF; font-size: 0.8rem; margin: 15px 0 10px;">💰 How to Play</h3>
-                <p>1. Connect your wallet (MetaMask, Coinbase, or Phantom)</p>
+                <p>1. Connect your wallet (MetaMask, Base Wallet, or Phantom)</p>
                 <p>2. Enter your bet amount (min 0.0001 ETH, no maximum)</p>
                 <p>3. Click "ENTER" to join the current round</p>
                 <p>4. Wait for timer (60 seconds once 2+ players)</p>
@@ -2221,12 +2221,13 @@
             }
         }
         
-        async function connectCoinbase() {
+        async function connectBaseWallet() {
             try {
-                if (typeof window.ethereum !== 'undefined' && window.ethereum.isCoinbaseWallet) {
-                    console.log('💼 Connecting Coinbase Wallet...');
+                // Base Wallet uses window.ethereum with specific properties
+                if (typeof window.ethereum !== 'undefined') {
+                    console.log('🔵 Connecting Base Wallet...');
                     
-                    // Switch to Base network
+                    // Switch to Base network (Base Wallet should already be on Base)
                     await switchToBaseNetwork(window.ethereum);
                     
                     // Request accounts
@@ -2236,14 +2237,14 @@
                     provider = new ethers.BrowserProvider(window.ethereum);
                     
                     // Complete connection
-                    await completeWalletConnection('Coinbase Wallet');
+                    await completeWalletConnection('Base Wallet');
                     
                 } else {
-                    showToast('❌ Install Coinbase Wallet!', 'error');
-                    window.open('https://www.coinbase.com/wallet/downloads', '_blank');
+                    showToast('❌ Install Base Wallet!', 'error');
+                    window.open('https://wallet.coinbase.com/', '_blank');
                 }
             } catch (error) {
-                console.error('❌ Coinbase Wallet connection error:', error);
+                console.error('❌ Base Wallet connection error:', error);
                 showToast('Connection failed: ' + error.message, 'error');
             }
         }
