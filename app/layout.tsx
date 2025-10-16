@@ -1,7 +1,9 @@
 import type { Metadata } from 'next';
 import { Analytics } from '@vercel/analytics/next';
 import { SpeedInsights } from '@vercel/speed-insights/next';
+import { Providers } from './providers';
 import './globals.css';
+import './onchainkit.css';
 
 export const metadata: Metadata = {
   title: 'The Basement - Retro Web3 Arcade',
@@ -16,7 +18,9 @@ export default function RootLayout({
   return (
     <html lang="en">
       <body>
-        {children}
+        <Providers>
+          {children}
+        </Providers>
         <Analytics />
         <SpeedInsights />
       </body>
