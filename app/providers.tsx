@@ -3,33 +3,43 @@
 import { ReactNode } from 'react';
 import { OnchainKitProvider } from '@coinbase/onchainkit';
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
-import { WagmiProvider } from 'wagmi';
-import { base } from 'wagmi/chains';
-import { http, createConfig } from 'wagmi';
-import { coinbaseWallet, metaMask } from 'wagmi/connectors';
+import { cookieToInitialState, WagmiProvider, type Config } from 'wagmi';
+import { base, mainnet } from '@reown/appkit/networks';
+import { createAppKit } from '@reown/appkit/react';
+import { wagmiAdapter, projectId } from '@/config';
 
-// Create wagmi config for Base - Official OnchainKit setup
-// Reference: https://www.base.org/build/onchainkit
-const config = createConfig({
-  chains: [base],
-  connectors: [
-    coinbaseWallet({
-      appName: 'The Basement Arcade',
-      preference: 'smartWalletOnly',
-    }),
-    metaMask(),
-  ],
-  transports: {
-    [base.id]: http(),
-  },
-  ssr: true,
-});
-
+// Set up queryClient
 const queryClient = new QueryClient();
 
-export function Providers({ children }: { children: ReactNode }) {
+if (!projectId) {
+  throw new Error('Project ID is not defined')
+}
+
+// Set up metadata
+const metadata = {
+  name: 'The Basement Arcade',
+  description: 'Retro Web3 Arcade on Base Network with Anonymous Forum',
+  url: 'https://thebasement.app', // Update with your actual domain
+  icons: ['/assets/icon.ico']
+}
+
+// Create the AppKit modal with Reown (WalletConnect)
+const modal = createAppKit({
+  adapters: [wagmiAdapter],
+  projectId,
+  networks: [base, mainnet],
+  defaultNetwork: base,
+  metadata: metadata,
+  features: {
+    analytics: true // Optional - defaults to your Cloud configuration
+  }
+})
+
+export function Providers({ children, cookies }: { children: ReactNode; cookies?: string | null }) {
+  const initialState = cookieToInitialState(wagmiAdapter.wagmiConfig as Config, cookies)
+
   return (
-    <WagmiProvider config={config}>
+    <WagmiProvider config={wagmiAdapter.wagmiConfig as Config} initialState={initialState}>
       <QueryClientProvider client={queryClient}>
         <OnchainKitProvider
           apiKey={process.env.NEXT_PUBLIC_ONCHAINKIT_API_KEY}
