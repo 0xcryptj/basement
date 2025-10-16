@@ -1154,15 +1154,9 @@
     
     <!-- Scripts -->
     <script src="../security.js"></script>
-    <script src="https://cdn.jsdelivr.net/npm/ethers@6.10.0/dist/ethers.umd.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/ethers@6.10.0/dist/ethers.umd.min.js" crossorigin="anonymous"></script>
     <script>
-        // Check if ethers loaded
-        if (typeof ethers === 'undefined') {
-            console.error('❌ Ethers.js failed to load!');
-            alert('Failed to load required libraries. Please refresh the page.');
-        }
-        
-        // Config
+        // Config (ethers check happens in window.load event)
         const CONTRACT_ADDRESS = '0xf7Cd6fcc391ad2c771c84159E60BDAEeE9BA821e'; // ✅ LIVE ON BASE MAINNET - LuckyBlock (Deployed Oct 15, 2025)
         const BASE_CHAIN_ID = '0x2105'; // 8453 in decimal
         const BASE_CHAIN_ID_DECIMAL = 8453;
