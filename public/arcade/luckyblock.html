@@ -1439,47 +1439,58 @@
             }
         }
         
-        // Initialize
+        // Initialize with robust library checking
         window.addEventListener('load', async () => {
-            // Wait a moment for ethers to fully load
-            await new Promise(resolve => setTimeout(resolve, 100));
+            console.log('🔄 Initializing application...');
             
-            // Verify ethers is available
-            if (typeof ethers === 'undefined') {
-                console.error('❌ Ethers.js not loaded - retrying...');
-                showToast('Loading libraries...', 'error');
-                await new Promise(resolve => setTimeout(resolve, 1000));
-                
-                if (typeof ethers === 'undefined') {
-                    alert('Failed to load required libraries. Please refresh the page.');
-                    return;
-                }
+            // Wait for ethers.js to load from CDN (with retries)
+            let retries = 0;
+            const maxRetries = 5;
+            
+            while (typeof ethers === 'undefined' && retries < maxRetries) {
+                console.log(`⏳ Waiting for ethers.js... (attempt ${retries + 1}/${maxRetries})`);
+                await new Promise(resolve => setTimeout(resolve, 500));
+                retries++;
             }
             
-            console.log('✅ Ethers.js loaded successfully');
+            if (typeof ethers === 'undefined') {
+                console.error('❌ Ethers.js failed to load from CDN!');
+                alert('Failed to load blockchain libraries.\n\nPossible causes:\n- CDN is blocked\n- Ad blocker is active\n- Network issue\n\nPlease:\n1. Disable ad blockers\n2. Check internet connection\n3. Refresh page (Ctrl+Shift+R)');
+                return;
+            }
             
+            console.log('✅ Ethers.js v' + ethers.version + ' loaded successfully');
+            
+            // Initialize UI
             initWheel();
             await fetchETHPrice();
             updateBetDisplay();
-            loadChatMessages();
             
-            // Check if contract is deployed
+            // Load chat
+            console.log('💬 Loading chat...');
+            await loadChatMessages();
+            
+            // Initialize contract if deployed
             if (CONTRACT_ADDRESS !== '0x0000000000000000000000000000000000000000') {
                 contractDeployed = true;
+                console.log('🔗 Initializing contract connection...');
                 await initContract();
-                await loadGlobalStatsFromContract(); // Load stats
-                setInterval(loadGlobalStatsFromContract, 10000); // Update every 10s
-                startContractSync(); // Sync with blockchain
+                await loadGlobalStatsFromContract();
+                setInterval(loadGlobalStatsFromContract, 10000);
+                startContractSync();
+                console.log('✅ Contract initialized');
             } else {
-                // Contract not deployed - show message
                 addChatMessage('SYSTEM', '⚠️ Contract not deployed. Gameplay is simulated for UI testing.');
                 document.getElementById('timer').textContent = 'WAITING';
                 document.getElementById('enter-btn').disabled = true;
                 document.getElementById('enter-btn').textContent = '⏸️ CONTRACT NOT DEPLOYED';
             }
             
-            // Auto-restore wallet if previously connected
+            // Auto-restore wallet session
+            console.log('🔄 Checking for saved wallet session...');
             await restoreWalletSession();
+            
+            console.log('✅ Application initialized successfully');
         });
         
         // Initialize contract connection
