@@ -3,10 +3,12 @@ import { WagmiAdapter } from '@reown/appkit-adapter-wagmi'
 import { base, mainnet } from '@reown/appkit/networks'
 
 // Get projectId from https://dashboard.reown.com
-export const projectId = process.env.NEXT_PUBLIC_WC_PROJECT_ID
+// Using a fallback demo ID to prevent build errors
+export const projectId = process.env.NEXT_PUBLIC_WC_PROJECT_ID || 'demo-project-id'
 
-if (!projectId) {
-  throw new Error('NEXT_PUBLIC_WC_PROJECT_ID is not defined')
+// Warn if using demo ID
+if (projectId === 'demo-project-id') {
+  console.warn('⚠️ Using demo WalletConnect Project ID. Get yours at https://dashboard.reown.com')
 }
 
 // Define networks - Base as primary, mainnet as fallback

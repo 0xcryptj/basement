@@ -521,8 +521,8 @@ body {
 
 .arcade-title {
     text-align: center;
-    font-size: 2rem;
-    margin-bottom: 2rem;
+    font-size: clamp(1.5rem, 5vw, 2.5rem);
+    margin-bottom: clamp(1.5rem, 4vw, 2.5rem);
     animation: pulse 2s infinite;
 }
 
@@ -577,9 +577,10 @@ body {
     display: flex;
     flex-direction: column;
     align-items: center;
-    gap: 1rem;
+    gap: clamp(0.75rem, 2vw, 1.25rem);
     transition: all 0.3s ease;
-    min-height: clamp(250px, 30vh, 350px);
+    aspect-ratio: 3/4;
+    min-height: clamp(280px, 35vh, 400px);
     width: 100%;
 }
 
@@ -594,15 +595,15 @@ body {
 }
 
 .game-icon {
-    font-size: 4rem;
+    font-size: clamp(3rem, 8vw, 4.5rem);
     filter: drop-shadow(0 0 10px #0052ff99);
 }
 
 /* Game Icon with Image */
 .game-icon-img {
-    width: 120px;
-    height: 120px;
-    margin: 0 auto 1rem;
+    width: clamp(100px, 20vw, 140px);
+    height: clamp(100px, 20vw, 140px);
+    margin: 0 auto clamp(0.75rem, 2vw, 1.25rem);
     display: flex;
     align-items: center;
     justify-content: center;
@@ -627,14 +628,14 @@ body {
 }
 
 .game-title {
-    font-size: 1rem;
+    font-size: clamp(0.85rem, 2.5vw, 1.1rem);
     text-align: center;
     color: #0052ff;
     text-shadow: 0 0 10px #0052ff99;
 }
 
 .game-description {
-    font-size: 0.6rem;
+    font-size: clamp(0.55rem, 1.5vw, 0.7rem);
     text-align: center;
     color: #ccc;
     line-height: 1.5;
