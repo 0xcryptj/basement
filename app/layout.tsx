@@ -3,7 +3,6 @@ import { Analytics } from '@vercel/analytics/next';
 import { SpeedInsights } from '@vercel/speed-insights/next';
 import { Providers } from './providers';
 import './globals.css';
-import './onchainkit.css';
 
 export const metadata: Metadata = {
   title: 'The Basement - Retro Web3 Arcade',
