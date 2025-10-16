@@ -20,6 +20,7 @@ export async function GET(request: NextRequest) {
     const { searchParams } = new URL(request.url);
     const channelSlug = searchParams.get('channel') || 'basement';
     const limit = parseInt(searchParams.get('limit') || '50');
+    const after = searchParams.get('after'); // Support pagination
 
     console.log('📥 Fetching messages for channel:', channelSlug);
 
@@ -44,8 +45,8 @@ export async function GET(request: NextRequest) {
       });
     }
 
-    // Fetch messages with user data
-    const { data: messages, error: messagesError } = await supabase
+    // Build query for messages with user data
+    let query = supabase
       .from('Message')
       .select(`
         id,
@@ -60,8 +61,24 @@ export async function GET(request: NextRequest) {
       `)
       .eq('channelId', channel.id)
       .eq('isDeleted', false)
-      .order('createdAt', { ascending: true })
-      .limit(limit);
+      .order('createdAt', { ascending: true });
+
+    // If 'after' parameter is provided, only fetch messages after that ID
+    if (after) {
+      // Get the timestamp of the 'after' message
+      const { data: afterMsg } = await supabase
+        .from('Message')
+        .select('createdAt')
+        .eq('id', after)
+        .single();
+        
+      if (afterMsg) {
+        query = query.gt('createdAt', afterMsg.createdAt);
+      }
+    }
+
+    // Fetch messages
+    const { data: messages, error: messagesError } = await query.limit(limit);
 
     if (messagesError) {
       console.error('❌ Error fetching messages:', messagesError);

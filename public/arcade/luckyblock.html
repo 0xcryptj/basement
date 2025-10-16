@@ -2534,15 +2534,16 @@
                         const username = msg.user?.username || shortenAddress(msg.user?.walletAddress);
                         addChatMessage(username, msg.content, false);
                         onlineUsers.add(username);
+                        lastMessageId = msg.id; // Track the last message ID for polling
                     });
                     console.log('✅ Loaded', data.messages.length, 'messages');
                 }
                 
                 updateOnlineCount();
                 
-                // Start polling for new messages every 3 seconds
+                // Start polling for new messages every 5 seconds (reduced from 3s)
                 if (chatPollInterval) clearInterval(chatPollInterval);
-                chatPollInterval = setInterval(loadNewMessages, 3000);
+                chatPollInterval = setInterval(loadNewMessages, 5000);
                 
             } catch (error) {
                 console.error('❌ Chat load error:', error);
@@ -2575,19 +2576,24 @@
         
         async function loadNewMessages() {
             try {
-                const url = lastMessageId 
-                    ? `/api/chat/messages?channel=luckyblock&after=${lastMessageId}`
-                    : '/api/chat/messages?channel=luckyblock&limit=10';
+                // Only poll for new messages if we have a lastMessageId
+                if (!lastMessageId) {
+                    console.log('⏭️ Skipping poll - no messages loaded yet');
+                    return;
+                }
+                
+                const url = `/api/chat/messages?channel=luckyblock&after=${lastMessageId}&limit=10`;
                     
                 const response = await fetch(url);
                 if (!response.ok) return;
                 
                 const data = await response.json();
                 if (data.messages && data.messages.length > 0) {
+                    console.log(`📨 Received ${data.messages.length} new messages`);
                     data.messages.forEach(msg => {
                         const username = msg.user?.username || shortenAddress(msg.user?.walletAddress);
                         addChatMessage(username, msg.content, false);
-                        lastMessageId = msg.id;
+                        lastMessageId = msg.id; // Update to latest message ID
                     });
                 }
             } catch (error) {
