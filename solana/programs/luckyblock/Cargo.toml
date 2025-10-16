@@ -1,0 +1,20 @@
+[package]
+name = "luckyblock"
+version = "0.1.0"
+description = "The Basement - LuckyBlock Solana Program"
+edition = "2021"
+
+[lib]
+crate-type = ["cdylib", "lib"]
+name = "luckyblock"
+
+[features]
+no-entrypoint = []
+no-idl = []
+no-log-ix-name = []
+cpi = ["no-entrypoint"]
+default = []
+
+[dependencies]
+anchor-lang = "0.30.0"
+
