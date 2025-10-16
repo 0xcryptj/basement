@@ -1,5 +1,5 @@
 import { ethers } from 'ethers';
-import { Connection, PublicKey, Transaction } from '@solana/web3.js';
+import { Connection, PublicKey, Transaction, LAMPORTS_PER_SOL } from '@solana/web3.js';
 
 export type Chain = 'base' | 'solana';
 export type WalletType = 'phantom' | 'metamask' | 'base';
