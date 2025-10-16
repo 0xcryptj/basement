@@ -66,6 +66,58 @@
             align-items: center;
             padding: 0 20px;
             justify-content: space-between;
+            gap: 15px;
+            flex-wrap: wrap;
+        }
+        
+        .chain-selector {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            padding: 5px 10px;
+            background: rgba(0, 0, 0, 0.5);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            border-radius: 5px;
+        }
+        
+        .chain-label {
+            font-size: 0.5rem;
+            color: #888;
+            font-family: 'Courier Prime', monospace;
+        }
+        
+        .chain-btn {
+            display: flex;
+            align-items: center;
+            gap: 4px;
+            padding: 5px 10px;
+            background: rgba(0, 82, 255, 0.1);
+            border: 1px solid rgba(0, 82, 255, 0.3);
+            border-radius: 4px;
+            color: #00BFFF;
+            font-family: 'Press Start 2P', monospace;
+            font-size: 0.5rem;
+            cursor: pointer;
+            transition: all 0.3s;
+        }
+        
+        .chain-btn:hover {
+            background: rgba(0, 82, 255, 0.2);
+            transform: translateY(-1px);
+        }
+        
+        .chain-btn.active {
+            background: rgba(0, 82, 255, 0.4);
+            border-color: #0052ff;
+            box-shadow: 0 0 10px rgba(0, 82, 255, 0.5);
+        }
+        
+        .chain-icon {
+            font-size: 0.8rem;
+        }
+        
+        .chain-text {
+            font-size: 0.45rem;
         }
         
         .logo {
@@ -1054,6 +1106,18 @@
             <a href="arcade.html" class="nav-link">← Arcade</a>
             <a href="../index.html" class="nav-link">Home</a>
         </div>
+        <!-- Chain Selector -->
+        <div class="chain-selector" id="chain-selector">
+            <span class="chain-label">Network:</span>
+            <button class="chain-btn active" id="chain-base-btn" onclick="switchChain('base')" title="Base Mainnet">
+                <span class="chain-icon">🔵</span>
+                <span class="chain-text">BASE</span>
+            </button>
+            <button class="chain-btn" id="chain-solana-btn" onclick="switchChain('solana')" title="Solana Mainnet">
+                <span class="chain-icon">☀️</span>
+                <span class="chain-text">SOL</span>
+            </button>
+        </div>
         <button class="wallet-btn" id="wallet-btn" onclick="openWalletModal()">Connect</button>
         <div class="wallet-connected" id="wallet-connected" style="display: none;">
             <span class="wallet-address" id="wallet-address"></span>
@@ -1062,12 +1126,15 @@
     </nav>
     
     <div class="container">
-        <!-- Network Warning -->
-        <div class="warning-banner" style="border-color: #ff9900; background: rgba(255, 153, 0, 0.2);">
-            <div class="warning-title" style="color: #ff9900;">⚠️ BASE NETWORK REQUIRED ⚠️</div>
-            <p class="warning-text" style="color: #fff;">This game runs on <strong>Base Mainnet (Chain ID: 8453)</strong>. Your wallet MUST be switched to Base network before playing.</p>
-            <p class="warning-text" style="margin-top: 10px; font-size: 0.5rem; color: #00FF88;">
-                ✅ Live Contract: 0x0601...d440 | Playing with REAL ETH | 5% house fee | Provably fair
+        <!-- Multi-Chain Banner -->
+        <div class="warning-banner" style="border-color: #00BFFF; background: rgba(0, 191, 255, 0.1);">
+            <div class="warning-title" style="color: #00BFFF;">🌐 MULTI-CHAIN ARCADE 🌐</div>
+            <p class="warning-text" style="color: #fff;">Choose your network: <strong id="active-network-display">Base Mainnet</strong></p>
+            <p class="warning-text" style="margin-top: 10px; font-size: 0.5rem; color: #00FF88;" id="network-info">
+                🔵 Base: Fast & Secure | ☀️ Solana: Ultra-Fast & Cheap
+            </p>
+            <p class="warning-text" style="margin-top: 5px; font-size: 0.5rem; color: #888;" id="contract-info">
+                Contract: 0xf7Cd...821e | 5% fee | Provably fair
             </p>
         </div>
         
@@ -1272,12 +1339,36 @@
     
     <!-- Scripts -->
     <script src="../security.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/@solana/web3.js@latest/lib/index.iife.min.js" crossorigin="anonymous"></script>
     <script src="https://cdn.jsdelivr.net/npm/ethers@6.10.0/dist/ethers.umd.min.js" crossorigin="anonymous"></script>
     <script>
-        // Config (ethers check happens in window.load event)
-        const CONTRACT_ADDRESS = '0xf7Cd6fcc391ad2c771c84159E60BDAEeE9BA821e'; // ✅ LIVE ON BASE MAINNET - LuckyBlock (Deployed Oct 15, 2025)
-        const BASE_CHAIN_ID = '0x2105'; // 8453 in decimal
-        const BASE_CHAIN_ID_DECIMAL = 8453;
+        // Multi-Chain Config
+        const SUPPORTED_CHAINS = {
+            base: {
+                name: 'Base',
+                chainId: 8453,
+                chainIdHex: '0x2105',
+                rpc: 'https://mainnet.base.org',
+                contract: '0xf7Cd6fcc391ad2c771c84159E60BDAEeE9BA821e',
+                explorer: 'https://basescan.org',
+                currency: 'ETH'
+            },
+            solana: {
+                name: 'Solana',
+                rpc: 'https://api.mainnet-beta.solana.com',
+                contract: null, // Will be deployed
+                explorer: 'https://solscan.io',
+                currency: 'SOL'
+            }
+        };
+        
+        // Legacy constants for backwards compatibility
+        const CONTRACT_ADDRESS = SUPPORTED_CHAINS.base.contract;
+        const BASE_CHAIN_ID = SUPPORTED_CHAINS.base.chainIdHex;
+        const BASE_CHAIN_ID_DECIMAL = SUPPORTED_CHAINS.base.chainId;
+        
+        // Current active chain
+        let currentChain = 'base'; // 'base' or 'solana'
         
         // Track online users
         let onlineWallets = new Set();
@@ -1441,25 +1532,35 @@
         
         // Initialize with robust library checking
         window.addEventListener('load', async () => {
-            console.log('🔄 Initializing application...');
+            console.log('🔄 Initializing multi-chain application...');
             
-            // Wait for ethers.js to load from CDN (with retries)
+            // Wait for both Solana and Ethers.js to load from CDN (with retries)
             let retries = 0;
             const maxRetries = 5;
             
-            while (typeof ethers === 'undefined' && retries < maxRetries) {
-                console.log(`⏳ Waiting for ethers.js... (attempt ${retries + 1}/${maxRetries})`);
+            while ((typeof ethers === 'undefined' || typeof solanaWeb3 === 'undefined') && retries < maxRetries) {
+                console.log(`⏳ Waiting for libraries... (attempt ${retries + 1}/${maxRetries})`);
                 await new Promise(resolve => setTimeout(resolve, 500));
                 retries++;
             }
             
+            // Check Ethers.js
             if (typeof ethers === 'undefined') {
                 console.error('❌ Ethers.js failed to load from CDN!');
-                alert('Failed to load blockchain libraries.\n\nPossible causes:\n- CDN is blocked\n- Ad blocker is active\n- Network issue\n\nPlease:\n1. Disable ad blockers\n2. Check internet connection\n3. Refresh page (Ctrl+Shift+R)');
+                alert('Failed to load Ethereum/Base libraries.\n\nPlease refresh (Ctrl+Shift+R)');
                 return;
             }
+            console.log('✅ Ethers.js v' + ethers.version + ' loaded');
             
-            console.log('✅ Ethers.js v' + ethers.version + ' loaded successfully');
+            // Check Solana web3.js
+            if (typeof solanaWeb3 === 'undefined') {
+                console.warn('⚠️ Solana web3.js failed to load - Solana features disabled');
+                // Continue without Solana support
+                document.getElementById('chain-solana-btn').disabled = true;
+                document.getElementById('chain-solana-btn').style.opacity = '0.3';
+            } else {
+                console.log('✅ Solana web3.js loaded successfully');
+            }
             
             // Initialize UI
             initWheel();
@@ -2287,12 +2388,58 @@
             }
         }
         
+        // Switch between chains
+        async function switchChain(newChain) {
+            if (newChain === currentChain) return;
+            
+            console.log(`🔄 Switching from ${currentChain} to ${newChain}...`);
+            
+            // Disconnect current wallet if connected
+            if (userAddress) {
+                disconnectWallet();
+            }
+            
+            // Update active chain
+            currentChain = newChain;
+            
+            // Update UI
+            document.getElementById('chain-base-btn').classList.toggle('active', newChain === 'base');
+            document.getElementById('chain-solana-btn').classList.toggle('active', newChain === 'solana');
+            
+            // Update banner
+            const networkDisplay = document.getElementById('active-network-display');
+            const contractInfo = document.getElementById('contract-info');
+            
+            if (newChain === 'solana') {
+                networkDisplay.textContent = 'Solana Mainnet';
+                contractInfo.textContent = '⏳ Solana program deployment coming soon!';
+                document.getElementById('enter-btn').disabled = true;
+                document.getElementById('enter-btn').textContent = '⏸️ SOLANA COMING SOON';
+                showToast('☀️ Switched to Solana network', 'success');
+            } else {
+                networkDisplay.textContent = 'Base Mainnet';
+                contractInfo.textContent = 'Contract: 0xf7Cd...821e | 5% fee | Provably fair';
+                if (!userAddress) {
+                    document.getElementById('enter-btn').disabled = true;
+                }
+                showToast('🔵 Switched to Base network', 'success');
+            }
+            
+            console.log(`✅ Now on ${SUPPORTED_CHAINS[newChain].name} network`);
+        }
+        
         function disconnectWallet() {
             userAddress = null;
             isOnBaseNetwork = false;
             provider = null;
             signer = null;
             contract = null;
+            
+            // Clear Solana state too
+            if (window.phantom?.solana?.isConnected) {
+                window.phantom.solana.disconnect();
+            }
+            
             document.getElementById('wallet-btn').style.display = 'block';
             document.getElementById('wallet-connected').style.display = 'none';
             document.getElementById('enter-btn').disabled = true;
