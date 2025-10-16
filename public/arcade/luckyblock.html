@@ -1659,9 +1659,10 @@
             }
             
             try {
-                // Ensure we have signer and provider
-                if (!provider) {
+                // Ensure we have provider and contract
+                if (!provider || !contract) {
                     showToast('⚠️ Reconnect your wallet', 'error');
+                    openWalletModal();
                     return;
                 }
                 
@@ -1671,18 +1672,27 @@
                 if (code === '0x' || code === '0x0') {
                     console.error('❌ No contract found at address:', CONTRACT_ADDRESS);
                     showToast('❌ Contract not deployed on this network!', 'error');
-                    addChatMessage('SYSTEM', '⚠️ Contract not found on Base network. Please verify deployment.');
+                    addChatMessage('SYSTEM', '⚠️ Contract not found. Address: ' + CONTRACT_ADDRESS);
                     return;
                 }
-                console.log('✅ Contract verified at address');
+                console.log('✅ Contract verified');
                 
-                // Get fresh signer for transaction
-                signer = await provider.getSigner();
-                console.log('✅ Signer ready:', await signer.getAddress());
+                // ALWAYS get fresh signer before transaction (critical for wallet prompts)
+                console.log('📝 Getting fresh signer...');
+                const freshSigner = await provider.getSigner();
+                const signerAddress = await freshSigner.getAddress();
+                console.log('✅ Fresh signer ready:', signerAddress);
                 
-                // Connect contract with signer for transactions
-                const contractWithSigner = contract.connect(signer);
-                console.log('✅ Contract connected with signer');
+                // Verify signer matches connected wallet
+                if (signerAddress.toLowerCase() !== userAddress.toLowerCase()) {
+                    console.error('❌ Signer mismatch!', signerAddress, 'vs', userAddress);
+                    showToast('❌ Wallet address mismatch - reconnect wallet', 'error');
+                    return;
+                }
+                
+                // Connect contract with fresh signer for transaction
+                const contractWithSigner = contract.connect(freshSigner);
+                console.log('✅ Contract connected with fresh signer');
                 
                 // Show loading state
                 const enterBtn = document.getElementById('enter-btn');
@@ -1914,23 +1924,114 @@
             document.getElementById('help-modal').classList.remove('show');
         }
         
-        async function connectMetaMask() {
+        // ============================================
+        // UNIFIED WALLET CONNECTION SYSTEM
+        // ============================================
+        
+        /**
+         * Unified function to verify and initialize contract
+         */
+        async function verifyAndInitContract() {
+            if (!contractDeployed || CONTRACT_ADDRESS === '0x0000000000000000000000000000000000000000') {
+                console.warn('⚠️ Contract not configured');
+                return false;
+            }
+            
             try {
-                if (typeof window.ethereum === 'undefined') {
-                    showToast('Install MetaMask!', 'error');
-                    return;
+                // Create contract instance with provider (read-only)
+                contract = new ethers.Contract(CONTRACT_ADDRESS, CONTRACT_ABI, provider);
+                
+                // Verify contract exists at address
+                const code = await provider.getCode(CONTRACT_ADDRESS);
+                if (code === '0x' || code === '0x0') {
+                    console.error('❌ No contract found at address:', CONTRACT_ADDRESS);
+                    showToast('⚠️ Contract not deployed on Base network!', 'error');
+                    addChatMessage('SYSTEM', '⚠️ Contract verification failed. Address: ' + CONTRACT_ADDRESS);
+                    contractDeployed = false;
+                    return false;
                 }
                 
-                // Check and switch to Base network FIRST
-                try {
-                    await window.ethereum.request({
-                        method: 'wallet_switchEthereumChain',
-                        params: [{ chainId: BASE_CHAIN_ID }],
-                    });
-                } catch (switchError) {
-                    // If network doesn't exist, add it
-                    if (switchError.code === 4902) {
-                        await window.ethereum.request({
+                console.log('✅ Contract verified at address:', CONTRACT_ADDRESS);
+                
+                // Enable enter button
+                document.getElementById('enter-btn').disabled = false;
+                document.getElementById('enter-btn').textContent = '🎰 ENTER 🎰';
+                
+                return true;
+            } catch (error) {
+                console.error('❌ Contract initialization failed:', error);
+                return false;
+            }
+        }
+        
+        /**
+         * Unified function to complete wallet connection after provider setup
+         */
+        async function completeWalletConnection(walletName) {
+            try {
+                // Get signer
+                signer = await provider.getSigner();
+                userAddress = await signer.getAddress();
+                console.log('✅ Signer ready:', userAddress);
+                
+                // Verify network
+                const network = await provider.getNetwork();
+                console.log('🌐 Network:', network.chainId.toString());
+                
+                if (Number(network.chainId) !== BASE_CHAIN_ID_DECIMAL) {
+                    showToast('⚠️ MUST be on Base network (Chain ID: 8453)!', 'error');
+                    disconnectWallet();
+                    return false;
+                }
+                
+                isOnBaseNetwork = true;
+                console.log('✅ Connected to Base Mainnet');
+                
+                // Initialize and verify contract
+                const contractReady = await verifyAndInitContract();
+                
+                // Update UI
+                document.getElementById('wallet-btn').style.display = 'none';
+                document.getElementById('wallet-connected').style.display = 'flex';
+                document.getElementById('wallet-address').textContent = shortenAddress(userAddress);
+                
+                // Load stats if contract is ready
+                if (contractReady) {
+                    await loadUserStats();
+                    await loadGlobalStatsFromContract();
+                }
+                
+                // Track online
+                trackOnlineUser(userAddress);
+                
+                // Close modal
+                document.getElementById('wallet-modal').classList.remove('show');
+                
+                showToast(`✅ ${walletName} connected!`, 'success');
+                return true;
+                
+            } catch (error) {
+                console.error('❌ Wallet connection failed:', error);
+                showToast('Connection failed: ' + error.message, 'error');
+                return false;
+            }
+        }
+        
+        /**
+         * Unified function to switch to Base network
+         */
+        async function switchToBaseNetwork(ethereumProvider) {
+            try {
+                await ethereumProvider.request({
+                    method: 'wallet_switchEthereumChain',
+                    params: [{ chainId: BASE_CHAIN_ID }],
+                });
+                return true;
+            } catch (switchError) {
+                // If network doesn't exist, add it
+                if (switchError.code === 4902) {
+                    try {
+                        await ethereumProvider.request({
                             method: 'wallet_addEthereumChain',
                             params: [{
                                 chainId: BASE_CHAIN_ID,
@@ -1940,236 +2041,102 @@
                                 blockExplorerUrls: ['https://basescan.org']
                             }],
                         });
-                    } else {
-                        throw new Error('Please switch to Base network in MetaMask');
+                        return true;
+                    } catch (addError) {
+                        console.error('Failed to add Base network:', addError);
+                        throw new Error('Please add Base network to your wallet');
                     }
+                } else if (switchError.code === 4001) {
+                    throw new Error('Network switch cancelled');
+                } else {
+                    throw new Error('Please switch to Base network manually');
                 }
-                
-                const accounts = await window.ethereum.request({ method: 'eth_requestAccounts' });
-                userAddress = accounts[0];
-                
-                // Initialize provider and signer
-                provider = new ethers.BrowserProvider(window.ethereum);
-                signer = await provider.getSigner();
-                
-                // Verify we're on Base network
-                const network = await provider.getNetwork();
-                if (Number(network.chainId) !== BASE_CHAIN_ID_DECIMAL) {
-                    showToast('⚠️ MUST be on Base network!', 'error');
-                    disconnectWallet();
+            }
+        }
+        
+        // ============================================
+        // WALLET-SPECIFIC CONNECTION FUNCTIONS
+        // ============================================
+        
+        async function connectMetaMask() {
+            try {
+                if (typeof window.ethereum === 'undefined') {
+                    showToast('❌ Install MetaMask!', 'error');
+                    window.open('https://metamask.io/download/', '_blank');
                     return;
                 }
                 
-                isOnBaseNetwork = true;
+                console.log('🦊 Connecting MetaMask...');
                 
-                // Initialize contract if deployed
-                if (contractDeployed && CONTRACT_ADDRESS !== '0x0000000000000000000000000000000000000000') {
-                    contract = new ethers.Contract(CONTRACT_ADDRESS, CONTRACT_ABI, provider);
-                    
-                    // Verify contract exists at address
-                    const code = await provider.getCode(CONTRACT_ADDRESS);
-                    if (code === '0x' || code === '0x0') {
-                        console.error('❌ No contract found at address:', CONTRACT_ADDRESS);
-                        showToast('⚠️ Contract not deployed on Base network!', 'error');
-                        addChatMessage('SYSTEM', '⚠️ Contract verification failed. Please contact support.');
-                        contractDeployed = false;
-                    } else {
-                        console.log('✅ Contract verified at address:', CONTRACT_ADDRESS);
-                        // Enable enter button only if contract is verified
-                        document.getElementById('enter-btn').disabled = false;
-                        document.getElementById('enter-btn').textContent = '🎰 ENTER 🎰';
-                    }
-                }
+                // Switch to Base network
+                await switchToBaseNetwork(window.ethereum);
                 
-                document.getElementById('wallet-btn').style.display = 'none';
-                document.getElementById('wallet-connected').style.display = 'flex';
-                document.getElementById('wallet-address').textContent = shortenAddress(userAddress);
+                // Request accounts
+                await window.ethereum.request({ method: 'eth_requestAccounts' });
                 
-                // Load user stats
-                await loadUserStats();
-                await loadGlobalStatsFromContract();
+                // Initialize provider
+                provider = new ethers.BrowserProvider(window.ethereum);
                 
-                // Track online
-                trackOnlineUser(userAddress);
-                
-                document.getElementById('wallet-modal').classList.remove('show');
-                showToast('Connected!', 'success');
+                // Complete connection
+                await completeWalletConnection('MetaMask');
                 
             } catch (error) {
-                console.error(error);
-                showToast('Connection failed', 'error');
+                console.error('❌ MetaMask connection error:', error);
+                showToast('Connection failed: ' + error.message, 'error');
             }
         }
         
         async function connectCoinbase() {
             try {
                 if (typeof window.ethereum !== 'undefined' && window.ethereum.isCoinbaseWallet) {
-                    // Check and switch to Base network FIRST
-                    try {
-                        await window.ethereum.request({
-                            method: 'wallet_switchEthereumChain',
-                            params: [{ chainId: BASE_CHAIN_ID }],
-                        });
-                    } catch (switchError) {
-                        if (switchError.code === 4902) {
-                            await window.ethereum.request({
-                                method: 'wallet_addEthereumChain',
-                                params: [{
-                                    chainId: BASE_CHAIN_ID,
-                                    chainName: 'Base Mainnet',
-                                    nativeCurrency: { name: 'ETH', symbol: 'ETH', decimals: 18 },
-                                    rpcUrls: ['https://mainnet.base.org'],
-                                    blockExplorerUrls: ['https://basescan.org']
-                                }],
-                            });
-                        } else {
-                            throw new Error('Please switch to Base network in Coinbase Wallet');
-                        }
-                    }
+                    console.log('💼 Connecting Coinbase Wallet...');
                     
-                    const accounts = await window.ethereum.request({ method: 'eth_requestAccounts' });
-                    userAddress = accounts[0];
+                    // Switch to Base network
+                    await switchToBaseNetwork(window.ethereum);
                     
-                    // Initialize provider and signer
+                    // Request accounts
+                    await window.ethereum.request({ method: 'eth_requestAccounts' });
+                    
+                    // Initialize provider
                     provider = new ethers.BrowserProvider(window.ethereum);
-                    signer = await provider.getSigner();
                     
-                    // Verify we're on Base network
-                    const network = await provider.getNetwork();
-                    if (Number(network.chainId) !== BASE_CHAIN_ID_DECIMAL) {
-                        showToast('⚠️ MUST be on Base network!', 'error');
-                        disconnectWallet();
-                        return;
-                    }
+                    // Complete connection
+                    await completeWalletConnection('Coinbase Wallet');
                     
-                    isOnBaseNetwork = true;
-                    
-                    // Initialize contract if deployed
-                    if (contractDeployed && CONTRACT_ADDRESS !== '0x0000000000000000000000000000000000000000') {
-                        contract = new ethers.Contract(CONTRACT_ADDRESS, CONTRACT_ABI, provider);
-                        
-                        // Verify contract exists at address
-                        const code = await provider.getCode(CONTRACT_ADDRESS);
-                        if (code === '0x' || code === '0x0') {
-                            console.error('❌ No contract found at address:', CONTRACT_ADDRESS);
-                            showToast('⚠️ Contract not deployed on Base network!', 'error');
-                            addChatMessage('SYSTEM', '⚠️ Contract verification failed. Please contact support.');
-                            contractDeployed = false;
-                        } else {
-                            console.log('✅ Contract verified at address:', CONTRACT_ADDRESS);
-                            document.getElementById('enter-btn').disabled = false;
-                            document.getElementById('enter-btn').textContent = '🎰 ENTER 🎰';
-                        }
-                    }
-                    
-                    document.getElementById('wallet-btn').style.display = 'none';
-                    document.getElementById('wallet-connected').style.display = 'flex';
-                    document.getElementById('wallet-address').textContent = shortenAddress(userAddress);
-                    
-                    // Load user stats
-                    await loadUserStats();
-                    await loadGlobalStatsFromContract();
-                    
-                    // Track online
-                    trackOnlineUser(userAddress);
-                    
-                    document.getElementById('wallet-modal').classList.remove('show');
-                    showToast('Connected!', 'success');
                 } else {
-                    showToast('Install Coinbase Wallet!', 'error');
+                    showToast('❌ Install Coinbase Wallet!', 'error');
+                    window.open('https://www.coinbase.com/wallet/downloads', '_blank');
                 }
             } catch (error) {
-                console.error(error);
-                showToast('Connection failed', 'error');
+                console.error('❌ Coinbase Wallet connection error:', error);
+                showToast('Connection failed: ' + error.message, 'error');
             }
         }
         
         async function connectPhantom() {
             try {
                 if (typeof window.phantom !== 'undefined' && window.phantom.ethereum) {
-                    // Try to switch to Base network (non-blocking)
-                    try {
-                        await window.phantom.ethereum.request({
-                            method: 'wallet_switchEthereumChain',
-                            params: [{ chainId: BASE_CHAIN_ID }],
-                        });
-                        console.log('✅ Phantom switched to Base network');
-                    } catch (switchError) {
-                        // If network doesn't exist, try to add it
-                        if (switchError.code === 4902) {
-                            try {
-                                await window.phantom.ethereum.request({
-                                    method: 'wallet_addEthereumChain',
-                                    params: [{
-                                        chainId: BASE_CHAIN_ID,
-                                        chainName: 'Base Mainnet',
-                                        nativeCurrency: { name: 'ETH', symbol: 'ETH', decimals: 18 },
-                                        rpcUrls: ['https://mainnet.base.org'],
-                                        blockExplorerUrls: ['https://basescan.org']
-                                    }],
-                                });
-                            } catch (addError) {
-                                console.warn('⚠️ Failed to add Base network, continuing anyway');
-                            }
-                        } else {
-                            console.warn('⚠️ Network switch failed or rejected, continuing with current network');
-                        }
-                    }
+                    console.log('👻 Connecting Phantom...');
                     
-                    const accounts = await window.phantom.ethereum.request({ method: 'eth_requestAccounts' });
-                    userAddress = accounts[0];
+                    // Switch to Base network
+                    await switchToBaseNetwork(window.phantom.ethereum);
                     
-                    // Initialize provider and signer
+                    // Request accounts
+                    await window.phantom.ethereum.request({ method: 'eth_requestAccounts' });
+                    
+                    // Initialize provider
                     provider = new ethers.BrowserProvider(window.phantom.ethereum);
-                    signer = await provider.getSigner();
                     
-                    // Verify we're on Base network
-                    const network = await provider.getNetwork();
-                    if (Number(network.chainId) !== BASE_CHAIN_ID_DECIMAL) {
-                        showToast('⚠️ MUST be on Base network!', 'error');
-                        disconnectWallet();
-                        return;
-                    }
+                    // Complete connection
+                    await completeWalletConnection('Phantom');
                     
-                    isOnBaseNetwork = true;
-                    
-                    // Initialize contract if deployed
-                    if (contractDeployed && CONTRACT_ADDRESS !== '0x0000000000000000000000000000000000000000') {
-                        contract = new ethers.Contract(CONTRACT_ADDRESS, CONTRACT_ABI, provider);
-                        
-                        // Verify contract exists at address
-                        const code = await provider.getCode(CONTRACT_ADDRESS);
-                        if (code === '0x' || code === '0x0') {
-                            console.error('❌ No contract found at address:', CONTRACT_ADDRESS);
-                            showToast('⚠️ Contract not deployed on Base network!', 'error');
-                            addChatMessage('SYSTEM', '⚠️ Contract verification failed. Please contact support.');
-                            contractDeployed = false;
-                        } else {
-                            console.log('✅ Contract verified at address:', CONTRACT_ADDRESS);
-                            document.getElementById('enter-btn').disabled = false;
-                            document.getElementById('enter-btn').textContent = '🎰 ENTER 🎰';
-                        }
-                    }
-                    
-                    document.getElementById('wallet-btn').style.display = 'none';
-                    document.getElementById('wallet-connected').style.display = 'flex';
-                    document.getElementById('wallet-address').textContent = shortenAddress(userAddress);
-                    
-                    // Load user stats
-                    await loadUserStats();
-                    await loadGlobalStatsFromContract();
-                    
-                    // Track online
-                    trackOnlineUser(userAddress);
-                    
-                    document.getElementById('wallet-modal').classList.remove('show');
-                    showToast('Connected!', 'success');
                 } else {
-                    showToast('Install Phantom!', 'error');
+                    showToast('❌ Install Phantom!', 'error');
+                    window.open('https://phantom.app/', '_blank');
                 }
             } catch (error) {
-                console.error(error);
-                showToast('Connection failed', 'error');
+                console.error('❌ Phantom connection error:', error);
+                showToast('Connection failed: ' + error.message, 'error');
             }
         }
         
