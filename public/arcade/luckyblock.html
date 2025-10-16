@@ -954,6 +954,96 @@
                 font-size: 1.2rem;
             }
         }
+        
+        /* Footer Styles */
+        .site-footer {
+            background: rgba(0, 0, 0, 0.8);
+            backdrop-filter: blur(15px);
+            border-top: 1px solid rgba(255, 255, 255, 0.1);
+            padding: 30px 20px;
+            margin-top: 50px;
+        }
+        
+        .footer-content {
+            max-width: 1200px;
+            margin: 0 auto;
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 30px;
+            align-items: center;
+        }
+        
+        .footer-section {
+            text-align: center;
+        }
+        
+        .footer-text {
+            font-family: 'Press Start 2P', monospace;
+            font-size: 0.7rem;
+            color: #0052ff;
+            text-shadow: 0 0 10px #0052ff;
+            margin-bottom: 8px;
+        }
+        
+        .footer-subtext {
+            font-size: 0.6rem;
+            color: #888;
+        }
+        
+        .footer-social {
+            display: flex;
+            justify-content: center;
+            gap: 20px;
+            flex-wrap: wrap;
+        }
+        
+        .social-link {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            padding: 10px 15px;
+            background: rgba(0, 82, 255, 0.1);
+            border: 1px solid rgba(0, 82, 255, 0.3);
+            border-radius: 5px;
+            color: #00BFFF;
+            text-decoration: none;
+            font-size: 0.7rem;
+            transition: all 0.3s;
+        }
+        
+        .social-link:hover {
+            background: rgba(0, 82, 255, 0.3);
+            border-color: #0052ff;
+            box-shadow: 0 0 15px rgba(0, 82, 255, 0.5);
+            transform: translateY(-2px);
+        }
+        
+        .social-link svg {
+            width: 20px;
+            height: 20px;
+        }
+        
+        .contract-text {
+            font-size: 0.6rem;
+            color: #fff;
+            margin-bottom: 5px;
+        }
+        
+        .contract-text a {
+            color: #00FF88;
+            text-decoration: none;
+            transition: all 0.3s;
+        }
+        
+        .contract-text a:hover {
+            color: #00BFFF;
+            text-shadow: 0 0 10px #00BFFF;
+        }
+        
+        .contract-subtext {
+            font-size: 0.5rem;
+            color: #888;
+        }
     </style>
 </head>
 <body>
@@ -1151,6 +1241,34 @@
     
     <!-- Help Button -->
     <button class="help-btn" onclick="openHelpModal()" title="How to Play">?</button>
+    
+    <!-- Footer -->
+    <footer class="site-footer">
+        <div class="footer-content">
+            <div class="footer-section">
+                <p class="footer-text">The Basement © 2025</p>
+                <p class="footer-subtext">Retro Web3 Arcade on Base</p>
+            </div>
+            <div class="footer-section footer-social">
+                <a href="https://zora.co/collect/base:0xf7cd6fcc391ad2c771c84159e60bdaeee9ba821e" target="_blank" rel="noopener noreferrer" class="social-link" title="Collect on Zora">
+                    <svg width="24" height="24" viewBox="0 0 24 24" fill="currentColor">
+                        <path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm0 18c-4.41 0-8-3.59-8-8s3.59-8 8-8 8 3.59 8 8-3.59 8-8 8zm-1-13h2v6h-2zm0 8h2v2h-2z"/>
+                    </svg>
+                    <span>Zora</span>
+                </a>
+                <a href="https://x.com/TheBasementWTF" target="_blank" rel="noopener noreferrer" class="social-link" title="Follow on X">
+                    <svg width="24" height="24" viewBox="0 0 24 24" fill="currentColor">
+                        <path d="M18.244 2.25h3.308l-7.227 8.26 8.502 11.24H16.17l-5.214-6.817L4.99 21.75H1.68l7.73-8.835L1.254 2.25H8.08l4.713 6.231zm-1.161 17.52h1.833L7.084 4.126H5.117z"/>
+                    </svg>
+                    <span>X (Twitter)</span>
+                </a>
+            </div>
+            <div class="footer-section footer-contract">
+                <p class="contract-text">Contract: <a href="https://basescan.org/address/0xf7Cd6fcc391ad2c771c84159E60BDAEeE9BA821e" target="_blank" rel="noopener noreferrer">0xf7Cd...821e</a></p>
+                <p class="contract-subtext">Base Mainnet</p>
+            </div>
+        </div>
+    </footer>
     
     <!-- Scripts -->
     <script src="../security.js"></script>
@@ -2014,8 +2132,8 @@
                 
                 // Load stats if contract is ready
                 if (contractReady) {
-                    await loadUserStats();
-                    await loadGlobalStatsFromContract();
+                await loadUserStats();
+                await loadGlobalStatsFromContract();
                 }
                 
                 // Track online
@@ -2040,24 +2158,24 @@
         async function switchToBaseNetwork(ethereumProvider) {
             try {
                 await ethereumProvider.request({
-                    method: 'wallet_switchEthereumChain',
-                    params: [{ chainId: BASE_CHAIN_ID }],
-                });
+                            method: 'wallet_switchEthereumChain',
+                            params: [{ chainId: BASE_CHAIN_ID }],
+                        });
                 return true;
-            } catch (switchError) {
+                    } catch (switchError) {
                 // If network doesn't exist, add it
-                if (switchError.code === 4902) {
+                        if (switchError.code === 4902) {
                     try {
                         await ethereumProvider.request({
-                            method: 'wallet_addEthereumChain',
-                            params: [{
-                                chainId: BASE_CHAIN_ID,
-                                chainName: 'Base Mainnet',
-                                nativeCurrency: { name: 'ETH', symbol: 'ETH', decimals: 18 },
-                                rpcUrls: ['https://mainnet.base.org'],
-                                blockExplorerUrls: ['https://basescan.org']
-                            }],
-                        });
+                                method: 'wallet_addEthereumChain',
+                                params: [{
+                                    chainId: BASE_CHAIN_ID,
+                                    chainName: 'Base Mainnet',
+                                    nativeCurrency: { name: 'ETH', symbol: 'ETH', decimals: 18 },
+                                    rpcUrls: ['https://mainnet.base.org'],
+                                    blockExplorerUrls: ['https://basescan.org']
+                                }],
+                            });
                         return true;
                     } catch (addError) {
                         console.error('Failed to add Base network:', addError);
@@ -2065,7 +2183,7 @@
                     }
                 } else if (switchError.code === 4001) {
                     throw new Error('Network switch cancelled');
-                } else {
+                        } else {
                     throw new Error('Please switch to Base network manually');
                 }
             }
@@ -2080,9 +2198,9 @@
                 if (typeof window.ethereum === 'undefined') {
                     showToast('❌ Install MetaMask!', 'error');
                     window.open('https://metamask.io/download/', '_blank');
-                    return;
-                }
-                
+                        return;
+                    }
+                    
                 console.log('🦊 Connecting MetaMask...');
                 
                 // Switch to Base network
