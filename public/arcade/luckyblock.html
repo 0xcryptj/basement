@@ -1691,13 +1691,50 @@
                 const urlParams = new URLSearchParams(window.location.search);
                 const referrer = urlParams.get('ref') || ethers.ZeroAddress;
                 
-                // Send transaction
+                // Prepare transaction
                 const betAmount = ethers.parseEther(currentBetAmount.toString());
                 console.log('💰 Bet amount:', betAmount.toString(), 'wei');
                 console.log('📝 Referrer:', referrer);
-                console.log('📤 Sending transaction...');
                 
-                const tx = await contractWithSigner.enterRound(referrer, { value: betAmount });
+                // Check user balance
+                const balance = await provider.getBalance(userAddress);
+                console.log('👛 User balance:', ethers.formatEther(balance), 'ETH');
+                
+                if (balance < betAmount) {
+                    showToast('❌ Insufficient ETH balance', 'error');
+                    enterBtn.disabled = false;
+                    enterBtn.textContent = originalText;
+                    enterBtn.classList.remove('btn-loading');
+                    return;
+                }
+                
+                // Get current round state
+                const roundInfo = await contract.getCurrentRound();
+                console.log('🎰 Round info:', {
+                    id: roundInfo[0].toString(),
+                    playerCount: roundInfo[1].toString(),
+                    pot: ethers.formatEther(roundInfo[2]),
+                    timeLeft: roundInfo[3].toString(),
+                    isActive: roundInfo[4],
+                    state: roundInfo[5]
+                });
+                
+                // Check if round is open (state 0 = Open)
+                if (roundInfo[5] !== 0) {
+                    showToast('❌ Round is not open for entries', 'error');
+                    enterBtn.disabled = false;
+                    enterBtn.textContent = originalText;
+                    enterBtn.classList.remove('btn-loading');
+                    return;
+                }
+                
+                console.log('📤 Sending transaction to wallet...');
+                
+                // Send transaction with explicit gas limit
+                const tx = await contractWithSigner.enterRound(referrer, { 
+                    value: betAmount,
+                    gasLimit: 500000 // Explicit gas limit to avoid estimation issues
+                });
                 console.log('✅ Transaction sent:', tx.hash);
                 
                 showToast('Transaction sent! Waiting for confirmation...', 'success');
