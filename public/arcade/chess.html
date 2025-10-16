@@ -588,11 +588,16 @@
 
         // Setup initial chess position
         function setupInitialPosition() {
-            const pieces = {
-                0: ['♜', '♞', '♝', '♛', '♚', '♝', '♞', '♜'],
-                1: ['♟', '♟', '♟', '♟', '♟', '♟', '♟', '♟'],
-                6: ['♙', '♙', '♙', '♙', '♙', '♙', '♙', '♙'],
-                7: ['♖', '♘', '♗', '♕', '♔', '♗', '♘', '♖']
+            // Black pieces (top) - rows 0-1
+            const blackPieces = {
+                0: ['♜', '♞', '♝', '♛', '♚', '♝', '♞', '♜'], // Black major pieces
+                1: ['♟', '♟', '♟', '♟', '♟', '♟', '♟', '♟']  // Black pawns
+            };
+            
+            // White pieces (bottom) - rows 6-7
+            const whitePieces = {
+                6: ['♙', '♙', '♙', '♙', '♙', '♙', '♙', '♙'],  // White pawns
+                7: ['♖', '♘', '♗', '♕', '♔', '♗', '♘', '♖']   // White major pieces
             };
 
             const squares = document.querySelectorAll('.chess-square');
@@ -600,8 +605,22 @@
                 const row = parseInt(square.dataset.row);
                 const col = parseInt(square.dataset.col);
                 
-                if (pieces[row]) {
-                    square.textContent = pieces[row][col];
+                // Add black pieces
+                if (blackPieces[row]) {
+                    const piece = document.createElement('span');
+                    piece.textContent = blackPieces[row][col];
+                    piece.style.color = '#000000'; // Force black color
+                    piece.style.textShadow = '0 0 2px rgba(0,0,0,0.5)';
+                    square.appendChild(piece);
+                }
+                
+                // Add white pieces
+                if (whitePieces[row]) {
+                    const piece = document.createElement('span');
+                    piece.textContent = whitePieces[row][col];
+                    piece.style.color = '#FFFFFF'; // Force white color
+                    piece.style.textShadow = '0 0 3px rgba(0,0,0,0.8)';
+                    square.appendChild(piece);
                 }
             });
         }
@@ -618,10 +637,16 @@
             if (gameState.selectedSquare) {
                 // Move piece
                 const fromSquare = gameState.selectedSquare;
-                const piece = fromSquare.textContent;
+                const pieceSpan = fromSquare.querySelector('span');
                 
-                square.textContent = piece;
-                fromSquare.textContent = '';
+                if (pieceSpan) {
+                    // Clear destination square
+                    square.innerHTML = '';
+                    
+                    // Move piece
+                    square.appendChild(pieceSpan.cloneNode(true));
+                    fromSquare.innerHTML = '';
+                }
                 
                 fromSquare.classList.remove('selected');
                 document.querySelectorAll('.valid-move').forEach(s => s.classList.remove('valid-move'));
@@ -630,7 +655,7 @@
                 gameState.currentPlayer = gameState.currentPlayer === 'white' ? 'black' : 'white';
                 
                 updateGameStatus();
-            } else if (square.textContent) {
+            } else if (square.querySelector('span')) {
                 // Select piece
                 gameState.selectedSquare = square;
                 square.classList.add('selected');
