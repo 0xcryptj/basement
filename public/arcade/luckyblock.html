@@ -1339,8 +1339,22 @@
     
     <!-- Scripts -->
     <script src="../security.js"></script>
-    <script src="https://cdn.jsdelivr.net/npm/@solana/web3.js@latest/lib/index.iife.min.js" crossorigin="anonymous"></script>
-    <script src="https://cdn.jsdelivr.net/npm/ethers@6.10.0/dist/ethers.umd.min.js" crossorigin="anonymous"></script>
+    <script src="https://cdn.jsdelivr.net/npm/@solana/web3.js@latest/lib/index.iife.min.js" crossorigin="anonymous" onerror="console.error('Failed to load Solana web3.js')"></script>
+    <script src="https://unpkg.com/ethers@6.10.0/dist/ethers.umd.min.js" integrity="sha384-" crossorigin="anonymous" onerror="handleEthersLoadError()"></script>
+    <script>
+        // Fallback handler if ethers.js fails to load from primary CDN
+        function handleEthersLoadError() {
+            console.error('❌ Primary ethers CDN failed, trying fallback...');
+            const fallbackScript = document.createElement('script');
+            fallbackScript.src = 'https://cdnjs.cloudflare.com/ajax/libs/ethers/6.10.0/ethers.umd.min.js';
+            fallbackScript.crossOrigin = 'anonymous';
+            fallbackScript.onerror = () => {
+                console.error('❌ All CDNs failed');
+                alert('Failed to load Ethereum library. Please refresh the page or contact support.');
+            };
+            document.head.appendChild(fallbackScript);
+        }
+    </script>
     <script>
         // Multi-Chain Config
         const SUPPORTED_CHAINS = {
