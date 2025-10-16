@@ -1,0 +1,488 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta http-equiv="Content-Security-Policy" content="default-src 'self' 'unsafe-inline' 'unsafe-eval'; script-src 'self' 'unsafe-inline' 'unsafe-eval' https://cdn.jsdelivr.net https://unpkg.com https://cdnjs.cloudflare.com; connect-src 'self' https://*.base.org https://mainnet.base.org https://api.mainnet-beta.solana.com wss://*; img-src 'self' data: https:; font-src 'self' https://fonts.gstatic.com; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com;">
+    <title>Create Channel - The Basement</title>
+    <link rel="icon" href="assets/icon.ico" type="image/x-icon">
+    <link href="https://fonts.googleapis.com/css2?family=Press+Start+2P&family=Courier+Prime:wght@400;700&display=swap" rel="stylesheet">
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            font-family: 'Press Start 2P', monospace;
+            background-color: #0A0A0A;
+            color: #ffffff;
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 20px;
+        }
+        
+        body::before {
+            content: '';
+            position: fixed;
+            inset: 0;
+            background: url('assets/bk3.png') center/cover no-repeat;
+            background-attachment: fixed;
+            z-index: -1;
+        }
+
+        .creator-container {
+            max-width: 600px;
+            width: 100%;
+            background: rgba(0, 0, 0, 0.9);
+            border: 3px solid #0052ff;
+            border-radius: 10px;
+            padding: 30px;
+            box-shadow: 0 0 50px rgba(0, 82, 255, 0.5);
+        }
+
+        .title {
+            font-size: 1.5rem;
+            color: #0052ff;
+            text-align: center;
+            margin-bottom: 30px;
+        }
+
+        .chain-selector {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 15px;
+            margin-bottom: 30px;
+        }
+
+        .chain-option {
+            padding: 20px;
+            background: rgba(0, 82, 255, 0.1);
+            border: 2px solid rgba(0, 82, 255, 0.3);
+            border-radius: 8px;
+            cursor: pointer;
+            transition: all 0.3s;
+            text-align: center;
+        }
+
+        .chain-option.active {
+            background: rgba(0, 82, 255, 0.3);
+            border-color: #0052ff;
+            box-shadow: 0 0 20px rgba(0, 82, 255, 0.5);
+        }
+
+        .chain-icon {
+            font-size: 2rem;
+            margin-bottom: 10px;
+        }
+
+        .chain-name {
+            font-size: 0.9rem;
+            margin-bottom: 8px;
+        }
+
+        .chain-cost {
+            font-size: 0.6rem;
+            color: #888;
+        }
+
+        .chain-cost.burn {
+            color: #ff6b6b;
+        }
+
+        .input-group {
+            margin-bottom: 20px;
+        }
+
+        .input-label {
+            display: block;
+            font-size: 0.7rem;
+            color: #888;
+            margin-bottom: 8px;
+        }
+
+        .input-field {
+            width: 100%;
+            padding: 12px;
+            background: rgba(0, 0, 0, 0.5);
+            border: 2px solid #0052ff;
+            border-radius: 5px;
+            color: #fff;
+            font-family: 'Courier Prime', monospace;
+            font-size: 0.9rem;
+        }
+
+        .input-field:focus {
+            outline: none;
+            border-color: #0080ff;
+            box-shadow: 0 0 10px rgba(0, 82, 255, 0.3);
+        }
+
+        .helper-text {
+            font-size: 0.6rem;
+            color: #666;
+            margin-top: 5px;
+        }
+
+        .token-info {
+            background: rgba(255, 107, 107, 0.1);
+            border: 1px solid rgba(255, 107, 107, 0.3);
+            border-radius: 5px;
+            padding: 15px;
+            margin-bottom: 20px;
+            display: none;
+        }
+
+        .token-info.show {
+            display: block;
+        }
+
+        .token-balance {
+            font-size: 0.7rem;
+            margin-bottom: 8px;
+        }
+
+        .token-warning {
+            font-size: 0.6rem;
+            color: #ff6b6b;
+        }
+
+        .create-btn {
+            width: 100%;
+            padding: 15px;
+            background: #0052ff;
+            border: none;
+            border-radius: 5px;
+            color: white;
+            font-family: 'Press Start 2P', monospace;
+            font-size: 0.8rem;
+            cursor: pointer;
+            transition: all 0.3s;
+        }
+
+        .create-btn:hover:not(:disabled) {
+            background: #0041cc;
+            transform: scale(1.02);
+        }
+
+        .create-btn:disabled {
+            background: #333;
+            cursor: not-allowed;
+            opacity: 0.5;
+        }
+
+        .status-message {
+            margin-top: 20px;
+            padding: 15px;
+            border-radius: 5px;
+            font-size: 0.7rem;
+            text-align: center;
+            display: none;
+        }
+
+        .status-message.show {
+            display: block;
+        }
+
+        .status-message.success {
+            background: rgba(0, 255, 0, 0.1);
+            border: 1px solid rgba(0, 255, 0, 0.3);
+            color: #00ff00;
+        }
+
+        .status-message.error {
+            background: rgba(255, 0, 0, 0.1);
+            border: 1px solid rgba(255, 0, 0, 0.3);
+            color: #ff6b6b;
+        }
+
+        .status-message.info {
+            background: rgba(0, 82, 255, 0.1);
+            border: 1px solid rgba(0, 82, 255, 0.3);
+            color: #0080ff;
+        }
+    </style>
+</head>
+<body>
+    <div class="creator-container">
+        <h1 class="title">📢 CREATE CHANNEL</h1>
+
+        <!-- Chain Selector -->
+        <div class="chain-selector">
+            <div class="chain-option active" data-chain="base">
+                <div class="chain-icon">🔵</div>
+                <div class="chain-name">BASE</div>
+                <div class="chain-cost">FREE</div>
+            </div>
+            <div class="chain-option" data-chain="solana">
+                <div class="chain-icon">☀️</div>
+                <div class="chain-name">SOLANA</div>
+                <div class="chain-cost burn">BURN 5 TOKENS</div>
+            </div>
+        </div>
+
+        <!-- Token Info (Solana only) -->
+        <div class="token-info" id="token-info">
+            <div class="token-balance">
+                Your Balance: <span id="token-balance">Loading...</span> BASEMENT
+            </div>
+            <div class="token-warning">
+                ⚠️ Creating a channel on Solana requires burning 5 BASEMENT tokens. This action is permanent.
+            </div>
+        </div>
+
+        <!-- Channel Name -->
+        <div class="input-group">
+            <label class="input-label">Channel Name *</label>
+            <input type="text" class="input-field" id="channel-name" placeholder="My Awesome Channel" maxlength="50">
+            <div class="helper-text">Display name for your channel</div>
+        </div>
+
+        <!-- Channel Slug -->
+        <div class="input-group">
+            <label class="input-label">Channel Slug *</label>
+            <input type="text" class="input-field" id="channel-slug" placeholder="my-awesome-channel" maxlength="30" pattern="[a-z0-9-]+">
+            <div class="helper-text">URL-friendly name (lowercase, numbers, hyphens only)</div>
+        </div>
+
+        <!-- Description -->
+        <div class="input-group">
+            <label class="input-label">Description</label>
+            <input type="text" class="input-field" id="channel-description" placeholder="A place for awesome discussions" maxlength="200">
+            <div class="helper-text">Optional: Brief description of your channel</div>
+        </div>
+
+        <!-- Create Button -->
+        <button class="create-btn" id="create-btn" disabled>
+            CONNECT WALLET TO CREATE
+        </button>
+
+        <!-- Status Message -->
+        <div class="status-message" id="status-message"></div>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/@solana/web3.js@latest/lib/index.iife.min.js" crossorigin="anonymous"></script>
+    <script src="https://unpkg.com/ethers@6.10.0/dist/ethers.umd.min.js" crossorigin="anonymous"></script>
+    <script>
+        let selectedChain = 'base';
+        let userAddress = null;
+        let tokenBalance = 0;
+        const BASEMENT_TOKEN = 'D4MXRKhzSMapDZ5bLEA1bmjrUPLZhHZRhSkS6wrBpump';
+        const REQUIRED_BURN = 5;
+
+        // Chain selection
+        document.querySelectorAll('.chain-option').forEach(option => {
+            option.addEventListener('click', () => {
+                document.querySelectorAll('.chain-option').forEach(o => o.classList.remove('active'));
+                option.classList.add('active');
+                selectedChain = option.dataset.chain;
+                
+                // Show/hide token info
+                const tokenInfo = document.getElementById('token-info');
+                if (selectedChain === 'solana') {
+                    tokenInfo.classList.add('show');
+                    if (userAddress) {
+                        fetchTokenBalance();
+                    }
+                } else {
+                    tokenInfo.classList.remove('show');
+                }
+                
+                updateCreateButton();
+            });
+        });
+
+        // Auto-generate slug from name
+        document.getElementById('channel-name').addEventListener('input', (e) => {
+            const slug = e.target.value
+                .toLowerCase()
+                .replace(/[^a-z0-9]+/g, '-')
+                .replace(/^-+|-+$/g, '');
+            document.getElementById('channel-slug').value = slug;
+        });
+
+        // Connect wallet on load
+        window.addEventListener('load', async () => {
+            if (window.ethereum) {
+                try {
+                    const accounts = await window.ethereum.request({ method: 'eth_accounts' });
+                    if (accounts.length > 0) {
+                        userAddress = accounts[0];
+                        updateCreateButton();
+                    }
+                } catch (error) {
+                    console.error('Error checking wallet:', error);
+                }
+            }
+
+            if (window.solana && window.solana.isPhantom) {
+                try {
+                    const response = await window.solana.connect({ onlyIfTrusted: true });
+                    if (selectedChain === 'solana') {
+                        userAddress = response.publicKey.toString();
+                        await fetchTokenBalance();
+                        updateCreateButton();
+                    }
+                } catch (error) {
+                    // User hasn't connected yet
+                }
+            }
+        });
+
+        // Fetch Solana token balance
+        async function fetchTokenBalance() {
+            if (selectedChain !== 'solana' || !userAddress) return;
+
+            try {
+                const connection = new solanaWeb3.Connection('https://api.mainnet-beta.solana.com');
+                const publicKey = new solanaWeb3.PublicKey(userAddress);
+                const tokenMint = new solanaWeb3.PublicKey(BASEMENT_TOKEN);
+
+                // Get associated token account
+                const tokenAccounts = await connection.getParsedTokenAccountsByOwner(publicKey, {
+                    mint: tokenMint
+                });
+
+                if (tokenAccounts.value.length > 0) {
+                    const balance = tokenAccounts.value[0].account.data.parsed.info.tokenAmount.uiAmount;
+                    tokenBalance = balance;
+                    document.getElementById('token-balance').textContent = balance.toFixed(2);
+                } else {
+                    tokenBalance = 0;
+                    document.getElementById('token-balance').textContent = '0.00';
+                }
+            } catch (error) {
+                console.error('Error fetching token balance:', error);
+                document.getElementById('token-balance').textContent = 'Error';
+            }
+        }
+
+        // Update create button state
+        function updateCreateButton() {
+            const btn = document.getElementById('create-btn');
+            const name = document.getElementById('channel-name').value.trim();
+            const slug = document.getElementById('channel-slug').value.trim();
+
+            if (!userAddress) {
+                btn.textContent = 'CONNECT WALLET TO CREATE';
+                btn.disabled = true;
+            } else if (!name || !slug) {
+                btn.textContent = 'FILL IN REQUIRED FIELDS';
+                btn.disabled = true;
+            } else if (selectedChain === 'solana' && tokenBalance < REQUIRED_BURN) {
+                btn.textContent = `NEED ${REQUIRED_BURN} BASEMENT TOKENS`;
+                btn.disabled = true;
+            } else {
+                btn.textContent = selectedChain === 'base' ? 'CREATE CHANNEL (FREE)' : `CREATE CHANNEL (BURN ${REQUIRED_BURN} TOKENS)`;
+                btn.disabled = false;
+            }
+        }
+
+        // Listen for input changes
+        document.getElementById('channel-name').addEventListener('input', updateCreateButton);
+        document.getElementById('channel-slug').addEventListener('input', updateCreateButton);
+
+        // Create channel
+        document.getElementById('create-btn').addEventListener('click', async () => {
+            const name = document.getElementById('channel-name').value.trim();
+            const slug = document.getElementById('channel-slug').value.trim();
+            const description = document.getElementById('channel-description').value.trim();
+
+            if (!name || !slug) {
+                showStatus('Please fill in required fields', 'error');
+                return;
+            }
+
+            showStatus('Creating channel...', 'info');
+
+            try {
+                let burnSignature = null;
+
+                // If Solana, burn tokens first
+                if (selectedChain === 'solana') {
+                    if (!window.solana) {
+                        showStatus('Phantom wallet not found', 'error');
+                        return;
+                    }
+
+                    showStatus('Preparing token burn transaction...', 'info');
+
+                    // Connect if not connected
+                    if (!userAddress) {
+                        const response = await window.solana.connect();
+                        userAddress = response.publicKey.toString();
+                    }
+
+                    // Create burn transaction
+                    const connection = new solanaWeb3.Connection('https://api.mainnet-beta.solana.com');
+                    const publicKey = new solanaWeb3.PublicKey(userAddress);
+                    const tokenMint = new solanaWeb3.PublicKey(BASEMENT_TOKEN);
+
+                    showStatus('Approve the burn transaction in your wallet...', 'info');
+
+                    // Get token account
+                    const tokenAccounts = await connection.getParsedTokenAccountsByOwner(publicKey, {
+                        mint: tokenMint
+                    });
+
+                    if (tokenAccounts.value.length === 0) {
+                        showStatus('No BASEMENT tokens found in your wallet', 'error');
+                        return;
+                    }
+
+                    const tokenAccount = tokenAccounts.value[0].pubkey;
+
+                    // Note: Actual burn transaction would be created here
+                    // For now, we'll show a message
+                    showStatus('Token burn feature coming soon! For now, use Base (free)', 'error');
+                    return;
+                }
+
+                // Create channel via API
+                const response = await fetch('/api/channels/create', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({
+                        channelName: name,
+                        channelSlug: slug,
+                        description,
+                        creatorAddress: userAddress,
+                        chain: selectedChain,
+                        burnTxSignature: burnSignature
+                    })
+                });
+
+                const data = await response.json();
+
+                if (!response.ok) {
+                    showStatus(data.error || 'Failed to create channel', 'error');
+                    return;
+                }
+
+                showStatus(`✅ Channel created successfully! Redirecting to #${slug}...`, 'success');
+
+                // Redirect after 2 seconds
+                setTimeout(() => {
+                    window.location.href = `/?channel=${slug}`;
+                }, 2000);
+
+            } catch (error) {
+                console.error('Error creating channel:', error);
+                showStatus('Failed to create channel: ' + error.message, 'error');
+            }
+        });
+
+        function showStatus(message, type) {
+            const statusEl = document.getElementById('status-message');
+            statusEl.textContent = message;
+            statusEl.className = `status-message show ${type}`;
+        }
+    </script>
+</body>
+</html>
+
