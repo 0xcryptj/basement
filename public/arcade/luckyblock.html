@@ -1971,18 +1971,6 @@
                 console.log('💰 Bet amount:', betAmount.toString(), 'wei');
                 console.log('📝 Referrer:', referrer);
                 
-                // Check user balance
-                const balance = await provider.getBalance(userAddress);
-                console.log('👛 User balance:', ethers.formatEther(balance), 'ETH');
-                
-                if (balance < betAmount) {
-                    showToast('❌ Insufficient ETH balance', 'error');
-                    enterBtn.disabled = false;
-                    enterBtn.textContent = originalText;
-                    enterBtn.classList.remove('btn-loading');
-                    return;
-                }
-                
                 // Get current round state
                 const roundInfo = await contract.getCurrentRound();
                 console.log('🎰 Round info:', {
@@ -2003,12 +1991,65 @@
                     return;
                 }
                 
-                console.log('📤 Sending transaction to wallet...');
+                // Estimate gas for the transaction
+                console.log('⛽ Estimating gas...');
+                let estimatedGas;
+                try {
+                    estimatedGas = await contractWithSigner.enterRound.estimateGas(referrer, { 
+                        value: betAmount
+                    });
+                    console.log('✅ Estimated gas:', estimatedGas.toString());
+                } catch (gasError) {
+                    console.error('❌ Gas estimation failed:', gasError);
+                    if (gasError.message && gasError.message.includes('insufficient funds')) {
+                        showToast('❌ Insufficient ETH for transaction + gas fees', 'error');
+                        addChatMessage('SYSTEM', '💡 You need more ETH to cover the bet amount plus network fees');
+                    } else {
+                        showToast('❌ Unable to estimate gas. Check your balance and network.', 'error');
+                    }
+                    enterBtn.disabled = false;
+                    enterBtn.textContent = originalText;
+                    enterBtn.classList.remove('btn-loading');
+                    return;
+                }
                 
-                // Send transaction with explicit gas limit
+                // Get current gas price
+                const feeData = await provider.getFeeData();
+                const gasPrice = feeData.gasPrice || feeData.maxFeePerGas || ethers.parseUnits('0.1', 'gwei');
+                const estimatedGasCost = estimatedGas * gasPrice;
+                const totalRequired = betAmount + estimatedGasCost;
+                
+                console.log('⛽ Gas price:', ethers.formatUnits(gasPrice, 'gwei'), 'gwei');
+                console.log('💰 Estimated gas cost:', ethers.formatEther(estimatedGasCost), 'ETH');
+                console.log('💰 Total required (bet + gas):', ethers.formatEther(totalRequired), 'ETH');
+                
+                // Check user balance (bet amount + estimated gas)
+                const balance = await provider.getBalance(userAddress);
+                console.log('👛 User balance:', ethers.formatEther(balance), 'ETH');
+                
+                if (balance < totalRequired) {
+                    const shortfall = totalRequired - balance;
+                    const betEth = ethers.formatEther(betAmount);
+                    const gasEth = ethers.formatEther(estimatedGasCost);
+                    const balanceEth = ethers.formatEther(balance);
+                    const shortfallEth = ethers.formatEther(shortfall);
+                    
+                    showToast(`❌ Insufficient funds! Need ${shortfallEth} more ETH`, 'error');
+                    addChatMessage('SYSTEM', `💡 Your balance: ${balanceEth} ETH | Bet: ${betEth} ETH | Gas: ~${gasEth} ETH | Need: ${shortfallEth} more ETH`);
+                    
+                    enterBtn.disabled = false;
+                    enterBtn.textContent = originalText;
+                    enterBtn.classList.remove('btn-loading');
+                    return;
+                }
+                
+                console.log('📤 Sending transaction to wallet...');
+                console.log('💡 Please confirm the transaction in your wallet popup');
+                
+                // Send transaction - wallet popup will now appear
                 const tx = await contractWithSigner.enterRound(referrer, { 
                     value: betAmount,
-                    gasLimit: 500000 // Explicit gas limit to avoid estimation issues
+                    gasLimit: estimatedGas + BigInt(50000) // Add 50k gas buffer for safety
                 });
                 console.log('✅ Transaction sent:', tx.hash);
                 
@@ -2044,23 +2085,28 @@
                 
                 // User-friendly error messages
                 if (error.code === 'ACTION_REJECTED' || error.code === 4001) {
-                    showToast('❌ Transaction cancelled', 'error');
+                    showToast('❌ Transaction cancelled by user', 'error');
+                    addChatMessage('SYSTEM', 'ℹ️ You cancelled the transaction in your wallet');
+                } else if (error.code === 'INSUFFICIENT_FUNDS' || (error.message && error.message.includes('insufficient funds'))) {
+                    showToast('❌ Insufficient ETH for bet + gas fees', 'error');
+                    addChatMessage('SYSTEM', '💡 You need more ETH to cover the bet amount plus network transaction fees');
+                    addChatMessage('SYSTEM', '💡 Get ETH on Base at https://bridge.base.org or use a Base faucet');
                 } else if (error.code === 'CALL_EXCEPTION') {
                     showToast('❌ Contract call failed - verify you are on Base network (Chain ID: 8453)', 'error');
                     addChatMessage('SYSTEM', '⚠️ Make sure you are connected to Base Mainnet (Chain ID: 8453)');
-                } else if (error.message && error.message.includes('insufficient funds')) {
-                    showToast('❌ Insufficient ETH balance', 'error');
                 } else if (error.message && error.message.includes('Already entered')) {
                     showToast('❌ Already entered this round!', 'error');
                 } else if (error.message && error.message.includes('user rejected')) {
-                    showToast('❌ You rejected the transaction', 'error');
+                    showToast('❌ You rejected the transaction in your wallet', 'error');
                 } else if (error.message && error.message.includes('gas')) {
-                    showToast('❌ Gas estimation failed - check network', 'error');
+                    showToast('❌ Gas estimation failed - check your balance and network', 'error');
+                    addChatMessage('SYSTEM', '💡 Make sure you have enough ETH for gas fees');
                 } else if (error.message && error.message.includes('missing revert data')) {
                     showToast('❌ Contract not found on Base network!', 'error');
                     addChatMessage('SYSTEM', '⚠️ Verify contract is deployed at: ' + CONTRACT_ADDRESS);
                 } else {
                     showToast(`❌ Transaction failed: ${error.message || 'Unknown error'}`, 'error');
+                    addChatMessage('SYSTEM', '⚠️ Error details: ' + (error.message || 'Unknown error'));
                 }
             }
         }
