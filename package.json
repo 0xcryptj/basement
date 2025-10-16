@@ -36,6 +36,10 @@
   },
   "dependencies": {
     "@prisma/client": "^6.17.1",
+    "@solana/wallet-adapter-base": "^0.9.27",
+    "@solana/wallet-adapter-phantom": "^0.9.28",
+    "@solana/wallet-adapter-wallets": "^0.19.37",
+    "@solana/web3.js": "^1.98.4",
     "@supabase/supabase-js": "^2.75.0",
     "@types/node": "^24.7.2",
     "@types/react": "^19.2.2",

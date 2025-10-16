@@ -1,0 +1,20 @@
+[package]
+name = "cointoss"
+version = "0.1.0"
+description = "The Basement - CoinToss Solana Program"
+edition = "2021"
+
+[lib]
+crate-type = ["cdylib", "lib"]
+name = "cointoss"
+
+[features]
+no-entrypoint = []
+no-idl = []
+no-log-ix-name = []
+cpi = ["no-entrypoint"]
+default = []
+
+[dependencies]
+anchor-lang = "0.30.0"
+
