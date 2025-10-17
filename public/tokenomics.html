@@ -363,6 +363,14 @@
                         <div class="stat-label">Type</div>
                         <div class="stat-value">SPL Token</div>
                     </div>
+                    <div class="stat-item">
+                        <div class="stat-label">Market Cap</div>
+                        <div class="stat-value" id="market-cap">Loading...</div>
+                    </div>
+                    <div class="stat-item">
+                        <div class="stat-label">24h Volume</div>
+                        <div class="stat-value" id="volume-24h">Loading...</div>
+                    </div>
                 </div>
 
                 <div class="token-contract">
@@ -482,12 +490,12 @@
 
                 <div class="utility-item" style="border-color: rgba(0, 82, 255, 0.3); background: rgba(0, 82, 255, 0.05);">
                     <div class="utility-icon">⚡</div>
-                    <div class="utility-name" style="color: #0052ff;">Base DEX (Coming Soon)</div>
+                    <div class="utility-name" style="color: #0052ff;">Zora (Coming Soon)</div>
                     <div class="utility-desc">
-                        1. Connect MetaMask/Base Wallet<br>
-                        2. Swap ETH for BASEMENT<br>
-                        3. Use on Base network<br>
-                        4. Low fees, fast transactions!
+                        1. Visit Zora.co<br>
+                        2. Connect Base Wallet/MetaMask<br>
+                        3. Mint BASEMENT tokens<br>
+                        4. Trade on Base network!
                     </div>
                 </div>
 
@@ -514,6 +522,12 @@
             <a href="https://pump.fun/coin/D4MXRKhzSMapDZ5bLEA1bmjrUPLZhHZRhSkS6wrBpump" target="_blank" style="color: #0052ff; text-decoration: none; font-size: 0.6rem;">
                 🚀 Pump.fun
             </a>
+            <a href="https://solscan.io/token/D4MXRKhzSMapDZ5bLEA1bmjrUPLZhHZRhSkS6wrBpump" target="_blank" style="color: #0052ff; text-decoration: none; font-size: 0.6rem;">
+                🔍 Solscan
+            </a>
+            <a href="https://zora.co/" target="_blank" style="color: #0052ff; text-decoration: none; font-size: 0.6rem;">
+                ⚡ Zora
+            </a>
             <a href="https://x.com/thebasementarc" target="_blank" style="color: #0052ff; text-decoration: none; font-size: 0.6rem;">
                 𝕏 Twitter
             </a>
@@ -522,5 +536,35 @@
             </a>
         </div>
     </footer>
+
+    <script>
+        // Fetch real-time token data from Solscan API
+        async function fetchTokenData() {
+            const tokenAddress = 'D4MXRKhzSMapDZ5bLEA1bmjrUPLZhHZRhSkS6wrBpump';
+            
+            try {
+                // Note: This is a placeholder for demonstration
+                // In production, you'd use Solscan API or Jupiter API
+                console.log('Fetching token data for:', tokenAddress);
+                
+                // Placeholder values - replace with real API calls
+                document.getElementById('market-cap').textContent = 'Loading...';
+                document.getElementById('volume-24h').textContent = 'Loading...';
+                
+                // You can integrate with Jupiter API or Solscan API here
+                // Example: https://api.solscan.io/token/meta?token=YOUR_TOKEN_ADDRESS
+                
+            } catch (error) {
+                console.error('Error fetching token data:', error);
+                document.getElementById('market-cap').textContent = 'N/A';
+                document.getElementById('volume-24h').textContent = 'N/A';
+            }
+        }
+
+        // Load data on page load
+        window.addEventListener('load', () => {
+            fetchTokenData();
+        });
+    </script>
 </body>
 </html>
