@@ -543,6 +543,21 @@
                 <button class="create-wager-btn" id="create-wager-btn">CREATE WAGER MATCH</button>
             </div>
 
+            <!-- Demo Mode -->
+            <div class="wager-setup" style="background: rgba(0, 255, 0, 0.1); border-color: rgba(0, 255, 0, 0.3);">
+                <div class="input-group">
+                    <label class="input-label" style="color: #00ff00;">🤖 Practice Mode (Free)</label>
+                    <div class="chain-selector">
+                        <button class="chain-btn" id="play-cpu-easy" style="font-size: 0.5rem;">Easy</button>
+                        <button class="chain-btn" id="play-cpu-medium" style="font-size: 0.5rem;">Medium</button>
+                        <button class="chain-btn" id="play-cpu-hard" style="font-size: 0.5rem;">Hard</button>
+                    </div>
+                </div>
+                <p style="font-size: 0.5rem; color: #888; text-align: center; margin-top: 10px;">
+                    Play against AI - No wagering required!
+                </p>
+            </div>
+
             <!-- Active Wagers -->
             <div class="active-wagers">
                 <h3 class="wager-list-title">🎯 Open Wagers</h3>
@@ -589,6 +604,7 @@
         </div>
     </div>
 
+    <script src="cpu-opponent.js"></script>
     <script>
         // Chess game state
         let gameState = {
@@ -599,8 +615,22 @@
             player1: null,
             player2: null,
             wagerAmount: 0,
-            chain: 'base'
+            chain: 'base',
+            cpuOpponent: null,
+            demoMode: false,
+            whiteTime: 600, // 10 minutes
+            blackTime: 600,
+            timerInterval: null
         };
+
+        // Piece types and movement
+        const PIECES = {
+            '♔': 'king', '♕': 'queen', '♖': 'rook', '♗': 'bishop', '♘': 'knight', '♙': 'pawn',
+            '♚': 'king', '♛': 'queen', '♜': 'rook', '♝': 'bishop', '♞': 'knight', '♟': 'pawn'
+        };
+
+        const WHITE_PIECES = ['♔', '♕', '♖', '♗', '♘', '♙'];
+        const BLACK_PIECES = ['♚', '♛', '♜', '♝', '♞', '♟'];
 
         // Initialize chess board
         function initChessBoard() {
@@ -624,6 +654,9 @@
 
         // Setup initial chess position
         function setupInitialPosition() {
+            // Initialize board array
+            gameState.board = Array(8).fill(null).map(() => Array(8).fill(null));
+
             // Black pieces (top) - rows 0-1
             const blackPieces = {
                 0: ['♜', '♞', '♝', '♛', '♚', '♝', '♞', '♜'], // Black major pieces
@@ -647,7 +680,9 @@
                     piece.textContent = blackPieces[row][col];
                     piece.style.color = '#000000'; // Force black color
                     piece.style.textShadow = '0 0 2px rgba(0,0,0,0.5)';
+                    piece.style.fontSize = '2.5rem';
                     square.appendChild(piece);
+                    gameState.board[row][col] = blackPieces[row][col];
                 }
                 
                 // Add white pieces
@@ -656,7 +691,9 @@
                     piece.textContent = whitePieces[row][col];
                     piece.style.color = '#FFFFFF'; // Force white color
                     piece.style.textShadow = '0 0 3px rgba(0,0,0,0.8)';
+                    piece.style.fontSize = '2.5rem';
                     square.appendChild(piece);
+                    gameState.board[row][col] = whitePieces[row][col];
                 }
             });
         }
@@ -664,7 +701,13 @@
         // Handle square click
         function handleSquareClick(row, col) {
             if (!gameState.gameActive) {
-                showToast('Game not active. Create or join a wager!', 'warning');
+                showToast('Game not active. Start a game first!', 'warning');
+                return;
+            }
+
+            // If it's CPU's turn in demo mode, don't allow player input
+            if (gameState.demoMode && gameState.currentPlayer === 'black') {
+                showToast('Wait for CPU to move...', 'info');
                 return;
             }
 
@@ -672,61 +715,293 @@
             
             if (gameState.selectedSquare) {
                 // Move piece
-                const fromSquare = gameState.selectedSquare;
-                const pieceSpan = fromSquare.querySelector('span');
+                const fromRow = parseInt(gameState.selectedSquare.dataset.row);
+                const fromCol = parseInt(gameState.selectedSquare.dataset.col);
                 
-                if (pieceSpan) {
-                    // Clear destination square
-                    square.innerHTML = '';
+                if (isValidMove(fromRow, fromCol, row, col)) {
+                    movePiece(fromRow, fromCol, row, col);
                     
-                    // Move piece
-                    square.appendChild(pieceSpan.cloneNode(true));
-                    fromSquare.innerHTML = '';
+                    // Check if CPU should move
+                    if (gameState.demoMode && gameState.currentPlayer === 'black') {
+                        setTimeout(makeCPUMove, 1000);
+                    }
+                } else {
+                    showToast('Invalid move!', 'error');
                 }
                 
-                fromSquare.classList.remove('selected');
+                gameState.selectedSquare.classList.remove('selected');
                 document.querySelectorAll('.valid-move').forEach(s => s.classList.remove('valid-move'));
-                
                 gameState.selectedSquare = null;
-                gameState.currentPlayer = gameState.currentPlayer === 'white' ? 'black' : 'white';
-                
-                updateGameStatus();
             } else if (square.querySelector('span')) {
+                const piece = square.querySelector('span').textContent;
+                const isWhitePiece = WHITE_PIECES.includes(piece);
+                const isBlackPiece = BLACK_PIECES.includes(piece);
+                
+                // Check if it's the correct player's turn
+                if ((gameState.currentPlayer === 'white' && !isWhitePiece) ||
+                    (gameState.currentPlayer === 'black' && !isBlackPiece)) {
+                    showToast("Not your turn!", 'warning');
+                    return;
+                }
+                
                 // Select piece
                 gameState.selectedSquare = square;
                 square.classList.add('selected');
                 
-                // Highlight valid moves (simplified)
+                // Highlight valid moves
                 highlightValidMoves(row, col);
             }
         }
 
-        // Highlight valid moves (simplified version)
-        function highlightValidMoves(row, col) {
-            // Basic movement (simplified - real chess logic needed)
-            const moves = [
-                [row-1, col], [row+1, col], [row, col-1], [row, col+1],
-                [row-1, col-1], [row-1, col+1], [row+1, col-1], [row+1, col+1]
-            ];
+        // Move piece on board
+        function movePiece(fromRow, fromCol, toRow, toCol) {
+            const fromSquare = document.querySelector(`[data-row="${fromRow}"][data-col="${fromCol}"]`);
+            const toSquare = document.querySelector(`[data-row="${toRow}"][data-col="${toCol}"]`);
+            const pieceSpan = fromSquare.querySelector('span');
+            
+            if (pieceSpan) {
+                // Capture opponent piece if present
+                const capturedPiece = toSquare.querySelector('span');
+                if (capturedPiece) {
+                    addChatMessage('SYSTEM', `${gameState.currentPlayer} captured ${capturedPiece.textContent}!`);
+                }
+                
+                // Clear destination and move piece
+                toSquare.innerHTML = '';
+                toSquare.appendChild(pieceSpan.cloneNode(true));
+                fromSquare.innerHTML = '';
+                
+                // Update board array
+                gameState.board[toRow][toCol] = gameState.board[fromRow][fromCol];
+                gameState.board[fromRow][fromCol] = null;
+                
+                // Switch turns
+                gameState.currentPlayer = gameState.currentPlayer === 'white' ? 'black' : 'white';
+                updateGameStatus();
+            }
+        }
 
-            moves.forEach(([r, c]) => {
-                if (r >= 0 && r < 8 && c >= 0 && c < 8) {
-                    const square = document.querySelector(`[data-row="${r}"][data-col="${c}"]`);
-                    if (square) {
-                        square.classList.add('valid-move');
+        // Basic move validation (simplified - not full chess rules)
+        function isValidMove(fromRow, fromCol, toRow, toCol) {
+            if (fromRow === toRow && fromCol === toCol) return false;
+            
+            const piece = gameState.board[fromRow][fromCol];
+            if (!piece) return false;
+            
+            const targetPiece = gameState.board[toRow][toCol];
+            const pieceType = PIECES[piece];
+            const isWhite = WHITE_PIECES.includes(piece);
+            
+            // Can't capture own pieces
+            if (targetPiece) {
+                const targetIsWhite = WHITE_PIECES.includes(targetPiece);
+                if (isWhite === targetIsWhite) return false;
+            }
+            
+            // Simplified movement rules
+            const rowDiff = Math.abs(toRow - fromRow);
+            const colDiff = Math.abs(toCol - fromCol);
+            
+            switch (pieceType) {
+                case 'pawn':
+                    // White pawns move up (decreasing row), black pawns move down
+                    const direction = isWhite ? -1 : 1;
+                    const startRow = isWhite ? 6 : 1;
+                    
+                    // Forward move
+                    if (fromCol === toCol && !targetPiece) {
+                        if (toRow === fromRow + direction) return true;
+                        if (fromRow === startRow && toRow === fromRow + 2 * direction) return true;
+                    }
+                    // Capture diagonally
+                    if (colDiff === 1 && toRow === fromRow + direction && targetPiece) {
+                        return true;
+                    }
+                    return false;
+                    
+                case 'rook':
+                    return (fromRow === toRow || fromCol === toCol) && isPathClear(fromRow, fromCol, toRow, toCol);
+                    
+                case 'knight':
+                    return (rowDiff === 2 && colDiff === 1) || (rowDiff === 1 && colDiff === 2);
+                    
+                case 'bishop':
+                    return rowDiff === colDiff && isPathClear(fromRow, fromCol, toRow, toCol);
+                    
+                case 'queen':
+                    return ((fromRow === toRow || fromCol === toCol) || rowDiff === colDiff) && 
+                           isPathClear(fromRow, fromCol, toRow, toCol);
+                    
+                case 'king':
+                    return rowDiff <= 1 && colDiff <= 1;
+                    
+                default:
+                    return false;
+            }
+        }
+
+        // Check if path is clear (for rooks, bishops, queens)
+        function isPathClear(fromRow, fromCol, toRow, toCol) {
+            const rowStep = toRow > fromRow ? 1 : (toRow < fromRow ? -1 : 0);
+            const colStep = toCol > fromCol ? 1 : (toCol < fromCol ? -1 : 0);
+            
+            let currentRow = fromRow + rowStep;
+            let currentCol = fromCol + colStep;
+            
+            while (currentRow !== toRow || currentCol !== toCol) {
+                if (gameState.board[currentRow][currentCol] !== null) {
+                    return false;
+                }
+                currentRow += rowStep;
+                currentCol += colStep;
+            }
+            
+            return true;
+        }
+
+        // Get valid moves for CPU
+        function getAllValidMoves(color) {
+            const moves = [];
+            const pieces = color === 'white' ? WHITE_PIECES : BLACK_PIECES;
+            
+            for (let fromRow = 0; fromRow < 8; fromRow++) {
+                for (let fromCol = 0; fromCol < 8; fromCol++) {
+                    const piece = gameState.board[fromRow][fromCol];
+                    if (piece && pieces.includes(piece)) {
+                        for (let toRow = 0; toRow < 8; toRow++) {
+                            for (let toCol = 0; toCol < 8; toCol++) {
+                                if (isValidMove(fromRow, fromCol, toRow, toCol)) {
+                                    moves.push({ from: [fromRow, fromCol], to: [toRow, toCol] });
+                                }
+                            }
+                        }
                     }
                 }
-            });
+            }
+            return moves;
+        }
+
+        // CPU makes a move
+        async function makeCPUMove() {
+            if (!gameState.cpuOpponent || gameState.currentPlayer !== 'black') return;
+            
+            addChatMessage('CPU', `${gameState.cpuOpponent.name} is thinking...`);
+            await gameState.cpuOpponent.makeMove();
+            
+            const validMoves = getAllValidMoves('black');
+            if (validMoves.length === 0) {
+                showToast('Checkmate! You win!', 'success');
+                endGame('white');
+                return;
+            }
+            
+            // CPU selects a random valid move (or best move based on difficulty)
+            let selectedMove;
+            if (gameState.cpuOpponent.difficulty === 'hard') {
+                // Prioritize captures
+                const captures = validMoves.filter(m => gameState.board[m.to[0]][m.to[1]] !== null);
+                selectedMove = captures.length > 0 ? 
+                    captures[Math.floor(Math.random() * captures.length)] :
+                    validMoves[Math.floor(Math.random() * validMoves.length)];
+            } else if (gameState.cpuOpponent.difficulty === 'medium') {
+                // 50% chance of optimal move
+                if (Math.random() < 0.5) {
+                    const captures = validMoves.filter(m => gameState.board[m.to[0]][m.to[1]] !== null);
+                    selectedMove = captures.length > 0 ? 
+                        captures[Math.floor(Math.random() * captures.length)] :
+                        validMoves[Math.floor(Math.random() * validMoves.length)];
+                } else {
+                    selectedMove = validMoves[Math.floor(Math.random() * validMoves.length)];
+                }
+            } else {
+                // Easy: random move
+                selectedMove = validMoves[Math.floor(Math.random() * validMoves.length)];
+            }
+            
+            const [fromRow, fromCol] = selectedMove.from;
+            const [toRow, toCol] = selectedMove.to;
+            
+            movePiece(fromRow, fromCol, toRow, toCol);
+            
+            const piece = gameState.board[toRow][toCol];
+            addChatMessage(gameState.cpuOpponent.name, `Moved ${piece} to ${String.fromCharCode(97 + toCol)}${8 - toRow}`);
+        }
+
+        // Highlight valid moves
+        function highlightValidMoves(fromRow, fromCol) {
+            for (let toRow = 0; toRow < 8; toRow++) {
+                for (let toCol = 0; toCol < 8; toCol++) {
+                    if (isValidMove(fromRow, fromCol, toRow, toCol)) {
+                        const square = document.querySelector(`[data-row="${toRow}"][data-col="${toCol}"]`);
+                        if (square) {
+                            square.classList.add('valid-move');
+                        }
+                    }
+                }
+            }
         }
 
         // Update game status
         function updateGameStatus() {
             const status = document.getElementById('game-status');
             if (gameState.gameActive) {
-                status.textContent = `${gameState.currentPlayer.toUpperCase()}'s turn`;
+                const turnText = gameState.currentPlayer.toUpperCase();
+                const modeText = gameState.demoMode ? ' (vs CPU)' : '';
+                status.textContent = `${turnText}'s turn${modeText}`;
+                
+                // Update clocks
+                if (gameState.timerInterval) {
+                    clearInterval(gameState.timerInterval);
+                }
+                gameState.timerInterval = setInterval(updateClocks, 1000);
             } else {
-                status.textContent = 'Connect wallet to play';
+                status.textContent = 'Start a game to play';
             }
+        }
+
+        // Update game clocks
+        function updateClocks() {
+            if (!gameState.gameActive) {
+                clearInterval(gameState.timerInterval);
+                return;
+            }
+            
+            if (gameState.currentPlayer === 'white') {
+                gameState.whiteTime--;
+                if (gameState.whiteTime <= 0) {
+                    endGame('black');
+                    showToast('White ran out of time! Black wins!', 'info');
+                    return;
+                }
+            } else {
+                gameState.blackTime--;
+                if (gameState.blackTime <= 0) {
+                    endGame('white');
+                    showToast('Black ran out of time! White wins!', 'info');
+                    return;
+                }
+            }
+            
+            document.getElementById('player1-time').textContent = formatTime(gameState.whiteTime);
+            document.getElementById('player2-time').textContent = formatTime(gameState.blackTime);
+        }
+
+        // Format time as MM:SS
+        function formatTime(seconds) {
+            const mins = Math.floor(seconds / 60);
+            const secs = seconds % 60;
+            return `${mins}:${secs.toString().padStart(2, '0')}`;
+        }
+
+        // End game
+        function endGame(winner) {
+            gameState.gameActive = false;
+            if (gameState.timerInterval) {
+                clearInterval(gameState.timerInterval);
+            }
+            const status = document.getElementById('game-status');
+            status.textContent = `${winner.toUpperCase()} wins!`;
+            document.getElementById('forfeit-btn').style.display = 'none';
         }
 
         // Chain selector
@@ -801,11 +1076,44 @@
             }, 3000);
         }
 
+        // CPU game buttons
+        document.getElementById('play-cpu-easy').addEventListener('click', () => startCPUGame('easy'));
+        document.getElementById('play-cpu-medium').addEventListener('click', () => startCPUGame('medium'));
+        document.getElementById('play-cpu-hard').addEventListener('click', () => startCPUGame('hard'));
+
+        function startCPUGame(difficulty) {
+            gameState.cpuOpponent = new CPUOpponent(difficulty);
+            gameState.demoMode = true;
+            gameState.gameActive = true;
+            gameState.currentPlayer = 'white';
+            gameState.whiteTime = 600;
+            gameState.blackTime = 600;
+            
+            document.getElementById('player1-name').textContent = 'You (White)';
+            document.getElementById('player2-name').textContent = `${gameState.cpuOpponent.name} (Black)`;
+            document.getElementById('forfeit-btn').style.display = 'inline-block';
+            
+            initChessBoard();
+            updateGameStatus();
+            
+            showToast(`Playing against ${gameState.cpuOpponent.name} (${difficulty.toUpperCase()})`, 'success');
+            addChatMessage('SYSTEM', `Game started! You are White, CPU is Black. Difficulty: ${difficulty.toUpperCase()}`);
+        }
+
+        // Forfeit button
+        document.getElementById('forfeit-btn').addEventListener('click', () => {
+            if (confirm('Are you sure you want to forfeit?')) {
+                endGame(gameState.currentPlayer === 'white' ? 'black' : 'white');
+                showToast('You forfeited the game.', 'info');
+                addChatMessage('SYSTEM', `${gameState.currentPlayer === 'white' ? 'White' : 'Black'} forfeited.`);
+            }
+        });
+
         // Initialize
         initChessBoard();
         updateGameStatus();
 
-        console.log('♟️ Chess Wager initialized!');
+        console.log('♟️ Chess Wager initialized with CPU support!');
     </script>
 
     <!-- Footer -->
