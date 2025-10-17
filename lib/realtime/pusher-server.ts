@@ -11,7 +11,7 @@ try {
   console.warn('⚠️ Pusher not installed - WebSocket features disabled');
 }
 
-let pusherInstance: Pusher | null = null;
+let pusherInstance: any | null = null;
 
 export function getPusher(): any | null {
   if (pusherInstance) return pusherInstance;

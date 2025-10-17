@@ -24,7 +24,7 @@ interface ChatMessage {
 }
 
 export class RealtimeChat {
-  private pusher: Pusher | null = null;
+  private pusher: any | null = null;
   private channel: any = null;
   private currentChannelSlug: string = 'basement';
 
