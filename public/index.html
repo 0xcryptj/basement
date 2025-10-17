@@ -15,13 +15,16 @@
     <link rel="manifest" href="data:application/json,{&quot;icons&quot;:[{&quot;src&quot;:&quot;assets/icon.ico&quot;,&quot;sizes&quot;:&quot;192x192&quot;,&quot;type&quot;:&quot;image/x-icon&quot;}]}">
     <link rel="stylesheet" href="style.css">
     <link rel="stylesheet" href="responsive-chat.css">
+    <link rel="stylesheet" href="layout-advanced.css">
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Press+Start+2P&display=swap" rel="stylesheet">
 </head>
 <body>
+    <!-- Skip to main content link for accessibility -->
+    <a href="#main-content" class="skip-to-main">Skip to main content</a>
     <!-- Top Navigation Bar -->
-    <nav class="navbar">
+    <nav class="navbar" role="navigation" aria-label="Main navigation">
         <div class="nav-content">
             <!-- Left Logo -->
             <div class="logo">
@@ -32,44 +35,44 @@
             </div>
             
             <!-- Center Navigation -->
-            <div class="nav-links">
-                <a href="arcade/arcade.html" class="nav-link">Arcade</a>
-                <a href="#" class="nav-link" id="tokenomics-link">Tokenomics</a>
-                <a href="/shop" class="nav-link" id="shop-link">Shop</a>
-                <a href="/forum" class="nav-link" id="forum-link">Forum</a>
+            <div class="nav-links" role="menubar">
+                <a href="arcade/arcade.html" class="nav-link" role="menuitem" aria-label="Go to Arcade">Arcade</a>
+                <a href="#" class="nav-link" id="tokenomics-link" role="menuitem" aria-label="View Tokenomics">Tokenomics</a>
+                <a href="/shop" class="nav-link" id="shop-link" role="menuitem" aria-label="Visit Shop">Shop</a>
+                <a href="/forum" class="nav-link" id="forum-link" role="menuitem" aria-label="Open Forum">Forum</a>
             </div>
             
             <!-- Right Wallet Connect -->
             <div class="wallet-section">
                 <div class="wallet-dropdown">
-                    <button id="connect-wallet" class="connect-btn">
+                    <button id="connect-wallet" class="connect-btn touch-target" aria-label="Connect your crypto wallet" aria-haspopup="menu" aria-expanded="false">
                         <span class="btn-text">Connect Wallet</span>
-                        <span class="dropdown-arrow">▼</span>
+                        <span class="dropdown-arrow" aria-hidden="true">▼</span>
                     </button>
-                    <div id="wallet-options" class="wallet-options">
-                        <button class="wallet-option" data-wallet="metamask">MetaMask</button>
-                        <button class="wallet-option" data-wallet="base">Base Wallet</button>
-                        <button class="wallet-option" data-wallet="phantom">Phantom</button>
+                    <div id="wallet-options" class="wallet-options" role="menu" aria-label="Wallet options">
+                        <button class="wallet-option touch-target" data-wallet="metamask" role="menuitem" aria-label="Connect with MetaMask">MetaMask</button>
+                        <button class="wallet-option touch-target" data-wallet="base" role="menuitem" aria-label="Connect with Base Wallet">Base Wallet</button>
+                        <button class="wallet-option touch-target" data-wallet="phantom" role="menuitem" aria-label="Connect with Phantom">Phantom</button>
                     </div>
                 </div>
-                <div id="wallet-info" class="wallet-info">
+                <div id="wallet-info" class="wallet-info" role="status" aria-label="Wallet connection status">
                     <div class="user-profile">
                 <div class="profile-pic-container" id="profile-pic-container">
-                    <img id="profile-pic" class="profile-pic" src="" alt="Profile" style="display: none;">
-                    <div id="profile-pic-placeholder" class="profile-pic-placeholder">●</div>
+                    <img id="profile-pic" class="profile-pic" src="" alt="User profile picture" style="display: none;">
+                    <div id="profile-pic-placeholder" class="profile-pic-placeholder" aria-hidden="true">●</div>
                 </div>
                         <div class="user-details">
-                            <span id="wallet-address" class="wallet-address"></span>
+                            <span id="wallet-address" class="wallet-address" aria-label="Connected wallet address"></span>
                         </div>
                     </div>
-                    <button id="disconnect-wallet" class="disconnect-btn">Disconnect Wallet</button>
+                    <button id="disconnect-wallet" class="disconnect-btn touch-target" aria-label="Disconnect your wallet">Disconnect Wallet</button>
                 </div>
                 
                 <!-- Mobile Hamburger Menu -->
-                <button id="mobile-menu-toggle" class="mobile-menu-toggle">
-                    <span class="hamburger-line"></span>
-                    <span class="hamburger-line"></span>
-                    <span class="hamburger-line"></span>
+                <button id="mobile-menu-toggle" class="mobile-menu-toggle touch-target" aria-label="Open mobile menu" aria-haspopup="menu" aria-expanded="false">
+                    <span class="hamburger-line" aria-hidden="true"></span>
+                    <span class="hamburger-line" aria-hidden="true"></span>
+                    <span class="hamburger-line" aria-hidden="true"></span>
                 </button>
             </div>
             
@@ -121,17 +124,17 @@
     <!-- Main Layout -->
     <div class="main-layout">
         <!-- Collapsible IRC Chat Sidebar -->
-        <aside id="chat-sidebar" class="chat-sidebar">
+        <aside id="chat-sidebar" class="chat-sidebar" role="complementary" aria-label="Chat sidebar">
             <div class="sidebar-header">
                 <div class="channel-info">
                     <h3 class="sidebar-title" id="current-channel">#basement</h3>
-                    <div class="channel-stats" id="channel-stats">
-                        <span class="user-count">0 users</span>
+                    <div class="channel-stats" id="channel-stats" role="status" aria-live="polite">
+                        <span class="user-count" aria-label="Number of users online">0 users</span>
                     </div>
                 </div>
                 <div class="sidebar-controls">
-                    <button id="create-channel" class="create-channel-btn" title="Create New Channel">+</button>
-                    <button id="toggle-sidebar" class="toggle-btn"><<</button>
+                    <button id="create-channel" class="create-channel-btn touch-target" title="Create New Channel" aria-label="Create a new channel">+</button>
+                    <button id="toggle-sidebar" class="toggle-btn touch-target" aria-label="Toggle sidebar visibility" aria-expanded="true"><<</button>
                 </div>
             </div>
             <div class="channel-list" id="channel-list">
@@ -141,7 +144,7 @@
                 </div>
             </div>
             <div class="chat-area">
-                <div class="chat-messages" id="chat-messages">
+                <div class="chat-messages" id="chat-messages" role="log" aria-live="polite" aria-label="Chat messages">
                     <div class="system-message">
                         <span class="timestamp">[00:00]</span>
                         <span class="system-text">*** Welcome to The Basement IRC</span>
@@ -161,7 +164,7 @@
         </aside>
 
         <!-- Main Content Area -->
-        <main class="main-content">
+        <main class="main-content" id="main-content" role="main">
             <div class="content-wrapper">
                 <!-- Welcome Section -->
                 <div class="welcome-section" id="welcome-section">
