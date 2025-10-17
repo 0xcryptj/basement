@@ -6,7 +6,7 @@ import { ConnectWallet } from '@coinbase/onchainkit/wallet';
 import { useAccount } from 'wagmi';
 
 // Mock products - In production, these would come from Coinbase Commerce
-export const SHOP_PRODUCTS = [
+const SHOP_PRODUCTS = [
   {
     id: process.env.NEXT_PUBLIC_PRODUCT_ARCADE_PASS || 'demo-arcade-pass',
     name: '🎮 Arcade Pass',
