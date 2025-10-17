@@ -1,0 +1,318 @@
+import { NextRequest, NextResponse } from 'next/server';
+import { createClient } from '@supabase/supabase-js';
+import { randomBytes } from 'crypto';
+import { broadcastMessage } from '@/lib/realtime/pusher-server';
+
+function generateId(): string {
+  const timestamp = Date.now().toString(36);
+  const randomPart = randomBytes(12).toString('base64url').substring(0, 16);
+  return `${timestamp}${randomPart}`;
+}
+
+const supabase = createClient(
+  process.env.NEXT_PUBLIC_SUPABASE_URL!,
+  process.env.SUPABASE_SERVICE_ROLE_KEY!,
+  {
+    db: {
+      schema: 'public',
+    },
+    global: {
+      headers: {
+        'x-application-name': 'basement-arcade',
+      },
+    },
+  }
+);
+
+// Cache for channel lookups (5 minute TTL)
+const channelCache = new Map<string, { channel: any, expires: number }>();
+const CACHE_TTL = 5 * 60 * 1000; // 5 minutes
+
+function getCachedChannel(slug: string) {
+  const cached = channelCache.get(slug);
+  if (cached && cached.expires > Date.now()) {
+    return cached.channel;
+  }
+  return null;
+}
+
+function setCachedChannel(slug: string, channel: any) {
+  channelCache.set(slug, {
+    channel,
+    expires: Date.now() + CACHE_TTL
+  });
+}
+
+export async function GET(request: NextRequest) {
+  try {
+    const { searchParams } = new URL(request.url);
+    const channelSlug = searchParams.get('channel') || 'basement';
+    const limit = Math.min(parseInt(searchParams.get('limit') || '50'), 100); // Max 100
+    const before = searchParams.get('before'); // For pagination
+
+    // Try cache first
+    let channel = getCachedChannel(channelSlug);
+    
+    if (!channel) {
+      const { data, error } = await supabase
+        .from('Channel')
+        .select('id, name, slug')
+        .eq('slug', channelSlug)
+        .single();
+
+      if (error || !data) {
+        return NextResponse.json({
+          success: true,
+          messages: [],
+          channel: {
+            id: null,
+            name: `#${channelSlug}`,
+            slug: channelSlug
+          }
+        });
+      }
+      
+      channel = data;
+      setCachedChannel(channelSlug, channel);
+    }
+
+    // Optimized query with proper indexes
+    let query = supabase
+      .from('Message')
+      .select(`
+        id,
+        content,
+        imageUrl,
+        createdAt,
+        user:User!Message_userId_fkey (
+          username,
+          walletAddress,
+          avatarUrl
+        )
+      `, { count: 'exact' })
+      .eq('channelId', channel.id)
+      .eq('isDeleted', false)
+      .order('createdAt', { ascending: false }) // DESC for latest first
+      .limit(limit);
+
+    // Pagination support
+    if (before) {
+      query = query.lt('createdAt', before);
+    }
+
+    const { data: messages, error: messagesError, count } = await query;
+
+    if (messagesError) {
+      console.error('Message query error:', messagesError);
+      return NextResponse.json({
+        success: true,
+        messages: [],
+        channel: {
+          id: channel.id,
+          name: channel.name,
+          slug: channel.slug
+        }
+      });
+    }
+
+    // Reverse for chronological order
+    const chronologicalMessages = (messages || []).reverse();
+
+    // Add cache headers
+    return NextResponse.json(
+      {
+        success: true,
+        messages: chronologicalMessages,
+        channel: {
+          id: channel.id,
+          name: channel.name,
+          slug: channel.slug
+        },
+        pagination: {
+          total: count,
+          hasMore: (count || 0) > limit
+        }
+      },
+      {
+        headers: {
+          'Cache-Control': 'private, no-cache, no-store, must-revalidate',
+          'CDN-Cache-Control': 'no-store',
+        }
+      }
+    );
+
+  } catch (error) {
+    return NextResponse.json(
+      { error: 'Failed to fetch messages', details: error instanceof Error ? error.message : 'Unknown error' },
+      { status: 500 }
+    );
+  }
+}
+
+export async function POST(request: NextRequest) {
+  try {
+    const body = await request.json();
+    const { walletAddress, content, channelSlug = 'basement', imageUrl } = body;
+
+    // Validation
+    if (!content) {
+      return NextResponse.json(
+        { error: 'Content is required' },
+        { status: 400 }
+      );
+    }
+
+    if (content.length > 2000) {
+      return NextResponse.json(
+        { error: 'Message too long (max 2000 characters)' },
+        { status: 400 }
+      );
+    }
+
+    const isAnonymous = !walletAddress || walletAddress === 'anonymous' || !walletAddress.startsWith('0x');
+    const effectiveWallet = isAnonymous ? 'anonymous' : walletAddress;
+    const username = isAnonymous ? 'Anon' : `User_${walletAddress.slice(0, 6)}`;
+
+    // User lookup/create (optimized with upsert)
+    let { data: user } = await supabase
+      .from('User')
+      .select('id, username, walletAddress')
+      .eq('walletAddress', effectiveWallet)
+      .single();
+
+    if (!user) {
+      const newUserId = generateId();
+      const { data: newUser, error: userCreateError } = await supabase
+        .from('User')
+        .insert({
+          id: newUserId,
+          walletAddress: effectiveWallet,
+          username: username,
+          lastSeenAt: new Date().toISOString()
+        })
+        .select()
+        .single();
+
+      if (userCreateError || !newUser) {
+        return NextResponse.json(
+          { error: 'Failed to create user', details: userCreateError?.message || 'Unknown error' },
+          { status: 500 }
+        );
+      }
+      user = newUser;
+    } else {
+      // Update last seen (async, don't wait)
+      supabase
+        .from('User')
+        .update({ lastSeenAt: new Date().toISOString() })
+        .eq('id', user.id)
+        .then(() => {})
+        .catch(() => {});
+    }
+
+    // Channel lookup with cache
+    let channel = getCachedChannel(channelSlug);
+    
+    if (!channel) {
+      let { data, error } = await supabase
+        .from('Channel')
+        .select('id, name, slug')
+        .eq('slug', channelSlug)
+        .single();
+
+      if (!data) {
+        const newChannelId = generateId();
+        const { data: newChannel, error: channelCreateError } = await supabase
+          .from('Channel')
+          .insert({
+            id: newChannelId,
+            name: `#${channelSlug}`,
+            slug: channelSlug,
+            description: `${channelSlug} channel`,
+            createdBy: effectiveWallet
+          })
+          .select()
+          .single();
+
+        if (channelCreateError || !newChannel) {
+          return NextResponse.json(
+            { error: 'Failed to create channel', details: channelCreateError?.message || 'Unknown error' },
+            { status: 500 }
+          );
+        }
+        channel = newChannel;
+      } else {
+        channel = data;
+      }
+      
+      setCachedChannel(channelSlug, channel);
+    }
+
+    // Create message
+    const newMessageId = generateId();
+    const { data: message, error: messageError } = await supabase
+      .from('Message')
+      .insert({
+        id: newMessageId,
+        channelId: channel.id,
+        userId: user.id,
+        content,
+        imageUrl
+      })
+      .select(`
+        id,
+        content,
+        imageUrl,
+        createdAt
+      `)
+      .single();
+
+    if (messageError || !message) {
+      return NextResponse.json(
+        { error: 'Failed to send message', details: messageError?.message || 'Unknown error' },
+        { status: 500 }
+      );
+    }
+
+    const responseData = {
+      success: true,
+      message: {
+        id: message.id,
+        content: message.content,
+        imageUrl: message.imageUrl,
+        createdAt: message.createdAt,
+        user: {
+          username: user.username,
+          walletAddress: user.walletAddress
+        }
+      }
+    };
+
+    // Broadcast to WebSocket (non-blocking)
+    broadcastMessage(channelSlug, responseData.message).catch(err => 
+      console.error('Broadcast failed:', err)
+    );
+
+    return NextResponse.json(responseData, {
+      headers: {
+        'Cache-Control': 'no-store',
+      }
+    });
+
+  } catch (error) {
+    return NextResponse.json(
+      {
+        error: 'Failed to send message',
+        details: error instanceof Error ? error.message : 'Unknown error',
+        stack: error instanceof Error ? error.stack : undefined
+      },
+      { status: 500 }
+    );
+  }
+}
+
+// Configure route for Edge Runtime
+export const runtime = 'nodejs'; // Use Node.js for Pusher
+export const dynamic = 'force-dynamic';
+export const revalidate = 0;
+

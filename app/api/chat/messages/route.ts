@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { createClient } from '@supabase/supabase-js';
 import { randomBytes } from 'crypto';
+import { broadcastMessage } from '@/lib/realtime/pusher-server';
 
 // Helper function to generate cuid-like IDs
 function generateId(): string {
@@ -235,21 +236,28 @@ export async function POST(request: NextRequest) {
 
     console.log('✅ Message created:', message.id);
 
-    return NextResponse.json({
-      success: true,
-      message: {
-        id: message.id,
-        content: message.content,
-        imageUrl: message.imageUrl,
-        createdAt: message.createdAt,
-        user: {
-          username: user!.username,
-          walletAddress: user!.walletAddress
-        }
-      }
-    });
+           const responseData = {
+             success: true,
+             message: {
+               id: message.id,
+               content: message.content,
+               imageUrl: message.imageUrl,
+               createdAt: message.createdAt,
+               user: {
+                 username: user!.username,
+                 walletAddress: user!.walletAddress
+               }
+             }
+           };
 
-  } catch (error) {
+           // Broadcast to WebSocket (non-blocking)
+           broadcastMessage(channelSlug, responseData.message).catch(err => 
+             console.error('Broadcast failed:', err)
+           );
+
+           return NextResponse.json(responseData);
+
+         } catch (error) {
     console.error('❌ Error sending message:', error);
     return NextResponse.json(
       { 
