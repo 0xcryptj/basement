@@ -2,9 +2,15 @@
  * REAL-TIME CHAT WITH PUSHER (WebSockets)
  * Replaces inefficient polling with real-time updates
  * 99% reduction in API calls
+ * Gracefully degrades if Pusher not installed
  */
 
-import Pusher from 'pusher-js';
+let Pusher: any;
+try {
+  Pusher = require('pusher-js');
+} catch (e) {
+  console.warn('⚠️ Pusher-js not installed - using polling fallback');
+}
 
 interface ChatMessage {
   id: string;
@@ -27,6 +33,12 @@ export class RealtimeChat {
   }
 
   init() {
+    // Check if Pusher is available
+    if (!Pusher) {
+      console.warn('⚠️ Pusher not installed - falling back to polling');
+      return;
+    }
+
     // Initialize Pusher only if key is available
     if (!process.env.NEXT_PUBLIC_PUSHER_KEY) {
       console.warn('⚠️ Pusher key not configured - falling back to polling');

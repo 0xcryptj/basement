@@ -150,9 +150,6 @@ const nextConfig = {
 
   // Strict mode for better optimization
   reactStrictMode: true,
-
-  // SWC minification (faster than Terser)
-  swcMinify: true,
 };
 
 module.exports = nextConfig;

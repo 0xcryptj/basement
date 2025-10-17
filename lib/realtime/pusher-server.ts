@@ -1,14 +1,25 @@
 /**
  * SERVER-SIDE PUSHER (for triggering events)
  * Sends real-time updates to connected clients
+ * Gracefully degrades if Pusher not installed
  */
 
-import Pusher from 'pusher';
+let Pusher: any;
+try {
+  Pusher = require('pusher');
+} catch (e) {
+  console.warn('⚠️ Pusher not installed - WebSocket features disabled');
+}
 
 let pusherInstance: Pusher | null = null;
 
-export function getPusher(): Pusher | null {
+export function getPusher(): any | null {
   if (pusherInstance) return pusherInstance;
+
+  // Check if Pusher is available
+  if (!Pusher) {
+    return null;
+  }
 
   // Only initialize if all credentials are present
   if (!process.env.PUSHER_APP_ID || 
