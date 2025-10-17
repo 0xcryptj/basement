@@ -4,52 +4,9 @@
  */
 
 /* ============================================
-   HAMBURGER MENU
+   HAMBURGER MENU - Disabled (using existing one from style.css)
    ============================================ */
-.hamburger-menu {
-    display: none;
-    position: fixed;
-    top: 15px;
-    right: 20px;
-    z-index: 10000;
-    background: rgba(0, 82, 255, 0.9);
-    border: 2px solid #0052ff;
-    border-radius: 8px;
-    padding: 10px;
-    cursor: pointer;
-    transition: all 0.3s;
-}
-
-.hamburger-menu:hover {
-    background: #0052ff;
-    transform: scale(1.1);
-}
-
-.hamburger-icon {
-    display: flex;
-    flex-direction: column;
-    gap: 4px;
-}
-
-.hamburger-icon span {
-    width: 25px;
-    height: 3px;
-    background: white;
-    border-radius: 2px;
-    transition: all 0.3s;
-}
-
-.hamburger-menu.active .hamburger-icon span:nth-child(1) {
-    transform: rotate(45deg) translateY(8px);
-}
-
-.hamburger-menu.active .hamburger-icon span:nth-child(2) {
-    opacity: 0;
-}
-
-.hamburger-menu.active .hamburger-icon span:nth-child(3) {
-    transform: rotate(-45deg) translateY(-8px);
-}
+/* Hamburger menu already exists in style.css as .mobile-menu-toggle */
 
 /* ============================================
    COLLAPSIBLE CHAT PANEL

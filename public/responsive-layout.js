@@ -13,9 +13,11 @@ class ResponsiveLayoutManager {
     }
 
     init() {
-        // Create hamburger menu if mobile
-        if (this.isMobile) {
-            this.createHamburgerMenu();
+        // Use existing hamburger menu from style.css
+        const existingHamburger = document.getElementById('mobile-menu-toggle');
+        if (existingHamburger) {
+            existingHamburger.addEventListener('click', () => this.toggleMobileMenu());
+            this.hamburgerMenu = existingHamburger;
         }
 
         // Add chat toggle functionality
@@ -31,23 +33,6 @@ class ResponsiveLayoutManager {
         this.adjustLayout();
 
         console.log('✅ Responsive layout initialized');
-    }
-
-    createHamburgerMenu() {
-        const menu = document.createElement('div');
-        menu.className = 'hamburger-menu';
-        menu.innerHTML = `
-            <div class="hamburger-icon">
-                <span></span>
-                <span></span>
-                <span></span>
-            </div>
-        `;
-
-        menu.addEventListener('click', () => this.toggleMobileMenu());
-        document.body.appendChild(menu);
-
-        this.hamburgerMenu = menu;
     }
 
     setupChatToggle() {

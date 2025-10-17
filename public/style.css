@@ -90,13 +90,14 @@ body::before {
 
 .nav-content {
     width: 100%;
-    margin: 0;
-    padding: 0 12px;
+    max-width: 1400px;
+    margin: 0 auto;
+    padding: 0 20px;
     display: flex;
-    justify-content: flex-start;
+    justify-content: space-between;
     align-items: center;
     height: 100%;
-    gap: 20px;
+    gap: 30px;
 }
 
 /* Logo */
@@ -852,30 +853,35 @@ body::before {
 
 .wallet-options {
     position: absolute;
-    top: 100%;
+    top: calc(100% + 10px);
     right: 0;
-    background: rgba(0, 0, 0, 0.9);
-    border: 1px solid #0052ff99;
-    border-top: none;
-    backdrop-filter: blur(15px);
-    box-shadow: 0 4px 20px rgba(0, 82, 255, 0.3);
-    z-index: 1000;
-    min-width: 150px;
-    border-radius: 0 0 4px 4px;
+    background: rgba(0, 0, 0, 0.98);
+    border: 2px solid #0052ff;
+    backdrop-filter: blur(20px);
+    box-shadow: 0 8px 32px rgba(0, 82, 255, 0.5);
+    z-index: 10000;
+    min-width: 200px;
+    border-radius: 10px;
     display: none;
+    opacity: 0;
+    transform: translateY(-10px);
+    transition: all 0.3s ease;
 }
 
 .wallet-dropdown.active .wallet-options {
     display: block;
+    opacity: 1;
+    transform: translateY(0);
 }
 
 .wallet-option {
     display: block;
     width: 100%;
-    background: transparent;
+    background: rgba(0, 82, 255, 0.05);
     color: #ffffff;
     border: none;
-    padding: 12px 16px;
+    border-bottom: 1px solid rgba(0, 82, 255, 0.2);
+    padding: 15px 20px;
     font-family: 'Press Start 2P', monospace;
     font-size: 0.5rem;
     cursor: pointer;
