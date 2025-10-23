@@ -1412,7 +1412,7 @@ class BasementApp {
         }, 3000); // Poll every 3 seconds
     }
 
-    displayMessage(username, content, timestamp = new Date()) {
+    displayMessage(username, content, timestamp = new Date(), messageId = null) {
         const chatMessages = document.getElementById('chat-messages');
         const time = timestamp.toLocaleTimeString('en-US', { 
             hour12: false, 
@@ -1428,6 +1428,9 @@ class BasementApp {
         
         const messageDiv = document.createElement('div');
         messageDiv.className = 'user-message';
+        if (messageId) {
+            messageDiv.setAttribute('data-message-id', messageId);
+        }
         
         const timestampSpan = document.createElement('span');
         timestampSpan.className = 'timestamp';
@@ -1441,11 +1444,44 @@ class BasementApp {
         textSpan.className = 'message-text';
         textSpan.textContent = sanitizedMessage;
         
-        messageDiv.appendChild(timestampSpan);
-        messageDiv.appendChild(document.createTextNode(' '));
-        messageDiv.appendChild(usernameSpan);
-        messageDiv.appendChild(document.createTextNode(' '));
-        messageDiv.appendChild(textSpan);
+        // Add voting buttons for non-system messages
+        if (username !== 'SYSTEM' && messageId) {
+            const voteContainer = document.createElement('div');
+            voteContainer.className = 'vote-container';
+            
+            const upvoteBtn = document.createElement('button');
+            upvoteBtn.className = 'vote-btn upvote-btn';
+            upvoteBtn.innerHTML = '▲';
+            upvoteBtn.title = 'Upvote';
+            upvoteBtn.onclick = () => this.voteMessage(messageId, 'upvote');
+            
+            const downvoteBtn = document.createElement('button');
+            downvoteBtn.className = 'vote-btn downvote-btn';
+            downvoteBtn.innerHTML = '▼';
+            downvoteBtn.title = 'Downvote';
+            downvoteBtn.onclick = () => this.voteMessage(messageId, 'downvote');
+            
+            const voteCount = document.createElement('span');
+            voteCount.className = 'vote-count';
+            voteCount.textContent = '0';
+            
+            voteContainer.appendChild(upvoteBtn);
+            voteContainer.appendChild(voteCount);
+            voteContainer.appendChild(downvoteBtn);
+            
+            messageDiv.appendChild(timestampSpan);
+            messageDiv.appendChild(document.createTextNode(' '));
+            messageDiv.appendChild(usernameSpan);
+            messageDiv.appendChild(document.createTextNode(' '));
+            messageDiv.appendChild(textSpan);
+            messageDiv.appendChild(voteContainer);
+        } else {
+            messageDiv.appendChild(timestampSpan);
+            messageDiv.appendChild(document.createTextNode(' '));
+            messageDiv.appendChild(usernameSpan);
+            messageDiv.appendChild(document.createTextNode(' '));
+            messageDiv.appendChild(textSpan);
+        }
         
         chatMessages.appendChild(messageDiv);
         chatMessages.scrollTop = chatMessages.scrollHeight;
@@ -1456,15 +1492,82 @@ class BasementApp {
         this.displayMessage(username, message);
     }
 
+    async voteMessage(messageId, voteType) {
+        if (!this.isConnected) {
+            alert('⚠️ Anonymous users cannot vote.\n\nConnect your wallet to vote on messages!');
+            return;
+        }
+
+        try {
+            const response = await fetch('/api/messages/vote', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify({
+                    messageId: messageId,
+                    voteType: voteType,
+                    channelId: this.currentChannelId
+                })
+            });
+
+            if (response.ok) {
+                const result = await response.json();
+                // Update the vote count display
+                const messageElement = document.querySelector(`[data-message-id="${messageId}"]`);
+                if (messageElement) {
+                    const voteCountElement = messageElement.querySelector('.vote-count');
+                    if (voteCountElement) {
+                        voteCountElement.textContent = result.totalVotes || '0';
+                    }
+                }
+            } else {
+                const error = await response.json();
+                alert(`Vote failed: ${error.message}`);
+            }
+        } catch (error) {
+            console.error('Error voting on message:', error);
+            alert('Failed to vote on message. Please try again.');
+        }
+    }
+
     async createChannel(channelName) {
         if (!this.isConnected) {
             alert('⚠️ Anonymous users cannot create channels.\n\nConnect your wallet to create channels!');
             return;
         }
         
-        const slug = channelName.replace('#', '').toLowerCase();
+        // Check token balance and burn requirement
+        const tokenRequirement = 5; // 5 tokens must be burned
+        const tokenContractAddress = '0xcf4abb42B4b47Eb242EAbab5C9A9913bCad9Ca23'; // Base ETH contract
         
         try {
+            // Check if user has enough tokens
+            const tokenBalance = await this.checkTokenBalance(tokenContractAddress);
+            
+            if (tokenBalance < tokenRequirement) {
+                alert(`⚠️ Insufficient tokens!\n\nYou need ${tokenRequirement} $BASEMENT tokens to create a channel.\n\nCurrent balance: ${tokenBalance} tokens\n\nGet tokens at: https://pump.fun/coin/D4MXRKhzSMapDZ5bLEA1bmjrUPLZhHZRhSkS6wrBpump`);
+                return;
+            }
+            
+            // Confirm token burn
+            const confirmBurn = confirm(`🔥 Channel Creation Fee\n\nCreating a channel requires burning ${tokenRequirement} $BASEMENT tokens.\n\nThis action cannot be undone!\n\nDo you want to proceed?`);
+            
+            if (!confirmBurn) {
+                return;
+            }
+            
+            // Burn tokens
+            const burnSuccess = await this.burnTokens(tokenContractAddress, tokenRequirement);
+            
+            if (!burnSuccess) {
+                alert('❌ Failed to burn tokens. Channel creation cancelled.');
+                return;
+            }
+            
+            // Proceed with channel creation
+            const slug = channelName.replace('#', '').toLowerCase();
+            
             const response = await fetch('/api/chat/channels', {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
@@ -1472,7 +1575,8 @@ class BasementApp {
                     name: channelName,
                     slug,
                     description: `${channelName} channel`,
-                    walletAddress: this.walletAddress
+                    walletAddress: this.walletAddress,
+                    tokensBurned: tokenRequirement
                 })
             });
             
@@ -1486,6 +1590,9 @@ class BasementApp {
                     this.updateChannelList();
                 }
                 this.switchChannel(channelName);
+                
+                // Show success message
+                this.addSystemMessage(`🔥 Channel created! ${tokenRequirement} $BASEMENT tokens burned.`);
                 console.log('Channel created:', channelName);
             } else {
                 if (response.status === 409) {
@@ -1503,6 +1610,87 @@ class BasementApp {
         } catch (error) {
             console.error('Error creating channel:', error);
             alert('Failed to create channel');
+        }
+    }
+
+    // Token balance checking function
+    async checkTokenBalance(tokenContractAddress) {
+        try {
+            if (!window.ethereum) {
+                throw new Error('No wallet connected');
+            }
+            
+            // Get the contract ABI for ERC20 token
+            const tokenABI = [
+                {
+                    "constant": true,
+                    "inputs": [{"name": "_owner", "type": "address"}],
+                    "name": "balanceOf",
+                    "outputs": [{"name": "balance", "type": "uint256"}],
+                    "type": "function"
+                },
+                {
+                    "constant": true,
+                    "inputs": [],
+                    "name": "decimals",
+                    "outputs": [{"name": "", "type": "uint8"}],
+                    "type": "function"
+                }
+            ];
+            
+            const contract = new window.ethereum.Contract(tokenABI, tokenContractAddress);
+            const balance = await contract.balanceOf(this.walletAddress);
+            const decimals = await contract.decimals();
+            
+            // Convert from wei to token units
+            return parseFloat(balance.toString()) / Math.pow(10, decimals);
+            
+        } catch (error) {
+            console.error('Error checking token balance:', error);
+            return 0;
+        }
+    }
+    
+    // Token burning function
+    async burnTokens(tokenContractAddress, amount) {
+        try {
+            if (!window.ethereum) {
+                throw new Error('No wallet connected');
+            }
+            
+            // Get the contract ABI for ERC20 token with burn function
+            const tokenABI = [
+                {
+                    "constant": false,
+                    "inputs": [{"name": "_value", "type": "uint256"}],
+                    "name": "burn",
+                    "outputs": [],
+                    "type": "function"
+                },
+                {
+                    "constant": true,
+                    "inputs": [],
+                    "name": "decimals",
+                    "outputs": [{"name": "", "type": "uint8"}],
+                    "type": "function"
+                }
+            ];
+            
+            const contract = new window.ethereum.Contract(tokenABI, tokenContractAddress);
+            const decimals = await contract.decimals();
+            
+            // Convert amount to wei
+            const amountInWei = (amount * Math.pow(10, decimals)).toString();
+            
+            // Execute burn transaction
+            const tx = await contract.burn(amountInWei);
+            await tx.wait();
+            
+            return true;
+            
+        } catch (error) {
+            console.error('Error burning tokens:', error);
+            return false;
         }
     }
 
@@ -1977,6 +2165,22 @@ class BasementApp {
         // Update current channel
         this.currentChannel = channelName;
         
+        // Update UI
+        const channelItems = document.querySelectorAll('.channel-item');
+        channelItems.forEach(item => {
+            if (item.dataset.channel === channelName) {
+                item.classList.add('active');
+            } else {
+                item.classList.remove('active');
+            }
+        });
+
+        // Update channel title
+        const currentChannelTitle = document.getElementById('current-channel');
+        if (currentChannelTitle) {
+            currentChannelTitle.textContent = channelName;
+        }
+        
         // Clear messages display
         const chatMessages = document.getElementById('chat-messages');
         if (chatMessages) {
@@ -2233,30 +2437,6 @@ class BasementApp {
         });
 
         channelList.appendChild(channelItem);
-    }
-
-    switchChannel(channelName) {
-        // Update active channel
-        this.currentChannel = channelName;
-
-        // Update UI
-        const channelItems = document.querySelectorAll('.channel-item');
-        channelItems.forEach(item => {
-            if (item.dataset.channel === channelName) {
-                item.classList.add('active');
-            } else {
-                item.classList.remove('active');
-            }
-        });
-
-        // Update channel title
-        const currentChannelTitle = document.getElementById('current-channel');
-        if (currentChannelTitle) {
-            currentChannelTitle.textContent = channelName;
-        }
-
-        // Load channel messages
-        this.loadChannelMessages(channelName);
     }
 
     loadChannelMessages(channelName) {

@@ -2125,6 +2125,20 @@ body::before {
         z-index: 1000;
     }
     
+    /* Mobile chat input - larger for touch */
+    .chat-input input {
+        height: 40px;
+        padding: 8px 12px;
+        font-size: 0.6rem;
+    }
+    
+    .chat-input button {
+        height: 40px;
+        padding: 8px 12px;
+        font-size: 0.5rem;
+        max-width: 70px;
+    }
+    
     .nav-content {
         padding: 0 clamp(0.5rem, 2vw, 0.75rem);
         gap: clamp(0.25rem, 1vw, 0.5rem);
@@ -2999,6 +3013,69 @@ body::before {
 .dev-notice-close:active {
     transform: translateY(0);
 }
+/* Voting System */
+.vote-container {
+    display: flex;
+    align-items: center;
+    gap: 5px;
+    margin-left: 10px;
+    opacity: 0;
+    transition: opacity 0.3s ease;
+}
+
+.user-message:hover .vote-container {
+    opacity: 1;
+}
+
+.vote-btn {
+    background: rgba(0, 82, 255, 0.2);
+    border: 1px solid rgba(0, 82, 255, 0.5);
+    color: #ffffff;
+    width: 20px;
+    height: 20px;
+    border-radius: 3px;
+    cursor: pointer;
+    font-size: 0.6rem;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: all 0.3s ease;
+}
+
+.vote-btn:hover {
+    background: rgba(0, 82, 255, 0.4);
+    border-color: #0052ff;
+    transform: scale(1.1);
+}
+
+.upvote-btn:hover {
+    color: #00ff00;
+}
+
+.downvote-btn:hover {
+    color: #ff0000;
+}
+
+.vote-count {
+    font-size: 0.5rem;
+    color: #888;
+    min-width: 15px;
+    text-align: center;
+}
+
+/* Mobile voting */
+@media (max-width: 768px) {
+    .vote-container {
+        opacity: 1; /* Always show on mobile */
+    }
+    
+    .vote-btn {
+        width: 24px;
+        height: 24px;
+        font-size: 0.7rem;
+    }
+}
+
 /* Mobile Performance Optimizations */
 @media (max-width: 768px) {
     /* Fix body scrolling */

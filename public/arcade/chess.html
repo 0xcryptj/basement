@@ -7,7 +7,7 @@
     <meta http-equiv="Pragma" content="no-cache">
     <meta http-equiv="Expires" content="0">
     <meta http-equiv="Content-Security-Policy" content="default-src 'self' 'unsafe-inline' 'unsafe-eval'; script-src 'self' 'unsafe-inline' 'unsafe-eval' https://cdn.jsdelivr.net https://unpkg.com https://cdnjs.cloudflare.com; connect-src 'self' https://*.base.org https://mainnet.base.org https://api.mainnet-beta.solana.com wss://*; img-src 'self' data: https:; font-src 'self' https://fonts.gstatic.com; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com;">
-    <title>Chess Wager - The Basement Arcade</title>
+    <title>Chess - The Basement Arcade</title>
     <link rel="icon" href="../assets/icon.ico" type="image/x-icon">
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -510,7 +510,7 @@
     <!-- Navbar -->
     <nav class="navbar">
         <a href="/" class="navbar-brand">
-            ♟️ CHESS WAGER
+            ♟️ CHESS
         </a>
         <div class="navbar-links">
             <a href="/" class="navbar-link">← Home</a>
@@ -523,7 +523,7 @@
     <div class="container">
         <!-- Game Info Panel -->
         <div class="game-info">
-            <h1 class="game-title">♟️ CHESS WAGER</h1>
+            <h1 class="game-title">♟️ CHESS</h1>
             
             <!-- Wager Setup -->
             <div class="wager-setup">
@@ -594,7 +594,7 @@
             <div class="chat-messages" id="chat-messages">
                 <div class="chat-message">
                     <div class="chat-user">SYSTEM</div>
-                    <div class="chat-text">Welcome to Chess Wager! Connect your wallet to start playing.</div>
+                    <div class="chat-text">Welcome to Chess! Connect your wallet to start playing.</div>
                 </div>
             </div>
             <div class="chat-input-container">
@@ -760,10 +760,21 @@
             const pieceSpan = fromSquare.querySelector('span');
             
             if (pieceSpan) {
+                const movingPiece = gameState.board[fromRow][fromCol];
+                const capturedPiece = gameState.board[toRow][toCol];
+                
+                // Check if king is being captured
+                if (capturedPiece && (capturedPiece === '♔' || capturedPiece === '♚')) {
+                    // King captured - game ends immediately
+                    const winner = gameState.currentPlayer;
+                    addChatMessage('SYSTEM', `${gameState.currentPlayer} captured the king! ${winner.toUpperCase()} wins!`);
+                    endGame(winner);
+                    return;
+                }
+                
                 // Capture opponent piece if present
-                const capturedPiece = toSquare.querySelector('span');
                 if (capturedPiece) {
-                    addChatMessage('SYSTEM', `${gameState.currentPlayer} captured ${capturedPiece.textContent}!`);
+                    addChatMessage('SYSTEM', `${gameState.currentPlayer} captured ${capturedPiece}!`);
                 }
                 
                 // Clear destination and move piece
@@ -775,14 +786,87 @@
                 gameState.board[toRow][toCol] = gameState.board[fromRow][fromCol];
                 gameState.board[fromRow][fromCol] = null;
                 
+                // Check for check/checkmate after move
+                const nextPlayer = gameState.currentPlayer === 'white' ? 'black' : 'white';
+                if (isInCheck(nextPlayer)) {
+                    if (isCheckmate(nextPlayer)) {
+                        addChatMessage('SYSTEM', `Checkmate! ${gameState.currentPlayer.toUpperCase()} wins!`);
+                        endGame(gameState.currentPlayer);
+                        return;
+                    } else {
+                        addChatMessage('SYSTEM', `${nextPlayer.toUpperCase()} is in check!`);
+                    }
+                }
+                
                 // Switch turns
-                gameState.currentPlayer = gameState.currentPlayer === 'white' ? 'black' : 'white';
+                gameState.currentPlayer = nextPlayer;
                 updateGameStatus();
             }
         }
 
-        // Basic move validation (simplified - not full chess rules)
+        // Enhanced move validation with proper chess rules
         function isValidMove(fromRow, fromCol, toRow, toCol) {
+            if (fromRow === toRow && fromCol === toCol) return false;
+            
+            const piece = gameState.board[fromRow][fromCol];
+            if (!piece) return false;
+            
+            const isWhite = WHITE_PIECES.includes(piece);
+            
+            // Check if it's the correct player's turn
+            if ((gameState.currentPlayer === 'white' && !isWhite) ||
+                (gameState.currentPlayer === 'black' && isWhite)) {
+                return false;
+            }
+            
+            // Use basic move validation first
+            if (!isValidBasicMove(fromRow, fromCol, toRow, toCol)) {
+                return false;
+            }
+            
+            // Check if this move would put the player's own king in check
+            const playerColor = isWhite ? 'white' : 'black';
+            const originalPiece = gameState.board[toRow][toCol];
+            const movingPiece = gameState.board[fromRow][fromCol];
+            
+            // Simulate the move
+            gameState.board[toRow][toCol] = movingPiece;
+            gameState.board[fromRow][fromCol] = null;
+            
+            // Check if this puts the player's king in check
+            const wouldBeInCheck = isInCheck(playerColor);
+            
+            // Restore the board
+            gameState.board[fromRow][fromCol] = movingPiece;
+            gameState.board[toRow][toCol] = originalPiece;
+            
+            // If the move would put own king in check, it's invalid
+            if (wouldBeInCheck) return false;
+            
+            return true;
+        }
+
+        // Check if path is clear (for rooks, bishops, queens)
+        function isPathClear(fromRow, fromCol, toRow, toCol) {
+            const rowStep = toRow > fromRow ? 1 : (toRow < fromRow ? -1 : 0);
+            const colStep = toCol > fromCol ? 1 : (toCol < fromCol ? -1 : 0);
+            
+            let currentRow = fromRow + rowStep;
+            let currentCol = fromCol + colStep;
+            
+            while (currentRow !== toRow || currentCol !== toCol) {
+                if (gameState.board[currentRow][currentCol] !== null) {
+                    return false;
+                }
+                currentRow += rowStep;
+                currentCol += colStep;
+            }
+            
+            return true;
+        }
+
+        // Basic move validation without check checking (to avoid circular dependency)
+        function isValidBasicMove(fromRow, fromCol, toRow, toCol) {
             if (fromRow === toRow && fromCol === toCol) return false;
             
             const piece = gameState.board[fromRow][fromCol];
@@ -798,7 +882,7 @@
                 if (isWhite === targetIsWhite) return false;
             }
             
-            // Simplified movement rules
+            // Basic movement validation
             const rowDiff = Math.abs(toRow - fromRow);
             const colDiff = Math.abs(toCol - fromCol);
             
@@ -840,23 +924,66 @@
             }
         }
 
-        // Check if path is clear (for rooks, bishops, queens)
-        function isPathClear(fromRow, fromCol, toRow, toCol) {
-            const rowStep = toRow > fromRow ? 1 : (toRow < fromRow ? -1 : 0);
-            const colStep = toCol > fromCol ? 1 : (toCol < fromCol ? -1 : 0);
+        // Check if a king is in check
+        function isInCheck(kingColor) {
+            const kingSymbol = kingColor === 'white' ? '♔' : '♚';
+            const opponentPieces = kingColor === 'white' ? BLACK_PIECES : WHITE_PIECES;
             
-            let currentRow = fromRow + rowStep;
-            let currentCol = fromCol + colStep;
-            
-            while (currentRow !== toRow || currentCol !== toCol) {
-                if (gameState.board[currentRow][currentCol] !== null) {
-                    return false;
+            // Find the king's position
+            let kingRow = -1, kingCol = -1;
+            for (let row = 0; row < 8; row++) {
+                for (let col = 0; col < 8; col++) {
+                    if (gameState.board[row][col] === kingSymbol) {
+                        kingRow = row;
+                        kingCol = col;
+                        break;
+                    }
                 }
-                currentRow += rowStep;
-                currentCol += colStep;
+                if (kingRow !== -1) break;
             }
             
-            return true;
+            if (kingRow === -1) return false; // King not found (shouldn't happen)
+            
+            // Check if any opponent piece can attack the king
+            for (let row = 0; row < 8; row++) {
+                for (let col = 0; col < 8; col++) {
+                    const piece = gameState.board[row][col];
+                    if (piece && opponentPieces.includes(piece)) {
+                        // Use basic move validation to avoid circular dependency
+                        if (isValidBasicMove(row, col, kingRow, kingCol)) {
+                            return true;
+                        }
+                    }
+                }
+            }
+            
+            return false;
+        }
+
+        // Check if a player is in checkmate
+        function isCheckmate(playerColor) {
+            // If not in check, can't be checkmate
+            if (!isInCheck(playerColor)) return false;
+            
+            // Check if any move can get out of check
+            const playerPieces = playerColor === 'white' ? WHITE_PIECES : BLACK_PIECES;
+            
+            for (let fromRow = 0; fromRow < 8; fromRow++) {
+                for (let fromCol = 0; fromCol < 8; fromCol++) {
+                    const piece = gameState.board[fromRow][fromCol];
+                    if (piece && playerPieces.includes(piece)) {
+                        for (let toRow = 0; toRow < 8; toRow++) {
+                            for (let toCol = 0; toCol < 8; toCol++) {
+                                if (isValidMove(fromRow, fromCol, toRow, toCol)) {
+                                    return false; // Found a valid move that gets out of check
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+            
+            return true; // No moves can get out of check
         }
 
         // Get valid moves for CPU
@@ -1113,13 +1240,13 @@
         initChessBoard();
         updateGameStatus();
 
-        console.log('♟️ Chess Wager initialized with CPU support!');
+        console.log('♟️ Chess initialized with CPU support!');
     </script>
 
     <!-- Footer -->
     <footer class="site-footer">
         <div class="footer-social">
-            <a href="https://zora.co/@thebasement" target="_blank" rel="noopener noreferrer" class="social-link" title="Zora">
+            <a href="https://zora.co/@0xbasement" target="_blank" rel="noopener noreferrer" class="social-link" title="Zora">
                 <svg width="24" height="24" viewBox="0 0 24 24" fill="currentColor">
                     <circle cx="12" cy="12" r="10"/>
                 </svg>
@@ -1133,7 +1260,7 @@
                 </svg>
                 <span>🚀 0BT Token</span>
             </a>
-            <a href="https://x.com/thebasementarc" target="_blank" rel="noopener noreferrer" class="social-link" title="X (Twitter)">
+            <a href="https://x.com/joseph1133287" target="_blank" rel="noopener noreferrer" class="social-link" title="X (Twitter)">
                 <svg width="24" height="24" viewBox="0 0 24 24" fill="currentColor">
                     <path d="M18.244 2.25h3.308l-7.227 8.26 8.502 11.24H16.17l-5.214-6.817L4.99 21.75H1.68l7.73-8.835L1.254 2.25H8.08l4.713 6.231zm-1.161 17.52h1.833L7.084 4.126H5.117z"/>
                 </svg>
@@ -1141,7 +1268,11 @@
             </a>
         </div>
         <p style="margin-top: 15px; font-size: 0.6rem; color: #666;">
-            The Basement © 2025 | Built on Base & Solana
+            The Basement © 2025 | Built on Base & Solana<br>
+            <span style="font-size: 0.5rem; color: #888;">
+                Base: 0xcf4abb42B4b47Eb242EAbab5C9A9913bCad9Ca23 | 
+                Solana: D4MXRKhzSMapDZ5bLEA1bmjrUPLZhHZRhSkS6wrBpump
+            </span>
         </p>
     </footer>
 </body>
