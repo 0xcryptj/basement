@@ -75,7 +75,7 @@ const Forum = () => {
     <div className="min-h-screen bg-background">
       <Navbar />
       
-      <div className="pt-20 container mx-auto px-4 pb-12">
+      <div className="ml-0 md:ml-[280px] pt-20 container mx-auto px-4 pb-12 transition-all duration-300">
         {/* Header */}
         <div className="text-center mb-12">
           <h1 className="font-pixel text-3xl md:text-5xl text-primary mb-4 animate-glow-pulse">

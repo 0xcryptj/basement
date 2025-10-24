@@ -11,8 +11,12 @@ export const Navbar = () => {
 
   const navLinks = [
     { to: "/", label: "Home" },
+    { to: "/games/cointoss", label: "Coinflip" },
+    { to: "/games/luckyblock", label: "Lucky Block" },
+    { to: "/games/war", label: "War" },
+    { to: "/games/chess", label: "Chess" },
+    { to: "/games/connect4", label: "Connect4" },
     { to: "/forum", label: "Forum" },
-    { to: "/arcade", label: "Arcade" },
   ];
 
   const isActive = (path: string) => location.pathname === path;

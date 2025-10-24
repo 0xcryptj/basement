@@ -47,7 +47,7 @@ const Games = () => {
       <GlobalStats />
 
       {/* Main content with left margin for sidebar */}
-      <div className="ml-[280px] pt-20 pb-12 pr-4">
+      <div className="ml-0 md:ml-[280px] pt-20 pb-12 pr-4 transition-all duration-300">
         <div className="max-w-7xl mx-auto">
           {/* Page Header */}
           <div className="text-center mb-8 animate-fade-in">
