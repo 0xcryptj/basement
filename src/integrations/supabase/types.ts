@@ -650,6 +650,41 @@ export type Database = {
           },
         ]
       }
+      waiting_players: {
+        Row: {
+          created_at: string | null
+          game_type: string
+          id: string
+          network: string
+          user_id: string
+          wager_amount: number
+        }
+        Insert: {
+          created_at?: string | null
+          game_type: string
+          id?: string
+          network: string
+          user_id: string
+          wager_amount?: number
+        }
+        Update: {
+          created_at?: string | null
+          game_type?: string
+          id?: string
+          network?: string
+          user_id?: string
+          wager_amount?: number
+        }
+        Relationships: [
+          {
+            foreignKeyName: "waiting_players_user_id_fkey"
+            columns: ["user_id"]
+            isOneToOne: false
+            referencedRelation: "User"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
     }
     Views: {
       [_ in never]: never

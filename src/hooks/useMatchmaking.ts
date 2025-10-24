@@ -77,6 +77,18 @@ export const useMatchmaking = (gameType: GameType) => {
     setIsSearching(true);
 
     try {
+      // Add to waiting players for visibility
+      const { data: waitingEntry } = await supabase
+        .from('waiting_players')
+        .insert({
+          user_id: userId,
+          game_type: gameType,
+          network: network,
+          wager_amount: wagerAmount,
+        })
+        .select()
+        .single();
+
       // Check for existing matches waiting for player 2
       const { data: existingMatches } = await supabase
         .from('matches')
@@ -103,6 +115,13 @@ export const useMatchmaking = (gameType: GameType) => {
           .eq('id', match.id);
 
         if (error) throw error;
+
+        // Remove both players from waiting queue
+        await supabase
+          .from('waiting_players')
+          .delete()
+          .in('user_id', [userId, match.player1_id])
+          .eq('game_type', gameType);
 
         setMatchId(match.id);
         setOpponentId(match.player1_id);
@@ -150,6 +169,15 @@ export const useMatchmaking = (gameType: GameType) => {
         .delete()
         .eq('id', matchId)
         .eq('status', 'waiting');
+
+      // Remove from waiting players
+      if (userId) {
+        await supabase
+          .from('waiting_players')
+          .delete()
+          .eq('user_id', userId)
+          .eq('game_type', gameType);
+      }
 
       setMatchId(null);
       setIsSearching(false);

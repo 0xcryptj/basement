@@ -4,6 +4,8 @@ import { TooltipProvider } from "@/components/ui/tooltip";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { BrowserRouter, Routes, Route } from "react-router-dom";
 import { WalletProvider } from "@/contexts/WalletContext";
+import { MatrixRain } from "@/components/MatrixRain";
+import { WaitingPlayers } from "@/components/WaitingPlayers";
 import Index from "./pages/Index";
 import Chat from "./pages/Chat";
 import Forum from "./pages/Forum";
@@ -21,6 +23,8 @@ const App = () => (
   <QueryClientProvider client={queryClient}>
     <WalletProvider>
       <TooltipProvider>
+        <MatrixRain />
+        <WaitingPlayers />
         <Toaster />
         <Sonner />
         <BrowserRouter>
