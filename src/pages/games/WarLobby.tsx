@@ -94,7 +94,7 @@ const WarLobby = () => {
               />
             </div>
             <div className="lg:col-span-1">
-              <GameHistory />
+              <GameHistory gameType="war" />
             </div>
           </div>
         </div>

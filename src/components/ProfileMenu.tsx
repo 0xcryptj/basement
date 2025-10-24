@@ -141,7 +141,11 @@ export const ProfileMenu = () => {
             variant="ghost"
             className="flex items-center gap-2 px-2 py-1 h-auto hover:bg-primary/10"
           >
-            <Avatar className="w-10 h-10 border-2 border-primary/30 rounded-lg">
+            <Avatar className={`w-10 h-10 rounded-lg border-2 ${
+              network === 'solana' 
+                ? 'border-[#14F195] shadow-[0_0_10px_rgba(20,241,149,0.3)]' 
+                : 'border-[#0052FF] shadow-[0_0_10px_rgba(0,82,255,0.3)]'
+            }`}>
               <AvatarImage src={userData?.avatarUrl || undefined} />
               <AvatarFallback className="bg-primary/20 text-primary font-pixel text-sm rounded-lg">
                 {userData?.username?.[0]?.toUpperCase() || address?.slice(0, 2).toUpperCase()}

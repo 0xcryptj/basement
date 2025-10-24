@@ -93,7 +93,7 @@ const Connect4Lobby = () => {
               />
             </div>
             <div className="lg:col-span-1">
-              <GameHistory />
+              <GameHistory gameType="connect4" />
             </div>
           </div>
         </div>

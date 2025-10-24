@@ -2,7 +2,7 @@ import { Twitter, Sparkles } from "lucide-react";
 
 export const Footer = () => {
   return (
-    <footer className="border-t border-primary/30 bg-card/30 backdrop-blur-sm py-4 lg:ml-[280px]">
+    <footer className="mt-auto border-t border-primary/30 bg-card/30 backdrop-blur-sm py-4 lg:ml-[280px]">
       <div className="container mx-auto px-4">
         <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
           {/* Branding */}

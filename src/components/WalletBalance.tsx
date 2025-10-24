@@ -1,5 +1,7 @@
 import { useState, useEffect } from "react";
 import { useWallet } from "@/contexts/WalletContext";
+import { Connection, PublicKey } from "@solana/web3.js";
+import { ethers } from "ethers";
 import solanaLogo from "@/assets/solana-logo.svg";
 import baseLogo from "@/assets/base-logo.svg";
 
@@ -7,34 +9,49 @@ export const WalletBalance = () => {
   const { address, network } = useWallet();
   const [balance, setBalance] = useState(0);
   const [usdValue, setUsdValue] = useState(0);
+  const [loading, setLoading] = useState(false);
 
   useEffect(() => {
     if (!address) return;
-
-    // Fetch balance from blockchain
-    const fetchBalance = async () => {
-      try {
-        if (network === 'solana') {
-          // TODO: Implement Solana balance fetch
-          const mockBalance = 1.234;
-          setBalance(mockBalance);
-          setUsdValue(mockBalance * 192); // Mock SOL price
-        } else {
-          // TODO: Implement Base/ETH balance fetch
-          const mockBalance = 0.456;
-          setBalance(mockBalance);
-          setUsdValue(mockBalance * 3200); // Mock ETH price
-        }
-      } catch (error) {
-        console.error('Error fetching balance:', error);
-      }
-    };
-
     fetchBalance();
-    const interval = setInterval(fetchBalance, 10000); // Update every 10s
-
+    const interval = setInterval(fetchBalance, 15000);
     return () => clearInterval(interval);
   }, [address, network]);
+
+  const fetchBalance = async () => {
+    if (!address) return;
+    setLoading(true);
+    
+    try {
+      if (network === 'solana') {
+        const connection = new Connection('https://api.mainnet-beta.solana.com');
+        const publicKey = new PublicKey(address);
+        const lamports = await connection.getBalance(publicKey);
+        const sol = lamports / 1e9;
+        setBalance(sol);
+        
+        // Fetch SOL price (you can use a real API here)
+        const solPrice = 192; // Mock price
+        setUsdValue(sol * solPrice);
+      } else {
+        // Base network (Ethereum L2)
+        const provider = new ethers.JsonRpcProvider('https://mainnet.base.org');
+        const weiBalance = await provider.getBalance(address);
+        const eth = parseFloat(ethers.formatEther(weiBalance));
+        setBalance(eth);
+        
+        // Fetch ETH price (you can use a real API here)
+        const ethPrice = 3200; // Mock price
+        setUsdValue(eth * ethPrice);
+      }
+    } catch (error) {
+      console.error('Error fetching balance:', error);
+      setBalance(0);
+      setUsdValue(0);
+    } finally {
+      setLoading(false);
+    }
+  };
 
   if (!address) return null;
 
@@ -47,10 +64,10 @@ export const WalletBalance = () => {
       />
       <div className="flex flex-col">
         <span className="font-mono text-xs text-foreground">
-          {balance.toFixed(4)} {network === 'solana' ? 'SOL' : 'ETH'}
+          {loading ? '...' : balance.toFixed(4)} {network === 'solana' ? 'SOL' : 'ETH'}
         </span>
         <span className="font-mono text-[0.6rem] text-muted-foreground">
-          ${usdValue.toFixed(2)}
+          ${loading ? '...' : usdValue.toFixed(2)}
         </span>
       </div>
     </div>

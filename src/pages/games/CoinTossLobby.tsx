@@ -82,7 +82,7 @@ const CoinTossLobby = () => {
               />
             </div>
             <div className="lg:col-span-1">
-              <GameHistory />
+              <GameHistory gameType="cointoss" />
             </div>
           </div>
         </div>
