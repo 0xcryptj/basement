@@ -1,13 +1,54 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { Link, useLocation } from "react-router-dom";
-import { Menu, X, Wallet } from "lucide-react";
+import { Menu, X } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { WalletButton } from "./WalletButton";
+import { supabase } from "@/integrations/supabase/client";
 import logoIcon from "@/assets/logo-icon.svg";
 
 export const Navbar = () => {
   const [isMenuOpen, setIsMenuOpen] = useState(false);
   const location = useLocation();
+  const [stats, setStats] = useState({
+    total_wagers_placed: 0,
+    total_volume: 0,
+    solana_online: 0,
+    base_online: 0,
+  });
+
+  useEffect(() => {
+    const fetchStats = async () => {
+      const { data } = await supabase
+        .from('global_stats')
+        .select('*')
+        .single();
+      
+      if (data) {
+        setStats(data);
+      }
+    };
+
+    fetchStats();
+
+    const channel = supabase
+      .channel('navbar-stats')
+      .on(
+        'postgres_changes',
+        {
+          event: 'UPDATE',
+          schema: 'public',
+          table: 'global_stats',
+        },
+        (payload: any) => {
+          setStats(payload.new);
+        }
+      )
+      .subscribe();
+
+    return () => {
+      supabase.removeChannel(channel);
+    };
+  }, []);
 
   const navLinks = [
     { to: "/games/cointoss", label: "Coinflip" },
@@ -48,6 +89,26 @@ export const Navbar = () => {
                 {link.label}
               </Link>
             ))}
+          </div>
+
+          {/* Stats - Desktop */}
+          <div className="hidden xl:flex items-center gap-4 font-mono text-[0.65rem] text-muted-foreground">
+            <div className="flex items-center gap-1">
+              <span className="text-primary">Bets:</span>
+              <span>{stats.total_wagers_placed.toLocaleString()}</span>
+            </div>
+            <div className="flex items-center gap-1">
+              <span className="text-accent">Vol:</span>
+              <span>${stats.total_volume.toFixed(0)}</span>
+            </div>
+            <div className="flex items-center gap-1">
+              <span className="text-secondary">◎</span>
+              <span>{stats.solana_online}</span>
+            </div>
+            <div className="flex items-center gap-1">
+              <span className="text-primary">⟠</span>
+              <span>{stats.base_online}</span>
+            </div>
           </div>
 
           {/* Wallet Button - Desktop */}

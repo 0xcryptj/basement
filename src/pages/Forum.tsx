@@ -28,15 +28,15 @@ const Forum = () => {
       id: "1",
       name: "/b/",
       slug: "Random",
-      description: "Anything goes",
+      description: "The stories and information posted here are artistic works of fiction and falsehood.",
       threads: 1337,
       color: "primary",
     },
     {
       id: "2",
       name: "/crypto/",
-      slug: "Crypto",
-      description: "Blockchain & tokens",
+      slug: "Cryptocurrency",
+      description: "Discuss blockchain, DeFi, tokens and Web3",
       threads: 420,
       color: "secondary",
     },
@@ -44,9 +44,17 @@ const Forum = () => {
       id: "3",
       name: "/arcade/",
       slug: "Gaming",
-      description: "Retro & Web3 games",
+      description: "Video games, gambling, and arcade discussion",
       threads: 69,
       color: "accent",
+    },
+    {
+      id: "4",
+      name: "/biz/",
+      slug: "Business",
+      description: "Business and finance discussion",
+      threads: 256,
+      color: "primary",
     },
   ];
 
@@ -72,93 +80,102 @@ const Forum = () => {
   ];
 
   return (
-    <div className="min-h-screen bg-background">
+    <div className="min-h-screen bg-[#0e0e10]">
       <Navbar />
       
-      <div className="ml-0 md:ml-[280px] pt-20 container mx-auto px-4 pb-12 transition-all duration-300">
-        {/* Header */}
-        <div className="text-center mb-12">
-          <h1 className="font-pixel text-3xl md:text-5xl text-primary mb-4 animate-glow-pulse">
-            /BOARDS/
-          </h1>
-          <p className="font-mono text-sm text-muted-foreground">
-            Anonymous image board • Burn 5 tokens to post
-          </p>
+      <div className="ml-0 lg:ml-[280px] pt-16 pb-8 transition-all duration-300">
+        {/* Header - 4chan style */}
+        <div className="bg-[#1a1a1d] border-b-2 border-primary/20 py-3 mb-4">
+          <div className="container mx-auto px-4">
+            <h1 className="font-pixel text-2xl text-primary">
+              THE BASEMENT
+            </h1>
+          </div>
         </div>
 
-        {/* Boards Grid */}
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-12">
-          {boards.map((board) => (
-            <div
-              key={board.id}
-              className={`bg-card border-2 ${
-                board.color === "primary"
-                  ? "border-primary hover:shadow-glow-cyan"
-                  : board.color === "secondary"
-                  ? "border-secondary hover:shadow-glow-purple"
-                  : "border-accent hover:shadow-glow-magenta"
-              } p-6 transition-all duration-300 hover:scale-105 cursor-pointer group`}
-            >
-              <h2 className="font-pixel text-2xl mb-2 group-hover:animate-glow-pulse">
-                {board.name}
-              </h2>
-              <h3 className="font-pixel text-xs text-muted-foreground mb-3">
-                {board.slug}
-              </h3>
-              <p className="font-mono text-sm text-muted-foreground mb-4">
-                {board.description}
-              </p>
-              <div className="flex items-center justify-between">
-                <span className="font-mono text-xs text-primary">
-                  {board.threads} threads
-                </span>
-                <Flame className={`w-4 h-4 text-${board.color}`} />
-              </div>
+        <div className="container mx-auto px-4 max-w-6xl">
+          {/* Boards List - 4chan style table */}
+          <div className="bg-[#1a1a1d] border border-primary/20 mb-6">
+            <div className="bg-primary/10 border-b border-primary/20 px-4 py-2">
+              <h2 className="font-mono text-xs text-primary font-bold">Boards</h2>
             </div>
-          ))}
-        </div>
-
-        {/* Recent Threads */}
-        <div className="max-w-4xl mx-auto">
-          <div className="flex items-center justify-between mb-6">
-            <h2 className="font-pixel text-xl text-primary">Recent Threads</h2>
-            <Button className="font-pixel text-xs px-4 bg-secondary text-secondary-foreground hover:bg-secondary/80 shadow-glow-purple">
-              New Thread
-            </Button>
+            <div className="divide-y divide-primary/10">
+              {boards.map((board) => (
+                <div
+                  key={board.id}
+                  className="px-4 py-3 hover:bg-primary/5 cursor-pointer transition-colors group"
+                >
+                  <div className="flex items-start justify-between gap-4">
+                    <div className="flex items-start gap-3 flex-1 min-w-0">
+                      <span className="font-pixel text-lg text-primary group-hover:text-primary/80 shrink-0">
+                        {board.name}
+                      </span>
+                      <div className="flex-1 min-w-0">
+                        <h3 className="font-mono text-sm text-foreground font-bold mb-1">
+                          {board.slug}
+                        </h3>
+                        <p className="font-mono text-xs text-muted-foreground">
+                          {board.description}
+                        </p>
+                      </div>
+                    </div>
+                    <span className="font-mono text-xs text-muted-foreground shrink-0">
+                      {board.threads}
+                    </span>
+                  </div>
+                </div>
+              ))}
+            </div>
           </div>
 
-          <div className="space-y-4">
-            {threads.map((thread) => (
-              <div
-                key={thread.id}
-                className="bg-card border-2 border-primary p-4 transition-all hover:shadow-glow-cyan cursor-pointer group"
+          {/* Popular Threads */}
+          <div className="bg-[#1a1a1d] border border-primary/20">
+            <div className="bg-primary/10 border-b border-primary/20 px-4 py-2 flex items-center justify-between">
+              <h2 className="font-mono text-xs text-primary font-bold">Popular Threads</h2>
+              <Button 
+                size="sm"
+                className="font-mono text-xs px-3 py-1 h-auto bg-primary hover:bg-primary/90 text-primary-foreground"
               >
-                <div className="flex items-start justify-between mb-2">
-                  <h3 className="font-pixel text-sm group-hover:text-primary transition-colors">
-                    {thread.subject}
-                  </h3>
-                  <span className="font-mono text-xs text-muted-foreground">
-                    {thread.timestamp}
-                  </span>
-                </div>
-                <p className="font-mono text-xs text-muted-foreground mb-3">
-                  by {thread.author}
-                </p>
-                <p className="font-mono text-sm text-foreground mb-4">
-                  {thread.preview}
-                </p>
-                <div className="flex items-center space-x-4 text-xs font-mono text-muted-foreground">
-                  <div className="flex items-center space-x-1">
-                    <MessageSquare className="w-4 h-4" />
-                    <span>{thread.replies}</span>
+                [Start a Thread]
+              </Button>
+            </div>
+            <div className="divide-y divide-primary/10">
+              {threads.map((thread) => (
+                <div
+                  key={thread.id}
+                  className="px-4 py-3 hover:bg-primary/5 cursor-pointer transition-colors"
+                >
+                  <div className="flex items-start justify-between gap-4 mb-2">
+                    <div className="flex items-start gap-2 flex-1 min-w-0">
+                      <MessageSquare className="w-4 h-4 text-primary shrink-0 mt-0.5" />
+                      <div className="flex-1 min-w-0">
+                        <h3 className="font-mono text-sm text-primary hover:underline truncate">
+                          {thread.subject}
+                        </h3>
+                        <p className="font-mono text-xs text-muted-foreground mt-1">
+                          {thread.preview}
+                        </p>
+                      </div>
+                    </div>
+                    <span className="font-mono text-xs text-muted-foreground whitespace-nowrap shrink-0">
+                      {thread.timestamp}
+                    </span>
                   </div>
-                  <div className="flex items-center space-x-1">
-                    <Eye className="w-4 h-4" />
-                    <span>{thread.views}</span>
+                  <div className="flex items-center gap-3 font-mono text-xs text-muted-foreground">
+                    <span>by {thread.author}</span>
+                    <span>R: {thread.replies}</span>
+                    <span>V: {thread.views}</span>
                   </div>
                 </div>
-              </div>
-            ))}
+              ))}
+            </div>
+          </div>
+
+          {/* Footer info */}
+          <div className="mt-4 text-center">
+            <p className="font-mono text-xs text-muted-foreground">
+              Burn 5 tokens to post • All posts are anonymous
+            </p>
           </div>
         </div>
       </div>
