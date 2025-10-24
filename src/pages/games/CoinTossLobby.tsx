@@ -1,7 +1,6 @@
 import { useState } from "react";
 import { Navbar } from "@/components/Navbar";
 import { Footer } from "@/components/Footer";
-import { GlobalStats } from "@/components/GlobalStats";
 import { GameLobby } from "@/components/games/GameLobby";
 import { Card } from "@/components/ui/card";
 import { Coins } from "lucide-react";
@@ -37,7 +36,6 @@ const CoinTossLobby = () => {
           <div className="absolute inset-0 bg-gradient-to-b from-transparent via-primary/5 to-transparent animate-scan" />
         </div>
         <Navbar />
-        <GlobalStats />
         <main className="flex-1 flex items-center justify-center px-4 pt-20 pb-12 lg:ml-[280px]">
           <Card className="w-full max-w-md bg-card/80 backdrop-blur-sm border-2 border-primary p-8 text-center shadow-glow-cyan">
             <Coins className="w-20 h-20 mx-auto mb-4 text-primary animate-glow-pulse" />
@@ -69,7 +67,6 @@ const CoinTossLobby = () => {
       <div className="fixed inset-0 bg-gradient-to-b from-background/60 via-background/40 to-background/60 pointer-events-none" />
       
       <Navbar />
-      <GlobalStats />
       
       <main className="flex-1 px-4 sm:px-6 lg:px-8 pt-20 pb-12 lg:ml-[280px] relative">
         <div className="max-w-screen-xl mx-auto">

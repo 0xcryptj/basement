@@ -5,6 +5,7 @@ import { Dialog, DialogContent } from "@/components/ui/dialog";
 import { useWallet } from "@/contexts/WalletContext";
 import { useToast } from "@/hooks/use-toast";
 import { motion, AnimatePresence } from "framer-motion";
+import { ProfileMenu } from "./ProfileMenu";
 
 type WalletOption = {
   id: string;
@@ -57,19 +58,7 @@ export const WalletButton = () => {
   };
 
   if (isConnected && address) {
-    return (
-      <Button
-        onClick={disconnect}
-        className={`font-pixel text-xs px-3 py-2 ${
-          network === "solana"
-            ? "bg-secondary text-secondary-foreground hover:bg-secondary/80"
-            : "bg-primary text-primary-foreground hover:bg-primary/80"
-        }`}
-      >
-        <Wallet className="mr-2 h-3 w-3" />
-        {address.slice(0, 4)}...{address.slice(-4)}
-      </Button>
-    );
+    return <ProfileMenu />;
   }
 
   return (

@@ -551,36 +551,57 @@ export type Database = {
           balanceEth: number | null
           balanceUsd: number | null
           createdAt: string | null
+          gamesPlayed: number | null
+          gamesWon: number | null
           id: string
           isVerified: boolean | null
           lastSeenAt: string | null
+          netProfit: number | null
+          totalLost: number | null
+          totalWagered: number | null
+          totalWon: number | null
           updatedAt: string | null
           username: string | null
           walletAddress: string
+          winRate: number | null
         }
         Insert: {
           avatarUrl?: string | null
           balanceEth?: number | null
           balanceUsd?: number | null
           createdAt?: string | null
+          gamesPlayed?: number | null
+          gamesWon?: number | null
           id: string
           isVerified?: boolean | null
           lastSeenAt?: string | null
+          netProfit?: number | null
+          totalLost?: number | null
+          totalWagered?: number | null
+          totalWon?: number | null
           updatedAt?: string | null
           username?: string | null
           walletAddress: string
+          winRate?: number | null
         }
         Update: {
           avatarUrl?: string | null
           balanceEth?: number | null
           balanceUsd?: number | null
           createdAt?: string | null
+          gamesPlayed?: number | null
+          gamesWon?: number | null
           id?: string
           isVerified?: boolean | null
           lastSeenAt?: string | null
+          netProfit?: number | null
+          totalLost?: number | null
+          totalWagered?: number | null
+          totalWon?: number | null
           updatedAt?: string | null
           username?: string | null
           walletAddress?: string
+          winRate?: number | null
         }
         Relationships: []
       }

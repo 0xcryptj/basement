@@ -3,7 +3,6 @@ import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { Navbar } from "@/components/Navbar";
 import { Footer } from "@/components/Footer";
-import { GlobalStats } from "@/components/GlobalStats";
 import { PlayingCard } from "@/components/PlayingCard";
 import { Loader2 } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
@@ -130,7 +129,6 @@ const WarEnhanced = () => {
     return (
       <div className="min-h-screen bg-background">
         <Navbar />
-        <GlobalStats />
         <div className="pt-20 container mx-auto px-4 pb-12 flex items-center justify-center min-h-[60vh] lg:ml-[280px] transition-all duration-300">
           <Card className="bg-card border-2 border-primary p-8 text-center animate-scale-in">
             <h2 className="font-pixel text-xl text-primary mb-4">Connect Wallet</h2>
@@ -147,7 +145,6 @@ const WarEnhanced = () => {
   return (
     <div className="min-h-screen bg-background">
       <Navbar />
-      <GlobalStats />
       
       <div className="pt-20 container mx-auto px-4 pb-12 lg:ml-[280px] transition-all duration-300">
         <div className="text-center mb-8 animate-fade-in">

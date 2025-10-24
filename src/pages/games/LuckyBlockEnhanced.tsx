@@ -3,7 +3,6 @@ import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { Navbar } from "@/components/Navbar";
 import { Footer } from "@/components/Footer";
-import { GlobalStats } from "@/components/GlobalStats";
 import { Sparkles, Timer, Trophy, Loader2, Users, ChevronDown } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 import { useWallet } from "@/contexts/WalletContext";
@@ -84,7 +83,6 @@ const LuckyBlockEnhanced = () => {
       <div className="fixed inset-0 bg-gradient-to-b from-background/60 via-background/40 to-background/60 pointer-events-none" />
       
       <Navbar />
-      <GlobalStats />
       
       <div className="relative pt-20 pb-12 ml-0 lg:ml-[280px] transition-all duration-300 overflow-x-hidden">
         <div className="w-full max-w-[1400px] mx-auto px-4 sm:px-6 lg:px-8">

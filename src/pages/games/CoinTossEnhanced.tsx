@@ -3,7 +3,6 @@ import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { Navbar } from "@/components/Navbar";
 import { Footer } from "@/components/Footer";
-import { GlobalStats } from "@/components/GlobalStats";
 import { Coins, Loader2, TrendingUp, Info } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 import { useWallet } from "@/contexts/WalletContext";
@@ -83,7 +82,6 @@ const CoinTossEnhanced = () => {
     return (
       <div className="min-h-screen flex flex-col bg-background">
         <Navbar />
-        <GlobalStats />
         <main className="flex-1 flex items-center justify-center px-4 sm:px-6 lg:px-8 pt-20 pb-12 lg:ml-[280px] transition-all duration-300">
           <Card className="w-full max-w-md bg-card border-2 border-primary p-6 sm:p-8 text-center animate-scale-in shadow-glow-cyan">
             <Coins className="w-16 h-16 sm:w-20 sm:h-20 mx-auto mb-4 text-primary animate-glow-pulse" />
@@ -101,7 +99,6 @@ const CoinTossEnhanced = () => {
   return (
     <div className="min-h-screen flex flex-col bg-background">
       <Navbar />
-      <GlobalStats />
       
       <main className="flex-1 px-4 sm:px-6 lg:px-8 pt-20 pb-12 lg:ml-[280px] transition-all duration-300">
         <div className="max-w-screen-lg mx-auto w-full">
