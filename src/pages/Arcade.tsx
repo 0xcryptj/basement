@@ -1,6 +1,10 @@
 import { Gamepad2, Trophy, Coins } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Navbar } from "@/components/Navbar";
+import { Footer } from "@/components/Footer";
+import warGameImg from "@/assets/war-game.png";
+import chessGameImg from "@/assets/chess-game.png";
+import connect4GameImg from "@/assets/connect4-game.png";
 
 interface Game {
   id: string;
@@ -9,6 +13,7 @@ interface Game {
   minBet: string;
   status: "live" | "coming-soon";
   color: string;
+  image: string;
 }
 
 const Arcade = () => {
@@ -20,6 +25,7 @@ const Arcade = () => {
       minBet: "0.01 ETH",
       status: "live",
       color: "primary",
+      image: warGameImg,
     },
     {
       id: "2",
@@ -28,6 +34,7 @@ const Arcade = () => {
       minBet: "0.05 ETH",
       status: "coming-soon",
       color: "secondary",
+      image: chessGameImg,
     },
     {
       id: "3",
@@ -36,6 +43,7 @@ const Arcade = () => {
       minBet: "0.02 ETH",
       status: "coming-soon",
       color: "accent",
+      image: connect4GameImg,
     },
   ];
 
@@ -104,25 +112,13 @@ const Arcade = () => {
                 </div>
               )}
 
-              {/* Game Icon */}
+              {/* Game Image */}
               <div className="mb-4 flex justify-center">
-                <div
-                  className={`w-16 h-16 border-2 ${
-                    game.color === "primary"
-                      ? "border-primary shadow-glow-cyan"
-                      : game.color === "secondary"
-                      ? "border-secondary shadow-glow-purple"
-                      : "border-accent shadow-glow-magenta"
-                  } flex items-center justify-center group-hover:animate-glow-pulse`}
-                >
-                  <Gamepad2
-                    className={`w-8 h-8 ${
-                      game.color === "primary"
-                        ? "text-primary"
-                        : game.color === "secondary"
-                        ? "text-secondary"
-                        : "text-accent"
-                    }`}
+                <div className="w-32 h-32 overflow-hidden rounded border-2 border-primary">
+                  <img 
+                    src={game.image} 
+                    alt={game.name}
+                    className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-300"
                   />
                 </div>
               </div>
@@ -166,11 +162,25 @@ const Arcade = () => {
             <div className="space-y-2 font-mono text-xs">
               <div className="flex justify-between items-center">
                 <span className="text-muted-foreground">Base Token:</span>
-                <span className="text-primary">0xfd73...bc7b</span>
+                <a 
+                  href="https://dexscreener.com/base/0xfd730abb25c17e5bccf3bad3016ccc861bffbc7b"
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="text-primary hover:shadow-glow-cyan transition-all"
+                >
+                  0xfd73...bc7b
+                </a>
               </div>
               <div className="flex justify-between items-center">
                 <span className="text-muted-foreground">Solana Token:</span>
-                <span className="text-secondary">D4MX...pump</span>
+                <a 
+                  href="https://dexscreener.com/solana/D4MXRKhzSMapDZ5bLEA1bmjrUPLZhHZRhSkS6wrBpump"
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="text-secondary hover:shadow-glow-purple transition-all"
+                >
+                  D4MX...pump
+                </a>
               </div>
               <div className="flex justify-between items-center">
                 <span className="text-muted-foreground">House Fee:</span>
@@ -180,6 +190,7 @@ const Arcade = () => {
           </div>
         </div>
       </div>
+      <Footer />
     </div>
   );
 };

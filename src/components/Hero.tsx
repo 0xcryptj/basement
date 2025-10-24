@@ -1,12 +1,17 @@
 import { Link } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { Gamepad2, MessageSquare, Layout } from "lucide-react";
+import heroBackground from "@/assets/hero-background.jpg";
 
 export const Hero = () => {
   return (
     <div className="relative min-h-screen flex items-center justify-center overflow-hidden">
-      {/* Animated Background Grid */}
-      <div className="absolute inset-0 bg-grid-pattern opacity-20" />
+      {/* Hero Background Image */}
+      <div 
+        className="absolute inset-0 bg-cover bg-center opacity-60"
+        style={{ backgroundImage: `url(${heroBackground})` }}
+      />
+      <div className="absolute inset-0 bg-gradient-to-b from-background/80 via-background/60 to-background/90" />
       
       {/* Floating Particles */}
       <div className="absolute inset-0 overflow-hidden">

@@ -1,6 +1,7 @@
 import { MessageSquare, Eye, Flame } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Navbar } from "@/components/Navbar";
+import { Footer } from "@/components/Footer";
 
 interface Board {
   id: string;
@@ -161,6 +162,7 @@ const Forum = () => {
           </div>
         </div>
       </div>
+      <Footer />
     </div>
   );
 };

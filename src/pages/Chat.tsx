@@ -1,9 +1,12 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { Send, Plus, Hash } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { Navbar } from "@/components/Navbar";
+import { Footer } from "@/components/Footer";
+import { supabase } from "@/integrations/supabase/client";
+import { useToast } from "@/hooks/use-toast";
 
 interface Message {
   id: string;
@@ -19,49 +22,146 @@ interface Channel {
 }
 
 const Chat = () => {
-  const [channels] = useState<Channel[]>([
-    { id: "1", name: "general", color: "primary" },
-    { id: "2", name: "trading", color: "secondary" },
-    { id: "3", name: "arcade", color: "accent" },
-  ]);
-
-  const [activeChannel, setActiveChannel] = useState(channels[0].id);
-  const [messages, setMessages] = useState<Message[]>([
-    {
-      id: "1",
-      user: "anon_1337",
-      content: "Welcome to The Basement IRC",
-      timestamp: "12:00:00",
-    },
-    {
-      id: "2",
-      user: "system",
-      content: "Burn 5 tokens to create a new channel",
-      timestamp: "12:00:01",
-    },
-  ]);
-
+  const { toast } = useToast();
+  const [channels, setChannels] = useState<Channel[]>([]);
+  const [activeChannel, setActiveChannel] = useState("");
+  const [messages, setMessages] = useState<Message[]>([]);
   const [inputMessage, setInputMessage] = useState("");
+  const [isLoading, setIsLoading] = useState(true);
 
-  const sendMessage = () => {
-    if (!inputMessage.trim()) return;
+  // Load channels from Supabase
+  useEffect(() => {
+    loadChannels();
+  }, []);
 
-    const newMessage: Message = {
-      id: Date.now().toString(),
-      user: "you",
-      content: inputMessage,
-      timestamp: new Date().toLocaleTimeString(),
+  // Load messages for active channel
+  useEffect(() => {
+    if (activeChannel) {
+      loadMessages(activeChannel);
+      subscribeToMessages(activeChannel);
+    }
+  }, [activeChannel]);
+
+  const loadChannels = async () => {
+    const { data, error } = await supabase
+      .from("Channel")
+      .select("*")
+      .order("createdAt", { ascending: true });
+
+    if (error) {
+      toast({
+        title: "Error loading channels",
+        description: error.message,
+        variant: "destructive",
+      });
+      return;
+    }
+
+    if (data && data.length > 0) {
+      const channelList = data.map((ch, idx) => ({
+        id: ch.id,
+        name: ch.name,
+        color: idx % 3 === 0 ? "primary" : idx % 3 === 1 ? "secondary" : "accent",
+      }));
+      setChannels(channelList);
+      setActiveChannel(channelList[0].id);
+    }
+    setIsLoading(false);
+  };
+
+  const loadMessages = async (channelId: string) => {
+    const { data, error } = await supabase
+      .from("Message")
+      .select("*")
+      .eq("channelId", channelId)
+      .order("createdAt", { ascending: true })
+      .limit(100);
+
+    if (error) {
+      console.error("Error loading messages:", error);
+      return;
+    }
+
+    if (data) {
+      const formattedMessages = data.map((msg) => ({
+        id: msg.id,
+        user: msg.userId.slice(0, 8),
+        content: msg.content,
+        timestamp: new Date(msg.createdAt || "").toLocaleTimeString(),
+      }));
+      setMessages(formattedMessages);
+    }
+  };
+
+  const subscribeToMessages = (channelId: string) => {
+    const channel = supabase
+      .channel(`messages-${channelId}`)
+      .on(
+        "postgres_changes",
+        {
+          event: "INSERT",
+          schema: "public",
+          table: "Message",
+          filter: `channelId=eq.${channelId}`,
+        },
+        (payload) => {
+          const newMsg = payload.new as any;
+          setMessages((prev) => [
+            ...prev,
+            {
+              id: newMsg.id,
+              user: newMsg.userId.slice(0, 8),
+              content: newMsg.content,
+              timestamp: new Date(newMsg.createdAt).toLocaleTimeString(),
+            },
+          ]);
+        }
+      )
+      .subscribe();
+
+    return () => {
+      supabase.removeChannel(channel);
     };
+  };
 
-    setMessages([...messages, newMessage]);
+  const sendMessage = async () => {
+    if (!inputMessage.trim() || !activeChannel) return;
+
+    const userId = crypto.randomUUID();
+
+    const { error } = await supabase.from("Message").insert({
+      id: crypto.randomUUID(),
+      channelId: activeChannel,
+      userId: userId,
+      content: inputMessage,
+    });
+
+    if (error) {
+      toast({
+        title: "Error sending message",
+        description: error.message,
+        variant: "destructive",
+      });
+      return;
+    }
+
     setInputMessage("");
   };
 
+  if (isLoading) {
+    return (
+      <div className="min-h-screen bg-background flex items-center justify-center">
+        <Navbar />
+        <p className="font-pixel text-primary">Loading channels...</p>
+      </div>
+    );
+  }
+
   return (
-    <div className="min-h-screen bg-background">
+    <div className="min-h-screen bg-background flex flex-col">
       <Navbar />
       
-      <div className="pt-16 h-screen flex">
+      <div className="pt-16 flex-1 flex">
         {/* Sidebar */}
         <aside className="w-64 border-r-2 border-primary bg-card/50 backdrop-blur-sm hidden md:block">
           <div className="p-4 border-b-2 border-primary flex items-center justify-between">
@@ -149,6 +249,7 @@ const Chat = () => {
           </div>
         </main>
       </div>
+      <Footer />
     </div>
   );
 };
