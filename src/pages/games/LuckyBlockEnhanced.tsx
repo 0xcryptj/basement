@@ -91,7 +91,7 @@ const LuckyBlockEnhanced = () => {
             <div className="flex flex-col sm:flex-row items-start sm:items-center gap-4 sm:gap-8 w-full lg:w-auto">
               <div className="flex items-center gap-3">
                 <Sparkles className="w-6 h-6 sm:w-8 sm:h-8 text-primary animate-glow-pulse" />
-                <h1 className="font-pixel text-xl sm:text-2xl text-primary">JACKPOT</h1>
+                <h1 className="font-pixel text-2xl text-primary">JACKPOT</h1>
               </div>
               <p className="font-mono text-xs text-muted-foreground">
                 Winner takes all...

@@ -2,6 +2,7 @@ import { useState } from "react";
 import { Navbar } from "@/components/Navbar";
 import { Footer } from "@/components/Footer";
 import { GameLobby } from "@/components/games/GameLobby";
+import { GameHistory } from "@/components/games/GameHistory";
 import { Card } from "@/components/ui/card";
 import { Coins } from "lucide-react";
 import { useWallet } from "@/contexts/WalletContext";
@@ -70,13 +71,20 @@ const CoinTossLobby = () => {
       
       <main className="flex-1 px-4 sm:px-6 lg:px-8 pt-20 pb-12 lg:ml-[280px] relative">
         <div className="max-w-screen-xl mx-auto">
-          <GameLobby
-            gameType="cointoss"
-            gameTitle="COINFLIP"
-            gameDescription="The classic 50/50 game mode."
-            onJoinGame={handleJoinGame}
-            onSpectateGame={handleSpectateGame}
-          />
+          <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+            <div className="lg:col-span-2">
+              <GameLobby
+                gameType="cointoss"
+                gameTitle="COINFLIP"
+                gameDescription="The classic 50/50 game mode."
+                onJoinGame={handleJoinGame}
+                onSpectateGame={handleSpectateGame}
+              />
+            </div>
+            <div className="lg:col-span-1">
+              <GameHistory />
+            </div>
+          </div>
         </div>
       </main>
       

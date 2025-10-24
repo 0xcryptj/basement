@@ -104,8 +104,8 @@ const CoinTossEnhanced = () => {
         <div className="max-w-screen-lg mx-auto w-full">
           {/* Header Section */}
           <header className="text-center mb-8 sm:mb-12 animate-fade-in">
-            <h1 className="font-pixel text-2xl sm:text-3xl md:text-4xl lg:text-5xl text-primary mb-3 sm:mb-4 animate-glow-pulse">
-              /COIN TOSS/ {network === 'solana' ? '◎' : '⟠'}
+            <h1 className="font-pixel text-2xl text-primary mb-3 sm:mb-4 animate-glow-pulse">
+              COIN TOSS {network === 'solana' ? '◎' : '⟠'}
             </h1>
             <p className="font-mono text-sm sm:text-base text-muted-foreground">
               50/50 chance - Double or nothing

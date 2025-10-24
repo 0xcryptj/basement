@@ -2,6 +2,7 @@ import { useState } from "react";
 import { Navbar } from "@/components/Navbar";
 import { Footer } from "@/components/Footer";
 import { GameLobby } from "@/components/games/GameLobby";
+import { GameHistory } from "@/components/games/GameHistory";
 import { GameSpectator } from "@/components/games/GameSpectator";
 import { Card } from "@/components/ui/card";
 import { PlayingCard } from "@/components/PlayingCard";
@@ -82,13 +83,20 @@ const WarLobby = () => {
       
       <main className="flex-1 px-4 sm:px-6 lg:px-8 pt-20 pb-12 lg:ml-[280px] relative">
         <div className="max-w-screen-xl mx-auto">
-          <GameLobby
-            gameType="war"
-            gameTitle="WAR"
-            gameDescription="Classic card battle • Highest card wins"
-            onJoinGame={handleJoinGame}
-            onSpectateGame={handleSpectateGame}
-          />
+          <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+            <div className="lg:col-span-2">
+              <GameLobby
+                gameType="war"
+                gameTitle="WAR"
+                gameDescription="Classic card battle • Highest card wins"
+                onJoinGame={handleJoinGame}
+                onSpectateGame={handleSpectateGame}
+              />
+            </div>
+            <div className="lg:col-span-1">
+              <GameHistory />
+            </div>
+          </div>
         </div>
       </main>
       

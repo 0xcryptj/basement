@@ -53,6 +53,7 @@ export const GameLobby = ({
   const [wagerAmount, setWagerAmount] = useState(0.001);
   const [balance] = useState(0.00095);
   const [creating, setCreating] = useState(false);
+  const [waitingForMatch, setWaitingForMatch] = useState(false);
   const [sortBy, setSortBy] = useState<"high" | "low">("high");
   const [showAll, setShowAll] = useState(true);
 
@@ -146,6 +147,7 @@ export const GameLobby = ({
         variant: "destructive"
       });
     } else {
+      setWaitingForMatch(true);
       toast({
         title: "Game Created!",
         description: "Waiting for opponent to join..."
@@ -186,6 +188,34 @@ export const GameLobby = ({
 
   return (
     <div className="w-full space-y-6">
+      {/* Waiting State Overlay */}
+      {waitingForMatch && (
+        <Card className="bg-accent/10 backdrop-blur-sm border-2 border-accent p-6 animate-fade-in">
+          <div className="flex flex-col items-center gap-4">
+            <div className="relative">
+              <Loader2 className="w-12 h-12 text-accent animate-spin" />
+              <div className="absolute inset-0 bg-accent/20 blur-xl animate-pulse" />
+            </div>
+            <div className="text-center">
+              <h3 className="font-pixel text-lg text-accent mb-2">
+                Waiting for Opponent...
+              </h3>
+              <p className="font-mono text-sm text-muted-foreground">
+                Your game has been created. Waiting for another player to join.
+              </p>
+            </div>
+            <Button
+              onClick={() => setWaitingForMatch(false)}
+              variant="outline"
+              size="sm"
+              className="font-mono text-xs"
+            >
+              Hide
+            </Button>
+          </div>
+        </Card>
+      )}
+
       {/* Header Section */}
       <div className="space-y-4">
         <div className="flex items-center gap-3">

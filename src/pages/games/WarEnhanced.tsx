@@ -148,8 +148,8 @@ const WarEnhanced = () => {
       
       <div className="pt-20 container mx-auto px-4 pb-12 lg:ml-[280px] transition-all duration-300">
         <div className="text-center mb-8 animate-fade-in">
-          <h1 className="font-pixel text-3xl md:text-5xl text-primary mb-4 animate-glow-pulse">
-            /WAR/ {network === 'solana' ? '◎' : '⟠'}
+          <h1 className="font-pixel text-2xl text-primary mb-4 animate-glow-pulse">
+            WAR {network === 'solana' ? '◎' : '⟠'}
           </h1>
           <p className="font-mono text-sm text-muted-foreground">
             Classic card battle • Highest card wins
