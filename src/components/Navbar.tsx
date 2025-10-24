@@ -11,7 +11,6 @@ export const Navbar = () => {
 
   const navLinks = [
     { to: "/", label: "Home" },
-    { to: "/chat", label: "Chat" },
     { to: "/forum", label: "Forum" },
     { to: "/arcade", label: "Arcade" },
   ];
