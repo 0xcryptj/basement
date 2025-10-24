@@ -56,10 +56,10 @@ const Forum = () => {
   );
 
   return (
-    <div className="min-h-screen bg-[#0e0e10]">
+    <div className="min-h-screen flex flex-col bg-[#0e0e10]">
       <Navbar />
       
-      <div className="ml-0 lg:ml-[280px] pt-16 pb-8 transition-all duration-300">
+      <div className="flex-1 ml-0 lg:ml-[280px] pt-16 pb-8 transition-all duration-300">
         {/* Header - 4chan style */}
         <div className="bg-[#1a1a1d] border-b-2 border-primary/20 py-3 mb-4">
           <div className="container mx-auto px-4">

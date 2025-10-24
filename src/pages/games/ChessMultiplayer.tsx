@@ -226,7 +226,8 @@ const ChessMultiplayer = () => {
   };
 
   return (
-    <div className="min-h-screen flex flex-col bg-background">
+    <div className="min-h-screen flex flex-col bg-background relative">
+      <div className="absolute inset-0 bg-cover bg-center opacity-25 pointer-events-none" style={{ backgroundImage: 'url(/src/assets/bk3.png)' }} />
       <Navbar />
       <ChainIndicator />
       <ChatSidebar />

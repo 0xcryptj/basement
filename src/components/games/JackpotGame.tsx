@@ -335,17 +335,22 @@ export const JackpotGame = () => {
                           }`}
                           animate={isAnimating ? {
                             scale: [1, 1.05, 1],
+                            rotate: [0, 2, -2, 0],
                             backgroundColor: ["rgba(0, 0, 0, 0)", "rgba(0, 245, 255, 0.1)", "rgba(0, 0, 0, 0)"]
                           } : isWinner ? {
+                            rotate: [0, 5, -5, 0],
                             boxShadow: [
                               "0 0 20px rgba(236, 72, 153, 0.5)",
                               "0 0 40px rgba(236, 72, 153, 0.8)",
                               "0 0 20px rgba(236, 72, 153, 0.5)"
                             ]
-                          } : {}}
+                          } : {
+                            rotate: [0, 1, -1, 0]
+                          }}
                           transition={{
                             duration: isWinner ? 1.5 : 0.5,
-                            repeat: isWinner ? Infinity : 0
+                            repeat: isWinner ? Infinity : isAnimating ? 0 : Infinity,
+                            repeatDelay: isWinner ? 0 : 2
                           }}
                         >
                           {isWinner && <WinnerSparkles show={showSparkles} />}

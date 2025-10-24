@@ -155,7 +155,7 @@ export const LeftChatSidebar = () => {
     <motion.div
       initial={{ x: -300 }}
       animate={{ x: 0 }}
-      className="fixed left-0 top-16 h-[calc(100vh-4rem)] w-[280px] bg-[hsl(220,30%,8%)] border-r border-primary/20 z-40 flex-col shadow-glow-cyan hidden lg:flex"
+      className="fixed left-0 top-16 h-[calc(100vh-4rem)] w-[280px] bg-[hsl(220,30%,8%)]/70 backdrop-blur-md border-r border-primary/20 z-40 flex-col shadow-glow-cyan hidden lg:flex"
     >
       {/* Header */}
       <div className="p-3 border-b border-primary/20 flex items-center justify-between">

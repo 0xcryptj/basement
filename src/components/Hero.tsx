@@ -1,6 +1,5 @@
 import { Link } from "react-router-dom";
 import { Button } from "@/components/ui/button";
-import { Gamepad2, MessageSquare, Layout } from "lucide-react";
 import { motion } from "framer-motion";
 import bk3Image from "@/assets/bk3.png";
 
@@ -17,12 +16,12 @@ export const Hero = () => {
       />
       <div className="absolute inset-0 bg-gradient-to-b from-background/90 via-background/70 to-background/95" />
       
-      {/* Floating Particles */}
+      {/* Floating Particles - Squares */}
       <div className="absolute inset-0 overflow-hidden">
-        {[...Array(20)].map((_, i) => (
+        {[...Array(80)].map((_, i) => (
           <div
             key={i}
-            className="absolute w-1 h-1 bg-primary rounded-full animate-float"
+            className="absolute w-1 h-1 bg-primary animate-float"
             style={{
               left: `${Math.random() * 100}%`,
               top: `${Math.random() * 100}%`,
@@ -40,11 +39,11 @@ export const Hero = () => {
           initial={{ y: -50, opacity: 0 }}
           animate={{ y: 0, opacity: 1 }}
           transition={{ duration: 0.8, delay: 0.3 }}
-          className="font-pixel text-3xl sm:text-4xl md:text-6xl text-primary mb-6 animate-glow-pulse"
+          className="font-pixel text-2xl sm:text-3xl md:text-4xl text-primary mb-6 animate-glow-pulse"
         >
           WELCOME TO
           <br />
-          <span className="text-4xl sm:text-5xl md:text-7xl animate-neon-flicker">
+          <span className="text-3xl sm:text-4xl md:text-5xl animate-neon-flicker">
             THE BASEMENT
           </span>
         </motion.h1>
@@ -77,78 +76,8 @@ export const Hero = () => {
           </Link>
         </motion.div>
 
-        {/* Feature Cards */}
-        <motion.div 
-          initial={{ y: 100, opacity: 0 }}
-          animate={{ y: 0, opacity: 1 }}
-          transition={{ duration: 0.8, delay: 0.9 }}
-          className="grid grid-cols-1 md:grid-cols-3 gap-4 mt-16"
-        >
-          <FeatureCard
-            icon={<MessageSquare className="w-8 h-8" />}
-            title="IRC Chat"
-            description="Terminal-style chatrooms"
-            color="cyan"
-            delay={1.1}
-          />
-          <FeatureCard
-            icon={<Layout className="w-8 h-8" />}
-            title="Forum"
-            description="Anonymous image boards"
-            color="purple"
-            delay={1.2}
-          />
-          <FeatureCard
-            icon={<Gamepad2 className="w-8 h-8" />}
-            title="Arcade"
-            description="On-chain gaming"
-            color="magenta"
-            delay={1.3}
-          />
-        </motion.div>
       </div>
     </div>
   );
 };
 
-interface FeatureCardProps {
-  icon: React.ReactNode;
-  title: string;
-  description: string;
-  color: "cyan" | "purple" | "magenta";
-  delay: number;
-}
-
-const FeatureCard = ({ icon, title, description, color, delay }: FeatureCardProps) => {
-  const shadowClass = {
-    cyan: "hover:shadow-glow-cyan",
-    purple: "hover:shadow-glow-purple",
-    magenta: "hover:shadow-glow-magenta",
-  }[color];
-
-  const textClass = {
-    cyan: "text-primary",
-    purple: "text-secondary",
-    magenta: "text-accent",
-  }[color];
-
-  return (
-    <motion.div
-      initial={{ scale: 0.8, opacity: 0, y: 50 }}
-      animate={{ scale: 1, opacity: 1, y: 0 }}
-      transition={{ duration: 0.5, delay }}
-      whileHover={{ scale: 1.05, y: -5 }}
-      className={`bg-card border-2 border-${color === "cyan" ? "primary" : color === "purple" ? "secondary" : "accent"} p-6 transition-all duration-300 ${shadowClass} group cursor-pointer`}
-    >
-      <motion.div 
-        className={`${textClass} mb-4 flex justify-center`}
-        animate={{ rotate: [0, 5, -5, 0] }}
-        transition={{ duration: 2, repeat: Infinity, repeatDelay: 1 }}
-      >
-        {icon}
-      </motion.div>
-      <h3 className="font-pixel text-xs mb-2">{title}</h3>
-      <p className="font-mono text-xs text-muted-foreground">{description}</p>
-    </motion.div>
-  );
-};
