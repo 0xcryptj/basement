@@ -3,6 +3,7 @@ import { Send, Hash, MessageSquare } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { ScrollArea } from "@/components/ui/scroll-area";
+import { Avatar, AvatarImage, AvatarFallback } from "@/components/ui/avatar";
 import { Sheet, SheetContent, SheetHeader, SheetTitle, SheetTrigger } from "@/components/ui/sheet";
 import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
@@ -11,13 +12,13 @@ import { useWallet } from "@/contexts/WalletContext";
 interface Message {
   id: string;
   content: string;
-  created_at: string;
-  user_id: string;
-  users?: {
+  createdAt: string;
+  userId: string;
+  user?: {
     id: string;
-    display_name?: string;
-    wallet_address: string;
-    avatar_url?: string;
+    username?: string;
+    walletAddress: string;
+    avatarUrl?: string;
   };
 }
 
@@ -53,10 +54,10 @@ export const ChatSidebar = () => {
 
   const loadChannels = async () => {
     const { data, error } = await supabase
-      .from('channels')
+      .from('Channel')
       .select('*')
-      .eq('is_private', false)
-      .order('created_at', { ascending: true });
+      .eq('isPrivate', false)
+      .order('createdAt', { ascending: true });
 
     if (!error && data) {
       setChannels(data);
@@ -69,18 +70,18 @@ export const ChatSidebar = () => {
   const loadMessages = async (channelId: string) => {
     setLoading(true);
     const { data, error } = await supabase
-      .from('messages')
+      .from('Message')
       .select(`
         *,
-        users:user_id (
+        user:User!Message_userId_fkey (
           id,
-          display_name,
-          wallet_address,
-          avatar_url
+          username,
+          walletAddress,
+          avatarUrl
         )
       `)
-      .eq('channel_id', channelId)
-      .order('created_at', { ascending: true })
+      .eq('channelId', channelId)
+      .order('createdAt', { ascending: true })
       .limit(100);
 
     if (!error && data) {
@@ -97,21 +98,21 @@ export const ChatSidebar = () => {
         {
           event: 'INSERT',
           schema: 'public',
-          table: 'messages',
-          filter: `channel_id=eq.${channelId}`,
+          table: 'Message',
+          filter: `channelId=eq.${channelId}`,
         },
         async (payload) => {
           const { data: userData } = await supabase
-            .from('users')
-            .select('id, display_name, wallet_address, avatar_url')
-            .eq('id', payload.new.user_id)
+            .from('User')
+            .select('id, username, walletAddress, avatarUrl')
+            .eq('id', payload.new.userId)
             .single();
 
           setMessages((prev) => [
             ...prev,
             {
               ...payload.new,
-              users: userData || undefined,
+              user: userData || undefined,
             } as Message,
           ]);
         }
@@ -127,9 +128,9 @@ export const ChatSidebar = () => {
     try {
       // Ensure user exists
       const { data: existingUser } = await supabase
-        .from('users')
+        .from('User')
         .select('id')
-        .eq('wallet_address', address)
+        .eq('walletAddress', address)
         .single();
 
       let userId = existingUser?.id;
@@ -137,10 +138,10 @@ export const ChatSidebar = () => {
       if (!existingUser) {
         // Create user if doesn't exist
         const { data: newUser, error: userError } = await supabase
-          .from('users')
+          .from('User')
           .insert({
-            wallet_address: address,
-            display_name: `user_${address.slice(0, 8)}`,
+            walletAddress: address,
+            username: `user_${address.slice(0, 8)}`,
           })
           .select('id')
           .single();
@@ -149,9 +150,9 @@ export const ChatSidebar = () => {
         userId = newUser.id;
       }
 
-      const { error } = await supabase.from('messages').insert({
-        user_id: userId,
-        channel_id: activeChannel,
+      const { error } = await supabase.from('Message').insert({
+        userId: userId,
+        channelId: activeChannel,
         content: inputMessage.trim(),
       });
 
@@ -169,8 +170,8 @@ export const ChatSidebar = () => {
   };
 
   const getDisplayName = (message: Message) => {
-    if (message.users?.display_name) return message.users.display_name;
-    if (message.users?.wallet_address) return message.users.wallet_address.slice(0, 8) + '...';
+    if (message.user?.username) return message.user.username;
+    if (message.user?.walletAddress) return message.user.walletAddress.slice(0, 8) + '...';
     return 'Anonymous';
   };
 
@@ -216,21 +217,26 @@ export const ChatSidebar = () => {
           ) : (
             <div className="space-y-3">
               {messages.map((message) => (
-                <div
-                  key={message.id}
-                  className="flex flex-col space-y-1 animate-fade-in"
-                >
-                  <div className="flex items-baseline gap-2">
-                    <span className="font-pixel text-[0.6rem] text-primary">
-                      {getDisplayName(message)}
-                    </span>
-                    <span className="font-mono text-[0.5rem] text-muted-foreground">
-                      {new Date(message.created_at).toLocaleTimeString()}
-                    </span>
+                <div key={message.id} className="flex items-start gap-3 p-2 hover:bg-card/50 rounded-lg transition-colors animate-fade-in">
+                  <Avatar className="h-8 w-8 ring-2 ring-primary/20">
+                    <AvatarImage src={message.user?.avatarUrl} />
+                    <AvatarFallback className="bg-primary/20 text-primary text-xs">
+                      {message.user?.username?.[0]?.toUpperCase() || message.user?.walletAddress?.slice(0, 2).toUpperCase()}
+                    </AvatarFallback>
+                  </Avatar>
+                  <div className="flex-1 min-w-0">
+                    <div className="flex items-baseline gap-2">
+                      <span className="font-pixel text-[0.65rem] text-primary">
+                        {getDisplayName(message)}
+                      </span>
+                      <span className="font-mono text-[0.5rem] text-muted-foreground">
+                        {new Date(message.createdAt).toLocaleTimeString()}
+                      </span>
+                    </div>
+                    <p className="font-mono text-xs text-foreground break-words mt-0.5">
+                      {message.content}
+                    </p>
                   </div>
-                  <p className="font-mono text-xs text-foreground pl-2 break-words">
-                    {message.content}
-                  </p>
                 </div>
               ))}
             </div>

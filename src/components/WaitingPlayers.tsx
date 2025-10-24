@@ -1,6 +1,7 @@
 import { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { Users } from 'lucide-react';
+import { Avatar, AvatarImage, AvatarFallback } from '@/components/ui/avatar';
 import { supabase } from '@/integrations/supabase/client';
 
 interface WaitingPlayer {
@@ -9,11 +10,11 @@ interface WaitingPlayer {
   game_type: string;
   network: string;
   wager_amount: number;
-  users?: {
+  user?: {
     id: string;
-    display_name?: string;
-    wallet_address: string;
-    avatar_url?: string;
+    username?: string;
+    walletAddress: string;
+    avatarUrl?: string;
   };
 }
 
@@ -33,11 +34,11 @@ export const WaitingPlayers = () => {
       .from('waiting_players')
       .select(`
         *,
-        users:user_id (
+        user:User!waiting_players_user_id_fkey (
           id,
-          display_name,
-          wallet_address,
-          avatar_url
+          username,
+          walletAddress,
+          avatarUrl
         )
       `)
       .order('created_at', { ascending: false })
@@ -68,8 +69,8 @@ export const WaitingPlayers = () => {
   };
 
   const getDisplayName = (player: WaitingPlayer) => {
-    if (player.users?.display_name) return player.users.display_name;
-    if (player.users?.wallet_address) return player.users.wallet_address.slice(0, 8) + '...';
+    if (player.user?.username) return player.user.username;
+    if (player.user?.walletAddress) return player.user.walletAddress.slice(0, 8) + '...';
     return 'Anonymous';
   };
 
@@ -95,10 +96,16 @@ export const WaitingPlayers = () => {
               initial={{ opacity: 0, scale: 0.8 }}
               animate={{ opacity: 1, scale: 1 }}
               exit={{ opacity: 0, scale: 0.8 }}
-              className="flex items-center justify-between text-[0.6rem] font-mono bg-card/50 p-2 rounded border border-primary/20"
+              className="flex items-center gap-2 text-[0.6rem] font-mono bg-card/50 p-2 rounded border border-primary/20"
             >
-              <div className="flex flex-col gap-1">
-                <span className="text-foreground">{getDisplayName(player)}</span>
+              <Avatar className="h-8 w-8 ring-2 ring-primary/20">
+                <AvatarImage src={player.user?.avatarUrl} />
+                <AvatarFallback className="bg-primary/20 text-primary text-xs">
+                  {player.user?.username?.[0]?.toUpperCase() || player.user?.walletAddress?.slice(0, 2).toUpperCase()}
+                </AvatarFallback>
+              </Avatar>
+              <div className="flex-1 min-w-0 flex flex-col gap-1">
+                <span className="text-foreground truncate">{getDisplayName(player)}</span>
                 <div className="flex items-center gap-2">
                   <span className="text-muted-foreground">{player.game_type}</span>
                   <span className={`px-1 rounded ${

@@ -94,11 +94,10 @@ export const ProfileSetup = ({ isOpen, userId, walletAddress, onComplete }: Prof
     
     try {
       const { error } = await supabase
-        .from('users')
+        .from('User')
         .update({
-          display_name: displayName,
-          bio: bio || null,
-          avatar_url: avatarUrl || null,
+          username: displayName,
+          avatarUrl: avatarUrl || null,
         })
         .eq('id', userId);
 

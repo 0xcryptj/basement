@@ -223,13 +223,6 @@ export type Database = {
             referencedRelation: "lucky_block_rounds"
             referencedColumns: ["id"]
           },
-          {
-            foreignKeyName: "lucky_block_entries_user_id_fkey"
-            columns: ["user_id"]
-            isOneToOne: false
-            referencedRelation: "User"
-            referencedColumns: ["id"]
-          },
         ]
       }
       lucky_block_rounds: {
@@ -263,15 +256,7 @@ export type Database = {
           status?: Database["public"]["Enums"]["match_status"]
           winner_id?: string | null
         }
-        Relationships: [
-          {
-            foreignKeyName: "lucky_block_rounds_winner_id_fkey"
-            columns: ["winner_id"]
-            isOneToOne: false
-            referencedRelation: "User"
-            referencedColumns: ["id"]
-          },
-        ]
+        Relationships: []
       }
       matches: {
         Row: {
@@ -316,29 +301,7 @@ export type Database = {
           wager_amount?: number
           winner_id?: string | null
         }
-        Relationships: [
-          {
-            foreignKeyName: "matches_player1_id_fkey"
-            columns: ["player1_id"]
-            isOneToOne: false
-            referencedRelation: "User"
-            referencedColumns: ["id"]
-          },
-          {
-            foreignKeyName: "matches_player2_id_fkey"
-            columns: ["player2_id"]
-            isOneToOne: false
-            referencedRelation: "User"
-            referencedColumns: ["id"]
-          },
-          {
-            foreignKeyName: "matches_winner_id_fkey"
-            columns: ["winner_id"]
-            isOneToOne: false
-            referencedRelation: "User"
-            referencedColumns: ["id"]
-          },
-        ]
+        Relationships: []
       }
       matchmaking_queue: {
         Row: {
@@ -365,15 +328,7 @@ export type Database = {
           user_id?: string
           wager_amount?: number
         }
-        Relationships: [
-          {
-            foreignKeyName: "matchmaking_queue_user_id_fkey"
-            columns: ["user_id"]
-            isOneToOne: false
-            referencedRelation: "User"
-            referencedColumns: ["id"]
-          },
-        ]
+        Relationships: []
       }
       Message: {
         Row: {
@@ -595,55 +550,37 @@ export type Database = {
           avatarUrl: string | null
           balanceEth: number | null
           balanceUsd: number | null
-          bio: string | null
           createdAt: string | null
-          display_name: string | null
-          games_played: number | null
           id: string
           isVerified: boolean | null
           lastSeenAt: string | null
-          total_wagered: number | null
-          total_won: number | null
           updatedAt: string | null
           username: string | null
           walletAddress: string
-          wins: number | null
         }
         Insert: {
           avatarUrl?: string | null
           balanceEth?: number | null
           balanceUsd?: number | null
-          bio?: string | null
           createdAt?: string | null
-          display_name?: string | null
-          games_played?: number | null
           id: string
           isVerified?: boolean | null
           lastSeenAt?: string | null
-          total_wagered?: number | null
-          total_won?: number | null
           updatedAt?: string | null
           username?: string | null
           walletAddress: string
-          wins?: number | null
         }
         Update: {
           avatarUrl?: string | null
           balanceEth?: number | null
           balanceUsd?: number | null
-          bio?: string | null
           createdAt?: string | null
-          display_name?: string | null
-          games_played?: number | null
           id?: string
           isVerified?: boolean | null
           lastSeenAt?: string | null
-          total_wagered?: number | null
-          total_won?: number | null
           updatedAt?: string | null
           username?: string | null
           walletAddress?: string
-          wins?: number | null
         }
         Relationships: []
       }

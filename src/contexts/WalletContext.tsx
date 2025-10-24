@@ -31,17 +31,17 @@ export const WalletProvider = ({ children }: { children: ReactNode }) => {
 
   const ensureUserExists = async (walletAddress: string) => {
     const { data: existingUser } = await supabase
-      .from('users')
+      .from('User')
       .select('id')
-      .eq('wallet_address', walletAddress)
+      .eq('walletAddress', walletAddress)
       .single();
 
     if (!existingUser) {
       const { data: newUser, error } = await supabase
-        .from('users')
+        .from('User')
         .insert({
-          wallet_address: walletAddress,
-          display_name: `user_${walletAddress.slice(0, 8)}`,
+          walletAddress: walletAddress,
+          username: `user_${walletAddress.slice(0, 8)}`,
         })
         .select('id')
         .single();
@@ -110,8 +110,8 @@ export const WalletProvider = ({ children }: { children: ReactNode }) => {
 
       // Update last seen and online count
       await supabase
-        .from('users')
-        .update({ last_seen_at: new Date().toISOString() })
+        .from('User')
+        .update({ lastSeenAt: new Date().toISOString() })
         .eq('id', uid);
       
       await supabase.rpc('update_online_count', {
@@ -167,8 +167,8 @@ export const WalletProvider = ({ children }: { children: ReactNode }) => {
       const uid = await ensureUserExists(walletAddress);
 
       await supabase
-        .from('users')
-        .update({ last_seen_at: new Date().toISOString() })
+        .from('User')
+        .update({ lastSeenAt: new Date().toISOString() })
         .eq('id', uid);
       
       await supabase.rpc('update_online_count', {
