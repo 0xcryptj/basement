@@ -1,148 +1,118 @@
+import { useState, useEffect } from "react";
 import { Card } from "@/components/ui/card";
-import { Avatar, AvatarImage, AvatarFallback } from "@/components/ui/avatar";
-import { Trophy, TrendingUp } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
+import { Trophy, Flame } from "lucide-react";
+import { supabase } from "@/integrations/supabase/client";
+import solanaLogo from "@/assets/solana-logo.svg";
+import baseLogo from "@/assets/base-logo.svg";
 
-interface HistoricalGame {
-  id: string;
+interface GameHistoryProps {
   gameType: string;
-  winner: {
-    username: string;
-    avatarUrl?: string;
-  };
-  loser: {
-    username: string;
-    avatarUrl?: string;
-  };
-  wagerAmount: number;
-  winAmount: number;
-  timestamp: string;
-  network: string;
 }
 
-const mockHistory: HistoricalGame[] = [
-  {
-    id: "1",
-    gameType: "CoinToss",
-    winner: { username: "CryptoKing", avatarUrl: undefined },
-    loser: { username: "DeFiDegen", avatarUrl: undefined },
-    wagerAmount: 0.5,
-    winAmount: 0.9,
-    timestamp: "2 hours ago",
-    network: "solana"
-  },
-  {
-    id: "2",
-    gameType: "War",
-    winner: { username: "BaseChad", avatarUrl: undefined },
-    loser: { username: "EthMaxi", avatarUrl: undefined },
-    wagerAmount: 0.25,
-    winAmount: 0.45,
-    timestamp: "3 hours ago",
-    network: "base"
-  },
-  {
-    id: "3",
-    gameType: "Connect4",
-    winner: { username: "SolWhale", avatarUrl: undefined },
-    loser: { username: "MoonBoi", avatarUrl: undefined },
-    wagerAmount: 1.0,
-    winAmount: 1.8,
-    timestamp: "5 hours ago",
-    network: "solana"
-  },
-  {
-    id: "4",
-    gameType: "CoinToss",
-    winner: { username: "DiamondHands", avatarUrl: undefined },
-    loser: { username: "PaperHands", avatarUrl: undefined },
-    wagerAmount: 0.1,
-    winAmount: 0.18,
-    timestamp: "6 hours ago",
-    network: "base"
-  },
-  {
-    id: "5",
-    gameType: "War",
-    winner: { username: "GigaBrain", avatarUrl: undefined },
-    loser: { username: "Ape4Life", avatarUrl: undefined },
-    wagerAmount: 0.75,
-    winAmount: 1.35,
-    timestamp: "8 hours ago",
-    network: "solana"
-  },
-];
+export const GameHistory = ({ gameType }: GameHistoryProps) => {
+  const [recentGames, setRecentGames] = useState<any[]>([]);
+  const [loading, setLoading] = useState(true);
 
-export const GameHistory = () => {
+  useEffect(() => {
+    loadRecentGames();
+    const channel = subscribeToGames();
+    return () => {
+      supabase.removeChannel(channel);
+    };
+  }, [gameType]);
+
+  const loadRecentGames = async () => {
+    setLoading(true);
+    const { data, error } = await supabase
+      .from('matches')
+      .select(`
+        *,
+        player1:User!matches_player1_id_fkey(username, avatarUrl),
+        player2:User!matches_player2_id_fkey(username, avatarUrl)
+      `)
+      .eq('game_type', gameType)
+      .eq('status', 'completed')
+      .not('winner_id', 'is', null)
+      .order('completed_at', { ascending: false })
+      .limit(10);
+
+    if (!error && data) {
+      setRecentGames(data as any);
+    }
+    setLoading(false);
+  };
+
+  const subscribeToGames = () => {
+    const channel = supabase
+      .channel(`${gameType}-game-history`)
+      .on(
+        'postgres_changes',
+        {
+          event: 'UPDATE',
+          schema: 'public',
+          table: 'matches',
+          filter: `game_type=eq.${gameType}`,
+        },
+        () => loadRecentGames()
+      )
+      .subscribe();
+
+    return channel;
+  };
+
+  const getWinStreak = (playerId: string) => {
+    let streak = 0;
+    for (const game of recentGames) {
+      if (game.winner_id === playerId) {
+        streak++;
+      } else if (game.player1_id === playerId || game.player2_id === playerId) {
+        break;
+      }
+    }
+    return streak;
+  };
+
   return (
-    <Card className="bg-[hsl(220,30%,10%)]/80 backdrop-blur-sm border-primary/20 p-4">
-      <div className="flex items-center gap-2 mb-4">
-        <TrendingUp className="w-4 h-4 text-primary" />
-        <h3 className="font-pixel text-sm text-primary">Recent Games</h3>
-      </div>
-
+    <Card className="bg-[hsl(220,30%,10%)]/80 backdrop-blur-sm border border-primary/20 p-4">
       <div className="space-y-3">
-        {mockHistory.map((game) => (
-          <div
-            key={game.id}
-            className="bg-background/50 border border-primary/10 rounded p-3 hover:border-primary/20 transition-colors"
-          >
-            <div className="flex items-center justify-between mb-2">
-              <Badge
-                variant="outline"
-                className="font-mono text-xs border-primary/20"
-              >
-                {game.gameType}
-              </Badge>
-              <span className="font-mono text-xs text-muted-foreground">
-                {game.timestamp}
-              </span>
-            </div>
+        <h3 className="font-pixel text-sm text-primary">Recent Games</h3>
+        
+        {loading ? (
+          <div className="text-center py-4 font-mono text-xs text-muted-foreground">Loading...</div>
+        ) : recentGames.length === 0 ? (
+          <div className="text-center py-4 font-mono text-xs text-muted-foreground">No games yet</div>
+        ) : (
+          <div className="space-y-2">
+            {recentGames.map((game) => {
+              const winner = game.winner_id === game.player1_id ? game.player1 : game.player2;
+              const loser = game.winner_id === game.player1_id ? game.player2 : game.player1;
+              const winStreak = getWinStreak(game.winner_id);
 
-            <div className="flex items-center justify-between">
-              <div className="flex items-center gap-2 flex-1 min-w-0">
-                <Avatar className="w-8 h-8 border border-accent/30">
-                  <AvatarImage src={game.winner.avatarUrl} />
-                  <AvatarFallback className="bg-accent/20 text-accent font-pixel text-xs">
-                    {game.winner.username[0]}
-                  </AvatarFallback>
-                </Avatar>
-                <div className="min-w-0 flex-1">
-                  <div className="flex items-center gap-1">
-                    <Trophy className="w-3 h-3 text-accent shrink-0" />
-                    <p className="font-mono text-xs text-foreground truncate">
-                      {game.winner.username}
-                    </p>
+              return (
+                <div key={game.id} className="flex items-center justify-between p-2 bg-background/30 rounded-lg">
+                  <div className="flex items-center gap-2 flex-1 min-w-0">
+                    <Trophy className="w-3 h-3 text-accent flex-shrink-0" />
+                    <span className="font-mono text-xs text-foreground truncate">{winner?.username || 'Player'}</span>
+                    <span className="font-mono text-xs text-muted-foreground">vs</span>
+                    <span className="font-mono text-xs text-muted-foreground truncate">{loser?.username || 'Player'}</span>
                   </div>
-                  <p className="font-mono text-xs text-accent">
-                    +{game.winAmount.toFixed(2)} {game.network === 'solana' ? '◎' : '⟠'}
-                  </p>
+                  <div className="flex items-center gap-2 flex-shrink-0">
+                    {winStreak >= 3 && (
+                      <Badge className="bg-accent/20 text-accent border-accent/30 font-pixel text-[0.5rem] px-1.5">
+                        <Flame className="w-2 h-2 mr-0.5" />{winStreak}
+                      </Badge>
+                    )}
+                    <div className="flex items-center gap-1">
+                      <img src={game.network === 'solana' ? solanaLogo : baseLogo} alt={game.network} className="w-3 h-3" />
+                      <span className="font-mono text-xs text-primary font-bold">{game.wager_amount.toFixed(2)}</span>
+                    </div>
+                  </div>
                 </div>
-              </div>
-
-              <div className="font-pixel text-xs text-muted-foreground px-3">
-                vs
-              </div>
-
-              <div className="flex items-center gap-2 flex-1 min-w-0 justify-end">
-                <div className="min-w-0 flex-1 text-right">
-                  <p className="font-mono text-xs text-muted-foreground truncate">
-                    {game.loser.username}
-                  </p>
-                  <p className="font-mono text-xs text-destructive">
-                    -{game.wagerAmount.toFixed(2)} {game.network === 'solana' ? '◎' : '⟠'}
-                  </p>
-                </div>
-                <Avatar className="w-8 h-8 border border-muted/30">
-                  <AvatarImage src={game.loser.avatarUrl} />
-                  <AvatarFallback className="bg-muted/20 text-muted-foreground font-pixel text-xs">
-                    {game.loser.username[0]}
-                  </AvatarFallback>
-                </Avatar>
-              </div>
-            </div>
+              );
+            })}
           </div>
-        ))}
+        )}
       </div>
     </Card>
   );

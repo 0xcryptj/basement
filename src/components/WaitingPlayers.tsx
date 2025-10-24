@@ -48,7 +48,6 @@ export const WaitingPlayers = ({ gameType }: WaitingPlayersProps) => {
       .order('created_at', { ascending: false })
       .limit(10);
 
-    // Filter by game type if provided
     if (gameType) {
       query = query.eq('game_type', gameType);
     }

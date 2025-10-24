@@ -156,46 +156,42 @@ export const LeftChatSidebar = () => {
   const getUserLevel = () => Math.floor(Math.random() * 100) + 1;
 
   return (
-    <AnimatePresence mode="wait">
-      <motion.div
-        initial={{ x: -300 }}
-        animate={{ x: 0, width: isCollapsed ? "60px" : "280px" }}
-        className="fixed left-0 top-16 h-[calc(100vh-4rem)] bg-[hsl(220,30%,8%)] border-r border-primary/20 z-40 flex flex-col hidden lg:flex shadow-glow-cyan"
+    <>
+      {/* Mobile Toggle Button */}
+      <Button
+        variant="ghost"
+        size="icon"
+        className="fixed left-4 top-20 z-50 lg:hidden bg-primary/20 hover:bg-primary/30"
+        onClick={() => setIsCollapsed(!isCollapsed)}
       >
+        {isCollapsed ? <ChevronRight className="h-4 w-4" /> : <ChevronLeft className="h-4 w-4" />}
+      </Button>
+
+      <AnimatePresence mode="wait">
+        <motion.div
+          initial={{ x: -300 }}
+          animate={{ x: isCollapsed ? -300 : 0 }}
+          className="fixed left-0 top-16 h-[calc(100vh-4rem)] w-[280px] bg-[hsl(220,30%,8%)] border-r border-primary/20 z-40 flex flex-col shadow-glow-cyan lg:translate-x-0"
+        >
         {/* Header */}
         <div className="p-3 border-b border-primary/20 flex items-center justify-between">
-          {!isCollapsed && (
-            <>
-              <div className="flex items-center gap-2">
-                <span className="font-pixel text-[0.65rem] text-primary">Degen Chat</span>
-                <Badge variant="secondary" className="font-mono text-[0.5rem] bg-primary/20 text-primary border-primary/30">
-                  {onlineCount}
-                </Badge>
-              </div>
-              <Button
-                variant="ghost"
-                size="icon"
-                className="h-6 w-6 text-muted-foreground hover:text-primary"
-                onClick={() => setIsCollapsed(true)}
-              >
-                <ChevronLeft className="h-4 w-4" />
-              </Button>
-            </>
-          )}
-          {isCollapsed && (
-            <Button
-              variant="ghost"
-              size="icon"
-              className="h-6 w-6 text-muted-foreground hover:text-primary mx-auto"
-              onClick={() => setIsCollapsed(false)}
-            >
-              <ChevronRight className="h-4 w-4" />
-            </Button>
-          )}
+          <div className="flex items-center gap-2">
+            <span className="font-pixel text-[0.65rem] text-primary">Degen Chat</span>
+            <Badge variant="secondary" className="font-mono text-[0.5rem] bg-primary/20 text-primary border-primary/30">
+              {onlineCount}
+            </Badge>
+          </div>
+          <Button
+            variant="ghost"
+            size="icon"
+            className="h-6 w-6 text-muted-foreground hover:text-primary lg:hidden"
+            onClick={() => setIsCollapsed(true)}
+          >
+            <ChevronLeft className="h-4 w-4" />
+          </Button>
         </div>
 
-        {!isCollapsed && (
-          <>
+        <>
             {/* Channel Selector */}
             <div className="m-3 space-y-2">
               <div className="font-pixel text-[0.5rem] text-muted-foreground">CHANNELS</div>
@@ -297,8 +293,8 @@ export const LeftChatSidebar = () => {
               </div>
             </div>
           </>
-        )}
-      </motion.div>
-    </AnimatePresence>
+        </motion.div>
+      </AnimatePresence>
+    </>
   );
 };
