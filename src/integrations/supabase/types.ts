@@ -131,6 +131,35 @@ export type Database = {
         }
         Relationships: []
       }
+      game_spectators: {
+        Row: {
+          id: string
+          joined_at: string | null
+          match_id: string
+          user_id: string
+        }
+        Insert: {
+          id?: string
+          joined_at?: string | null
+          match_id: string
+          user_id: string
+        }
+        Update: {
+          id?: string
+          joined_at?: string | null
+          match_id?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "game_spectators_match_id_fkey"
+            columns: ["match_id"]
+            isOneToOne: false
+            referencedRelation: "matches"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       global_stats: {
         Row: {
           base_online: number | null

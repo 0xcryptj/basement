@@ -5,6 +5,7 @@ import { Footer } from "@/components/Footer";
 import { useNavigate } from "react-router-dom";
 import { ChatSidebar } from "@/components/ChatSidebar";
 import { ChainIndicator } from "@/components/ChainIndicator";
+import { LiveGames } from "@/components/LiveGames";
 import warGameImg from "@/assets/war.png";
 import chessGameImg from "@/assets/chess-game.png";
 import connect4GameImg from "@/assets/connect4.png";
@@ -107,23 +108,28 @@ const Arcade = () => {
           </p>
         </div>
 
+        {/* Live Games Section */}
+        <div className="max-w-md mx-auto mb-12">
+          <LiveGames />
+        </div>
+
         {/* Info Boxes */}
         <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-12 max-w-4xl mx-auto">
-          <div className="bg-card border-2 border-primary p-4 text-center shadow-glow-cyan">
+          <div className="bg-card/80 backdrop-blur-sm border-2 border-primary p-4 text-center shadow-glow-cyan">
             <Trophy className="w-8 h-8 text-primary mx-auto mb-2" />
             <p className="font-pixel text-xs text-primary mb-1">PROVABLY FAIR</p>
             <p className="font-mono text-xs text-muted-foreground">
               Smart contract verified
             </p>
           </div>
-          <div className="bg-card border-2 border-secondary p-4 text-center shadow-glow-purple">
+          <div className="bg-card/80 backdrop-blur-sm border-2 border-secondary p-4 text-center shadow-glow-purple">
             <Coins className="w-8 h-8 text-secondary mx-auto mb-2" />
             <p className="font-pixel text-xs text-secondary mb-1">AUTO PAYOUT</p>
             <p className="font-mono text-xs text-muted-foreground">
               Instant settlement
             </p>
           </div>
-          <div className="bg-card border-2 border-accent p-4 text-center shadow-glow-magenta">
+          <div className="bg-card/80 backdrop-blur-sm border-2 border-accent p-4 text-center shadow-glow-magenta">
             <Gamepad2 className="w-8 h-8 text-accent mx-auto mb-2" />
             <p className="font-pixel text-xs text-accent mb-1">MULTI-CHAIN</p>
             <p className="font-mono text-xs text-muted-foreground">
@@ -137,7 +143,7 @@ const Arcade = () => {
           {games.map((game) => (
             <div
               key={game.id}
-              className={`bg-card border-2 ${
+              className={`bg-card/80 backdrop-blur-sm border-2 ${
                 game.color === "primary"
                   ? "border-primary"
                   : game.color === "secondary"
@@ -195,7 +201,7 @@ const Arcade = () => {
 
         {/* Contract Info */}
         <div className="mt-12 max-w-4xl mx-auto">
-          <div className="bg-card border-2 border-primary p-6">
+          <div className="bg-card/80 backdrop-blur-sm border-2 border-primary p-6">
             <h2 className="font-pixel text-sm text-primary mb-4">
               SMART CONTRACTS
             </h2>

@@ -4,6 +4,7 @@ import { Footer } from "@/components/Footer";
 import { GlobalStats } from "@/components/GlobalStats";
 import { ChatSidebar } from "@/components/ChatSidebar";
 import { ChainIndicator } from "@/components/ChainIndicator";
+import { LiveGames } from "@/components/LiveGames";
 
 const Index = () => {
   return (
@@ -12,6 +13,11 @@ const Index = () => {
       <ChainIndicator />
       <ChatSidebar />
       <GlobalStats />
+      <div className="container mx-auto px-4 pt-20">
+        <div className="max-w-md mx-auto mb-8">
+          <LiveGames />
+        </div>
+      </div>
       <Hero />
       <Footer />
     </div>

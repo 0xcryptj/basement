@@ -8,51 +8,47 @@ All colors MUST be HSL.
 
 @layer base {
   :root {
-    /* Retro CRT Arcade Theme */
-    --background: 240 10% 5%;
-    --background-secondary: 240 15% 8%;
-    --foreground: 180 100% 85%;
+    /* Professional Dark Blue Arcade Theme */
+    --background: 220 40% 8%;
+    --background-secondary: 220 35% 12%;
+    --foreground: 210 100% 90%;
 
-    --card: 240 15% 8%;
-    --card-foreground: 180 100% 85%;
+    --card: 220 35% 10%;
+    --card-foreground: 210 100% 90%;
 
-    --popover: 240 20% 10%;
-    --popover-foreground: 180 100% 85%;
+    --popover: 220 40% 12%;
+    --popover-foreground: 210 100% 90%;
 
-    --primary: 180 100% 50%;
-    --primary-foreground: 240 10% 5%;
+    --primary: 210 100% 45%;
+    --primary-foreground: 0 0% 100%;
 
-    --secondary: 280 100% 60%;
-    --secondary-foreground: 240 10% 5%;
+    --secondary: 260 60% 50%;
+    --secondary-foreground: 0 0% 100%;
 
-    --muted: 240 10% 15%;
-    --muted-foreground: 180 50% 60%;
+    --muted: 220 20% 20%;
+    --muted-foreground: 210 20% 65%;
 
-    --accent: 330 100% 60%;
-    --accent-foreground: 240 10% 5%;
+    --accent: 280 70% 55%;
+    --accent-foreground: 0 0% 100%;
 
-    --destructive: 0 100% 50%;
+    --destructive: 0 80% 50%;
     --destructive-foreground: 0 0% 100%;
 
-    --border: 180 100% 50%;
-    --input: 240 15% 12%;
-    --ring: 180 100% 50%;
+    --border: 210 50% 30%;
+    --input: 220 30% 15%;
+    --ring: 210 100% 45%;
 
-    --radius: 0.25rem;
+    --radius: 0.5rem;
 
-    /* Neon Glows */
-    --glow-cyan: 0 0 20px hsl(180 100% 50% / 0.5);
-    --glow-purple: 0 0 20px hsl(280 100% 60% / 0.5);
-    --glow-magenta: 0 0 20px hsl(330 100% 60% / 0.5);
-    
-    /* CRT Effects - Dialed Down */
-    --scanline-opacity: 0.02;
-    --noise-opacity: 0.01;
+    /* Professional Glows */
+    --glow-cyan: 0 0 30px rgba(59, 130, 246, 0.4);
+    --glow-purple: 0 0 30px rgba(147, 51, 234, 0.4);
+    --glow-magenta: 0 0 30px rgba(236, 72, 153, 0.4);
     
     /* Gradients */
-    --gradient-neon: linear-gradient(135deg, hsl(180 100% 50%), hsl(280 100% 60%));
-    --gradient-arcade: linear-gradient(180deg, hsl(280 100% 60%), hsl(330 100% 60%));
-    --gradient-glow: radial-gradient(circle, hsl(180 100% 50% / 0.2), transparent);
+    --gradient-neon: linear-gradient(135deg, rgba(59, 130, 246, 0.2), rgba(147, 51, 234, 0.2));
+    --gradient-arcade: linear-gradient(180deg, rgba(147, 51, 234, 0.2), rgba(236, 72, 153, 0.2));
+    --gradient-glow: radial-gradient(circle, rgba(59, 130, 246, 0.15), transparent);
     
     /* Animations */
     --transition-smooth: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
@@ -86,15 +82,15 @@ All colors MUST be HSL.
     position: relative;
   }
   
-  /* Background overlay */
+  /* Background overlay with rgba */
   body::before {
     content: '';
     position: fixed;
     inset: 0;
     background: linear-gradient(
       135deg,
-      hsl(var(--background) / 0.75) 0%,
-      hsl(var(--background-secondary) / 0.8) 100%
+      rgba(15, 23, 42, 0.85) 0%,
+      rgba(30, 41, 59, 0.90) 100%
     );
     pointer-events: none;
     z-index: 0;
