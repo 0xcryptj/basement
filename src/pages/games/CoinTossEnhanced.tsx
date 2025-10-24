@@ -161,6 +161,17 @@ const CoinTossEnhanced = () => {
                 </div>
               )}
             </div>
+              }`}>
+                {isWinner ? "YOU WIN!" : "YOU LOSE"}
+              </div>
+            </div>
+
+              {gameState === "flipping" && (
+                <div className="mt-6 font-pixel text-accent animate-pulse">
+                  Flipping coin...
+                </div>
+              )}
+            </div>
 
             {/* Action Buttons */}
             <div className="flex gap-4 justify-center">

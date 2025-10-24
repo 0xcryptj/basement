@@ -3,9 +3,11 @@ import { Button } from "@/components/ui/button";
 import { Navbar } from "@/components/Navbar";
 import { Footer } from "@/components/Footer";
 import { useNavigate } from "react-router-dom";
-import warGameImg from "@/assets/war-game.png";
+import warGameImg from "@/assets/war.png";
 import chessGameImg from "@/assets/chess-game.png";
-import connect4GameImg from "@/assets/connect4-game.png";
+import connect4GameImg from "@/assets/connect4.png";
+import cointossImg from "@/assets/cointoss.png";
+import luckyBlockImg from "@/assets/war-game.png";
 
 interface Game {
   id: string;
@@ -55,7 +57,7 @@ const Arcade = () => {
       minBet: "",
       status: "live",
       color: "primary",
-      image: warGameImg,
+      image: cointossImg,
     },
     {
       id: "5",
@@ -64,7 +66,7 @@ const Arcade = () => {
       minBet: "",
       status: "live",
       color: "secondary",
-      image: chessGameImg,
+      image: luckyBlockImg,
     },
   ];
 
