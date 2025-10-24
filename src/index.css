@@ -185,4 +185,96 @@ All colors MUST be HSL.
       rgba(255, 255, 255, 0.05) 20px
     );
   }
+
+  /* Game state animations */
+  @keyframes pot-increase {
+    0% {
+      transform: scale(1);
+    }
+    50% {
+      transform: scale(1.1);
+    }
+    100% {
+      transform: scale(1);
+    }
+  }
+
+  @keyframes winner-celebration {
+    0% {
+      transform: scale(1) rotate(0deg);
+      opacity: 1;
+    }
+    25% {
+      transform: scale(1.2) rotate(-5deg);
+    }
+    50% {
+      transform: scale(1.3) rotate(5deg);
+    }
+    75% {
+      transform: scale(1.2) rotate(-5deg);
+    }
+    100% {
+      transform: scale(1) rotate(0deg);
+      opacity: 1;
+    }
+  }
+
+  @keyframes coin-flip {
+    0% {
+      transform: rotateY(0deg);
+    }
+    50% {
+      transform: rotateY(1800deg);
+    }
+    100% {
+      transform: rotateY(3600deg);
+    }
+  }
+
+  .animate-pot-increase {
+    animation: pot-increase 0.3s ease-out;
+  }
+
+  .animate-winner-celebration {
+    animation: winner-celebration 1s ease-out;
+  }
+
+  .animate-coin-flip {
+    animation: coin-flip 2s ease-in-out;
+  }
+
+  /* Neon border glow */
+  .border-glow {
+    position: relative;
+  }
+
+  .border-glow::before {
+    content: "";
+    position: absolute;
+    inset: -2px;
+    background: linear-gradient(
+      45deg,
+      hsl(var(--primary)),
+      hsl(var(--secondary)),
+      hsl(var(--accent)),
+      hsl(var(--primary))
+    );
+    background-size: 300% 300%;
+    border-radius: inherit;
+    animation: border-glow-rotate 3s ease-in-out infinite;
+    z-index: -1;
+    opacity: 0.7;
+  }
+
+  @keyframes border-glow-rotate {
+    0% {
+      background-position: 0% 50%;
+    }
+    50% {
+      background-position: 100% 50%;
+    }
+    100% {
+      background-position: 0% 50%;
+    }
+  }
 }
