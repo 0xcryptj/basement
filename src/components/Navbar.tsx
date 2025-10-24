@@ -66,7 +66,7 @@ export const Navbar = () => {
       <div className="max-w-screen-2xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="flex h-14 sm:h-16 items-center justify-between gap-4">
           {/* Logo - Responsive */}
-          <Link to="/" className="flex items-center gap-2 sm:gap-3 group shrink-0 focus:outline-none focus:ring-2 focus:ring-primary/50 rounded-lg transition-all duration-200" aria-label="Home">
+          <Link to="/" className="flex items-center gap-2 sm:gap-3 group shrink-0 focus:outline-none focus:ring-2 focus:ring-primary/50 rounded-lg transition-all duration-200 ml-0 lg:ml-[280px]" aria-label="Home">
             <img src={logoIcon} alt="" className="w-7 h-7 sm:w-9 sm:h-9 lg:w-10 lg:h-10 group-hover:scale-110 transition-transform duration-200" />
             <span className="text-primary font-pixel text-sm sm:text-base lg:text-lg animate-glow-pulse hidden xs:block">
               THE BASEMENT

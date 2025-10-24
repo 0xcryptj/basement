@@ -310,10 +310,10 @@ export const GameLobby = ({
             <div className="font-pixel text-sm text-foreground">
               ALL GAMES <span className="text-primary">{matches.length}</span>
             </div>
-            <div className="flex items-center gap-1 font-mono text-xs text-muted-foreground">
-              <span className="text-primary">≡</span>
-              <span>Payouts are settled in SOL</span>
-            </div>
+              <div className="flex items-center gap-1 font-mono text-xs text-muted-foreground">
+                <span className="text-primary">{network === 'solana' ? '◎' : '⟠'}</span>
+                <span>Payouts are settled in {network === 'solana' ? 'SOL' : 'ETH'}</span>
+              </div>
           </div>
 
           <div className="flex items-center gap-3">

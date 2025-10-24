@@ -18,7 +18,11 @@ interface WaitingPlayer {
   };
 }
 
-export const WaitingPlayers = () => {
+interface WaitingPlayersProps {
+  gameType?: string;
+}
+
+export const WaitingPlayers = ({ gameType }: WaitingPlayersProps) => {
   const [players, setPlayers] = useState<WaitingPlayer[]>([]);
 
   useEffect(() => {
@@ -27,10 +31,10 @@ export const WaitingPlayers = () => {
     return () => {
       supabase.removeChannel(channel);
     };
-  }, []);
+  }, [gameType]);
 
   const loadWaitingPlayers = async () => {
-    const { data, error } = await supabase
+    let query = supabase
       .from('waiting_players')
       .select(`
         *,
@@ -43,6 +47,13 @@ export const WaitingPlayers = () => {
       `)
       .order('created_at', { ascending: false })
       .limit(10);
+
+    // Filter by game type if provided
+    if (gameType) {
+      query = query.eq('game_type', gameType);
+    }
+
+    const { data, error } = await query;
 
     if (!error && data) {
       setPlayers(data);

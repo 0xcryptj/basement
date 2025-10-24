@@ -92,20 +92,17 @@ export const ProfileMenu = () => {
     setUploading(true);
 
     try {
-      // Delete old avatar if exists
-      if (userData?.avatarUrl) {
-        const oldPath = userData.avatarUrl.split('/').pop();
-        await supabase.storage.from('avatars').remove([`${userId}/${oldPath}`]);
-      }
-
-      // Upload new avatar
+      // Upload new avatar (don't delete old one due to RLS restrictions)
       const fileExt = file.name.split('.').pop();
       const fileName = `${Date.now()}.${fileExt}`;
-      const filePath = `${userId}/${fileName}`;
+      const filePath = `public/${fileName}`;
 
-      const { error: uploadError } = await supabase.storage
+      const { error: uploadError, data } = await supabase.storage
         .from('avatars')
-        .upload(filePath, file);
+        .upload(filePath, file, {
+          cacheControl: '3600',
+          upsert: true
+        });
 
       if (uploadError) throw uploadError;
 
@@ -125,9 +122,10 @@ export const ProfileMenu = () => {
       toast({ title: "Success", description: "Profile picture updated!" });
       queryClient.invalidateQueries({ queryKey: ['user', userId] });
     } catch (error: any) {
+      console.error('Avatar upload error:', error);
       toast({
         title: "Upload failed",
-        description: error.message,
+        description: error.message || "Failed to upload image",
         variant: "destructive",
       });
     } finally {
