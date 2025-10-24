@@ -139,10 +139,11 @@ export const ChatSidebar = () => {
         // Create user if doesn't exist
         const { data: newUser, error: userError } = await supabase
           .from('User')
-          .insert({
+          .insert([{
+            id: crypto.randomUUID(),
             walletAddress: address,
             username: `user_${address.slice(0, 8)}`,
-          })
+          }])
           .select('id')
           .single();
 
@@ -150,11 +151,12 @@ export const ChatSidebar = () => {
         userId = newUser.id;
       }
 
-      const { error } = await supabase.from('Message').insert({
+      const { error } = await supabase.from('Message').insert([{
+        id: crypto.randomUUID(),
         userId: userId,
         channelId: activeChannel,
         content: inputMessage.trim(),
-      });
+      }]);
 
       if (error) throw error;
 

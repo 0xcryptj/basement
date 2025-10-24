@@ -39,10 +39,11 @@ export const WalletProvider = ({ children }: { children: ReactNode }) => {
     if (!existingUser) {
       const { data: newUser, error } = await supabase
         .from('User')
-        .insert({
+        .insert([{
+          id: crypto.randomUUID(),
           walletAddress: walletAddress,
           username: `user_${walletAddress.slice(0, 8)}`,
-        })
+        }])
         .select('id')
         .single();
 
