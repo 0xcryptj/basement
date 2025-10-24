@@ -10,7 +10,6 @@ export const Navbar = () => {
   const location = useLocation();
 
   const navLinks = [
-    { to: "/", label: "Home" },
     { to: "/games/cointoss", label: "Coinflip" },
     { to: "/games/luckyblock", label: "Lucky Block" },
     { to: "/games/war", label: "War" },

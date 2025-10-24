@@ -66,6 +66,7 @@ export default {
       fontFamily: {
         pixel: ['"Press Start 2P"', 'cursive'],
         mono: ['"Share Tech Mono"', 'monospace'],
+        doto: ['Doto', 'sans-serif'],
       },
       keyframes: {
         "accordion-down": {
