@@ -9,10 +9,11 @@ interface WaitingPlayer {
   game_type: string;
   network: string;
   wager_amount: number;
-  User?: {
+  users?: {
+    id: string;
     display_name?: string;
-    username?: string;
-    walletAddress: string;
+    wallet_address: string;
+    avatar_url?: string;
   };
 }
 
@@ -32,10 +33,11 @@ export const WaitingPlayers = () => {
       .from('waiting_players')
       .select(`
         *,
-        User:user_id (
+        users:user_id (
+          id,
           display_name,
-          username,
-          walletAddress
+          wallet_address,
+          avatar_url
         )
       `)
       .order('created_at', { ascending: false })
@@ -66,9 +68,8 @@ export const WaitingPlayers = () => {
   };
 
   const getDisplayName = (player: WaitingPlayer) => {
-    if (player.User?.display_name) return player.User.display_name;
-    if (player.User?.username) return player.User.username;
-    if (player.User?.walletAddress) return player.User.walletAddress.slice(0, 8) + '...';
+    if (player.users?.display_name) return player.users.display_name;
+    if (player.users?.wallet_address) return player.users.wallet_address.slice(0, 8) + '...';
     return 'Anonymous';
   };
 

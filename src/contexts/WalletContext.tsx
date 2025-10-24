@@ -1,6 +1,5 @@
 import { createContext, useContext, useState, useEffect, ReactNode } from 'react';
-import { BrowserProvider, JsonRpcSigner } from 'ethers';
-import { Connection, PublicKey, Transaction } from '@solana/web3.js';
+import { BrowserProvider } from 'ethers';
 import { supabase } from '@/integrations/supabase/client';
 
 type Network = 'solana' | 'base';
@@ -30,6 +29,34 @@ export const WalletProvider = ({ children }: { children: ReactNode }) => {
   const [userId, setUserId] = useState<string | null>(null);
   const [isConnected, setIsConnected] = useState(false);
 
+  const ensureUserExists = async (walletAddress: string) => {
+    const { data: existingUser } = await supabase
+      .from('users')
+      .select('id')
+      .eq('wallet_address', walletAddress)
+      .single();
+
+    if (!existingUser) {
+      const { data: newUser, error } = await supabase
+        .from('users')
+        .insert({
+          wallet_address: walletAddress,
+          display_name: `user_${walletAddress.slice(0, 8)}`,
+        })
+        .select('id')
+        .single();
+
+      if (error) {
+        console.error('Error creating user:', error);
+        throw error;
+      }
+
+      return newUser.id;
+    }
+
+    return existingUser.id;
+  };
+
   useEffect(() => {
     // Check for existing session
     const checkSession = async () => {
@@ -41,21 +68,17 @@ export const WalletProvider = ({ children }: { children: ReactNode }) => {
         setAddress(savedAddress);
         setIsConnected(true);
         
-        // Fetch or create user in database
-        const { data: user } = await supabase
-          .from('User')
-          .select('id')
-          .eq('walletAddress', savedAddress)
-          .single();
-          
-        if (user) {
-          setUserId(user.id);
+        try {
+          const uid = await ensureUserExists(savedAddress);
+          setUserId(uid);
           
           // Update online count
           await supabase.rpc('update_online_count', {
             network_name: savedNetwork,
             count_change: 1,
           });
+        } catch (error) {
+          console.error('Error restoring session:', error);
         }
       }
     };
@@ -83,53 +106,22 @@ export const WalletProvider = ({ children }: { children: ReactNode }) => {
       const response = await window.solana.connect();
       const walletAddress = response.publicKey.toString();
 
-      // Create or get user from database
-      const { data: existingUser } = await supabase
-        .from('User')
-        .select('id')
-        .eq('walletAddress', walletAddress)
-        .single();
+      const uid = await ensureUserExists(walletAddress);
 
-      let userIdToSet: string;
-
-      if (existingUser) {
-        userIdToSet = existingUser.id;
-        
-        // Update last seen and online count
-        await supabase
-          .from('User')
-          .update({ lastSeenAt: new Date().toISOString() })
-          .eq('id', existingUser.id);
-        
-        await supabase.rpc('update_online_count', {
-          network_name: 'solana',
-          count_change: 1,
-        });
-      } else {
-        // Create new user
-        const { data: newUser, error } = await supabase
-          .from('User')
-          .insert({
-            id: crypto.randomUUID(),
-            walletAddress,
-            username: `user_${walletAddress.slice(0, 8)}`,
-          })
-          .select('id')
-          .single();
-
-        if (error) throw error;
-        userIdToSet = newUser.id;
-        
-        // Increment player count and online count
-        await supabase.rpc('update_online_count', {
-          network_name: 'solana',
-          count_change: 1,
-        });
-      }
+      // Update last seen and online count
+      await supabase
+        .from('users')
+        .update({ last_seen_at: new Date().toISOString() })
+        .eq('id', uid);
+      
+      await supabase.rpc('update_online_count', {
+        network_name: 'solana',
+        count_change: 1,
+      });
 
       setNetwork('solana');
       setAddress(walletAddress);
-      setUserId(userIdToSet);
+      setUserId(uid);
       setIsConnected(true);
       
       localStorage.setItem('wallet_network', 'solana');
@@ -172,50 +164,21 @@ export const WalletProvider = ({ children }: { children: ReactNode }) => {
         }
       }
 
-      // Create or get user from database
-      const { data: existingUser } = await supabase
-        .from('User')
-        .select('id')
-        .eq('walletAddress', walletAddress)
-        .single();
+      const uid = await ensureUserExists(walletAddress);
 
-      let userIdToSet: string;
-
-      if (existingUser) {
-        userIdToSet = existingUser.id;
-        
-        await supabase
-          .from('User')
-          .update({ lastSeenAt: new Date().toISOString() })
-          .eq('id', existingUser.id);
-        
-        await supabase.rpc('update_online_count', {
-          network_name: 'base',
-          count_change: 1,
-        });
-      } else {
-        const { data: newUser, error } = await supabase
-          .from('User')
-          .insert({
-            id: crypto.randomUUID(),
-            walletAddress,
-            username: `user_${walletAddress.slice(0, 8)}`,
-          })
-          .select('id')
-          .single();
-
-        if (error) throw error;
-        userIdToSet = newUser.id;
-        
-        await supabase.rpc('update_online_count', {
-          network_name: 'base',
-          count_change: 1,
-        });
-      }
+      await supabase
+        .from('users')
+        .update({ last_seen_at: new Date().toISOString() })
+        .eq('id', uid);
+      
+      await supabase.rpc('update_online_count', {
+        network_name: 'base',
+        count_change: 1,
+      });
 
       setNetwork('base');
       setAddress(walletAddress);
-      setUserId(userIdToSet);
+      setUserId(uid);
       setIsConnected(true);
       
       localStorage.setItem('wallet_network', 'base');

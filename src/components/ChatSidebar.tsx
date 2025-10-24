@@ -1,5 +1,5 @@
 import { useState, useEffect } from "react";
-import { Send, Hash, X, MessageSquare } from "lucide-react";
+import { Send, Hash, MessageSquare } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { ScrollArea } from "@/components/ui/scroll-area";
@@ -10,13 +10,14 @@ import { useWallet } from "@/contexts/WalletContext";
 
 interface Message {
   id: string;
-  userId: string;
   content: string;
-  createdAt: string;
-  User?: {
+  created_at: string;
+  user_id: string;
+  users?: {
+    id: string;
     display_name?: string;
-    username?: string;
-    walletAddress: string;
+    wallet_address: string;
+    avatar_url?: string;
   };
 }
 
@@ -28,12 +29,13 @@ interface Channel {
 
 export const ChatSidebar = () => {
   const { toast } = useToast();
-  const { userId, address } = useWallet();
+  const { address } = useWallet();
   const [channels, setChannels] = useState<Channel[]>([]);
   const [activeChannel, setActiveChannel] = useState("");
   const [messages, setMessages] = useState<Message[]>([]);
   const [inputMessage, setInputMessage] = useState("");
   const [isOpen, setIsOpen] = useState(false);
+  const [loading, setLoading] = useState(false);
 
   useEffect(() => {
     loadChannels();
@@ -42,125 +44,134 @@ export const ChatSidebar = () => {
   useEffect(() => {
     if (activeChannel) {
       loadMessages(activeChannel);
-      const unsubscribe = subscribeToMessages(activeChannel);
-      return unsubscribe;
+      const channel = subscribeToMessages(activeChannel);
+      return () => {
+        supabase.removeChannel(channel);
+      };
     }
   }, [activeChannel]);
 
   const loadChannels = async () => {
     const { data, error } = await supabase
-      .from("Channel")
-      .select("*")
-      .eq("isPrivate", false)
-      .order("createdAt", { ascending: true });
+      .from('channels')
+      .select('*')
+      .eq('is_private', false)
+      .order('created_at', { ascending: true });
 
-    if (error) {
-      console.error("Error loading channels:", error);
-      return;
-    }
-
-    if (data && data.length > 0) {
+    if (!error && data) {
       setChannels(data);
-      setActiveChannel(data[0].id);
+      if (data.length > 0 && !activeChannel) {
+        setActiveChannel(data[0].id);
+      }
     }
   };
 
   const loadMessages = async (channelId: string) => {
+    setLoading(true);
     const { data, error } = await supabase
-      .from("Message")
+      .from('messages')
       .select(`
         *,
-        User:userId (
+        users:user_id (
+          id,
           display_name,
-          username,
-          walletAddress
+          wallet_address,
+          avatar_url
         )
       `)
-      .eq("channelId", channelId)
-      .eq("isDeleted", false)
-      .order("createdAt", { ascending: true })
-      .limit(50);
+      .eq('channel_id', channelId)
+      .order('created_at', { ascending: true })
+      .limit(100);
 
-    if (error) {
-      console.error("Error loading messages:", error);
-      return;
-    }
-
-    if (data) {
+    if (!error && data) {
       setMessages(data);
     }
+    setLoading(false);
   };
 
   const subscribeToMessages = (channelId: string) => {
     const channel = supabase
-      .channel(`chat-${channelId}`)
+      .channel(`messages-${channelId}`)
       .on(
-        "postgres_changes",
+        'postgres_changes',
         {
-          event: "INSERT",
-          schema: "public",
-          table: "Message",
-          filter: `channelId=eq.${channelId}`,
+          event: 'INSERT',
+          schema: 'public',
+          table: 'messages',
+          filter: `channel_id=eq.${channelId}`,
         },
         async (payload) => {
-          const newMsg = payload.new as Message;
-          
-          // Fetch user info
           const { data: userData } = await supabase
-            .from("User")
-            .select("display_name, username, walletAddress")
-            .eq("id", newMsg.userId)
+            .from('users')
+            .select('id, display_name, wallet_address, avatar_url')
+            .eq('id', payload.new.user_id)
             .single();
 
-          setMessages((prev) => {
-            if (prev.find((m) => m.id === newMsg.id)) return prev;
-            return [...prev, { ...newMsg, User: userData }];
-          });
+          setMessages((prev) => [
+            ...prev,
+            {
+              ...payload.new,
+              users: userData || undefined,
+            } as Message,
+          ]);
         }
       )
       .subscribe();
 
-    return () => {
-      supabase.removeChannel(channel);
-    };
+    return channel;
   };
 
   const sendMessage = async () => {
-    if (!inputMessage.trim() || !activeChannel || !userId) {
-      if (!userId) {
-        toast({
-          title: "Connect Wallet",
-          description: "Please connect your wallet to chat",
-          variant: "destructive",
-        });
+    if (!inputMessage.trim() || !activeChannel || !address) return;
+
+    try {
+      // Ensure user exists
+      const { data: existingUser } = await supabase
+        .from('users')
+        .select('id')
+        .eq('wallet_address', address)
+        .single();
+
+      let userId = existingUser?.id;
+
+      if (!existingUser) {
+        // Create user if doesn't exist
+        const { data: newUser, error: userError } = await supabase
+          .from('users')
+          .insert({
+            wallet_address: address,
+            display_name: `user_${address.slice(0, 8)}`,
+          })
+          .select('id')
+          .single();
+
+        if (userError) throw userError;
+        userId = newUser.id;
       }
-      return;
-    }
 
-    const { error } = await supabase.from("Message").insert({
-      id: crypto.randomUUID(),
-      channelId: activeChannel,
-      userId: userId,
-      content: inputMessage,
-    });
-
-    if (error) {
-      toast({
-        title: "Error sending message",
-        description: error.message,
-        variant: "destructive",
+      const { error } = await supabase.from('messages').insert({
+        user_id: userId,
+        channel_id: activeChannel,
+        content: inputMessage.trim(),
       });
-      return;
-    }
 
-    setInputMessage("");
+      if (error) throw error;
+
+      setInputMessage('');
+    } catch (error) {
+      console.error('Error sending message:', error);
+      toast({
+        title: 'Error',
+        description: 'Failed to send message',
+        variant: 'destructive',
+      });
+    }
   };
 
-  const getDisplayName = (msg: Message) => {
-    if (msg.User?.display_name) return msg.User.display_name;
-    if (msg.User?.username) return msg.User.username;
-    if (msg.User?.walletAddress) return msg.User.walletAddress.slice(0, 8) + "...";
-    return "Anonymous";
+  const getDisplayName = (message: Message) => {
+    if (message.users?.display_name) return message.users.display_name;
+    if (message.users?.wallet_address) return message.users.wallet_address.slice(0, 8) + '...';
+    return 'Anonymous';
   };
 
   return (
@@ -173,7 +184,7 @@ export const ChatSidebar = () => {
           <MessageSquare className="h-6 w-6" />
         </Button>
       </SheetTrigger>
-      <SheetContent side="right" className="w-full sm:w-[400px] p-0 bg-background/95 backdrop-blur-sm border-l-2 border-primary">
+      <SheetContent side="right" className="w-full sm:w-[400px] p-0 bg-card/95 backdrop-blur-sm border-l-2 border-primary">
         <SheetHeader className="p-4 border-b-2 border-primary">
           <SheetTitle className="font-pixel text-sm text-primary">CHAT</SheetTitle>
         </SheetHeader>
@@ -187,7 +198,7 @@ export const ChatSidebar = () => {
                 onClick={() => setActiveChannel(channel.id)}
                 className={`px-3 py-1.5 font-pixel text-[0.6rem] whitespace-nowrap transition-all ${
                   activeChannel === channel.id
-                    ? "bg-primary/20 text-primary shadow-glow-cyan border border-primary"
+                    ? "bg-primary/20 text-primary shadow-glow-cyan border border-primary rounded"
                     : "text-muted-foreground hover:text-primary hover:bg-muted/50"
                 }`}
               >
@@ -200,42 +211,46 @@ export const ChatSidebar = () => {
 
         {/* Messages */}
         <ScrollArea className="h-[calc(100vh-200px)] p-4">
-          <div className="space-y-3">
-            {messages.map((message) => (
-              <div
-                key={message.id}
-                className="flex flex-col space-y-1 animate-slide-in-bottom"
-              >
-                <div className="flex items-baseline gap-2">
-                  <span className="font-pixel text-[0.6rem] text-primary">
-                    {getDisplayName(message)}
-                  </span>
-                  <span className="font-mono text-[0.5rem] text-muted-foreground">
-                    {new Date(message.createdAt).toLocaleTimeString()}
-                  </span>
+          {loading ? (
+            <div className="text-center text-muted-foreground font-mono text-xs">Loading...</div>
+          ) : (
+            <div className="space-y-3">
+              {messages.map((message) => (
+                <div
+                  key={message.id}
+                  className="flex flex-col space-y-1 animate-fade-in"
+                >
+                  <div className="flex items-baseline gap-2">
+                    <span className="font-pixel text-[0.6rem] text-primary">
+                      {getDisplayName(message)}
+                    </span>
+                    <span className="font-mono text-[0.5rem] text-muted-foreground">
+                      {new Date(message.created_at).toLocaleTimeString()}
+                    </span>
+                  </div>
+                  <p className="font-mono text-xs text-foreground pl-2 break-words">
+                    {message.content}
+                  </p>
                 </div>
-                <p className="font-mono text-xs text-foreground pl-2 break-words">
-                  {message.content}
-                </p>
-              </div>
-            ))}
-          </div>
+              ))}
+            </div>
+          )}
         </ScrollArea>
 
         {/* Input Area */}
-        <div className="absolute bottom-0 left-0 right-0 border-t-2 border-primary bg-background/95 p-4">
+        <div className="absolute bottom-0 left-0 right-0 border-t-2 border-primary bg-card/95 backdrop-blur-sm p-4">
           <div className="flex items-center gap-2">
             <Input
               value={inputMessage}
               onChange={(e) => setInputMessage(e.target.value)}
               onKeyDown={(e) => e.key === "Enter" && sendMessage()}
-              placeholder={userId ? "Type message..." : "Connect wallet to chat"}
-              disabled={!userId}
+              placeholder={address ? "Type message..." : "Connect wallet to chat"}
+              disabled={!address}
               className="flex-1 font-mono text-xs bg-input border-primary focus:shadow-glow-cyan"
             />
             <Button
               onClick={sendMessage}
-              disabled={!userId}
+              disabled={!address || !inputMessage.trim()}
               className="font-pixel text-xs px-3 bg-primary text-primary-foreground hover:bg-primary/80 shadow-glow-cyan"
             >
               <Send className="w-4 h-4" />
