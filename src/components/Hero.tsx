@@ -45,12 +45,12 @@ export const Hero = () => {
       
       {/* Floating Particles - Mix of squares and crypto characters */}
       <div className="absolute inset-0 overflow-hidden">
-        {[...Array(80)].map((_, i) => {
-          const isCryptoChar = i % 3 === 0;
+        {[...Array(320)].map((_, i) => {
+          const isCryptoChar = i % 2 === 0;
           return (
             <div
               key={i}
-              className="absolute"
+              className="absolute flex flex-col gap-1"
               style={{
                 left: `${Math.random() * 100}%`,
                 top: `${Math.random() * 100}%`,
@@ -59,7 +59,11 @@ export const Hero = () => {
               }}
             >
               {isCryptoChar ? (
-                <CryptoParticle delay={Math.random() * 3} />
+                <>
+                  <CryptoParticle delay={Math.random() * 3} />
+                  <CryptoParticle delay={Math.random() * 3 + 0.5} />
+                  <CryptoParticle delay={Math.random() * 3 + 1} />
+                </>
               ) : (
                 <div className="w-1 h-1 bg-primary animate-float" />
               )}

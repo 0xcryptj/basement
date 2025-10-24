@@ -67,9 +67,9 @@ export const Navbar = () => {
       <div className="max-w-screen-2xl mx-auto px-2 sm:px-4 lg:px-6">
         <div className="flex h-14 sm:h-16 items-center justify-between gap-4">
           {/* Logo - Far Left */}
-          <Link to="/" className="flex items-center gap-2 group shrink-0 focus:outline-none focus:ring-2 focus:ring-primary/50 rounded-lg transition-all duration-200" aria-label="Home">
+          <Link to="/" className="flex items-center gap-1.5 group shrink-0 focus:outline-none focus:ring-2 focus:ring-primary/50 rounded-lg transition-all duration-200 -ml-2" aria-label="Home">
             <img src={logoIcon} alt="" className="w-8 h-8 sm:w-10 sm:h-10 group-hover:scale-110 transition-transform duration-200" />
-            <span className="text-primary font-pixel text-base sm:text-lg animate-glow-pulse">
+            <span className="text-primary font-pixel text-[0.65rem] sm:text-xs animate-glow-pulse">
               THE BASEMENT
             </span>
           </Link>

@@ -320,12 +320,12 @@ const ChessMultiplayer = () => {
                       <button
                         key={`${rowIndex}-${colIndex}`}
                         onClick={() => handleSquareClick(rowIndex, colIndex)}
-                        className={`aspect-square flex items-center justify-center text-4xl transition-all ${
-                          isLight ? "bg-muted/30" : "bg-muted/60"
+                        className={`aspect-square flex items-center justify-center text-4xl md:text-5xl transition-all ${
+                          isLight ? "bg-[#f0d9b5]" : "bg-[#b58863]"
                         } ${
                           isSelected
-                            ? "ring-2 ring-primary shadow-glow-cyan"
-                            : "hover:ring-1 hover:ring-primary/50"
+                            ? "ring-4 ring-inset ring-primary shadow-glow-cyan"
+                            : "hover:ring-2 hover:ring-primary/50"
                         } ${
                           playerColor === currentTurn && !gameOver
                             ? "cursor-pointer"
@@ -333,7 +333,25 @@ const ChessMultiplayer = () => {
                         }`}
                         disabled={playerColor !== currentTurn || gameOver}
                       >
-                        {piece && getPieceSymbol(piece)}
+                        {piece && (
+                          <span 
+                            className={`select-none font-bold ${
+                              piece.color === "white" 
+                                ? "text-white" 
+                                : "text-black"
+                            }`}
+                            style={{
+                              filter: piece.color === "white"
+                                ? "drop-shadow(0 2px 3px rgba(0,0,0,0.9))"
+                                : "drop-shadow(0 1px 2px rgba(255,255,255,0.6))",
+                              textShadow: piece.color === "white" 
+                                ? "0 2px 4px rgba(0,0,0,0.8)" 
+                                : "0 1px 2px rgba(255,255,255,0.5)"
+                            }}
+                          >
+                            {getPieceSymbol(piece)}
+                          </span>
+                        )}
                       </button>
                     );
                   })
