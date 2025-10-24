@@ -155,7 +155,7 @@ export const LeftChatSidebar = () => {
     <motion.div
       initial={{ x: -300 }}
       animate={{ x: 0 }}
-      className="fixed left-0 top-16 h-[calc(100vh-4rem)] w-[280px] bg-[hsl(220,30%,8%)]/70 backdrop-blur-md border-r border-primary/20 z-40 flex-col shadow-glow-cyan hidden lg:flex"
+      className="fixed left-0 top-16 h-[calc(100vh-4rem)] w-[280px] bg-[hsl(220,30%,8%)]/50 backdrop-blur-md border-r border-primary/20 z-40 flex-col shadow-glow-cyan hidden lg:flex"
     >
       {/* Header */}
       <div className="p-3 border-b border-primary/20 flex items-center justify-between">
@@ -245,7 +245,7 @@ export const LeftChatSidebar = () => {
             value={inputMessage}
             onChange={(e) => setInputMessage(e.target.value)}
             onKeyDown={(e) => e.key === "Enter" && !e.shiftKey && sendMessage()}
-            placeholder="Type Message Here..."
+            placeholder="Type Message Here... (@mention)"
             disabled={!address}
             className="flex-1 font-mono text-xs bg-background/50 border-primary/20 h-8 focus:border-primary"
           />

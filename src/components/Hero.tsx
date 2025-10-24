@@ -1,9 +1,36 @@
-import { Link } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { motion } from "framer-motion";
 import bk3Image from "@/assets/bk3.png";
+import { useState, useEffect } from "react";
+
+const CryptoParticle = ({ delay }: { delay: number }) => {
+  const [char, setChar] = useState("0");
+  const chars = "0123456789ABCDEFabcdef";
+  
+  useEffect(() => {
+    const interval = setInterval(() => {
+      setChar(chars[Math.floor(Math.random() * chars.length)]);
+    }, 100 + Math.random() * 200);
+    return () => clearInterval(interval);
+  }, []);
+  
+  return (
+    <span className="font-mono text-xs text-primary/60 animate-float">
+      {char}
+    </span>
+  );
+};
 
 export const Hero = () => {
+  const navigate = useNavigate();
+  const [isPortaling, setIsPortaling] = useState(false);
+
+  const handleEnterBasement = () => {
+    setIsPortaling(true);
+    setTimeout(() => navigate("/chat"), 1000);
+  };
+
   return (
     <div className="relative min-h-screen flex items-center justify-center overflow-hidden">
       {/* Hero Background Image */}
@@ -16,21 +43,44 @@ export const Hero = () => {
       />
       <div className="absolute inset-0 bg-gradient-to-b from-background/90 via-background/70 to-background/95" />
       
-      {/* Floating Particles - Squares */}
+      {/* Floating Particles - Mix of squares and crypto characters */}
       <div className="absolute inset-0 overflow-hidden">
-        {[...Array(80)].map((_, i) => (
-          <div
-            key={i}
-            className="absolute w-1 h-1 bg-primary animate-float"
-            style={{
-              left: `${Math.random() * 100}%`,
-              top: `${Math.random() * 100}%`,
-              animationDelay: `${Math.random() * 3}s`,
-              animationDuration: `${3 + Math.random() * 4}s`,
-            }}
-          />
-        ))}
+        {[...Array(80)].map((_, i) => {
+          const isCryptoChar = i % 3 === 0;
+          return (
+            <div
+              key={i}
+              className="absolute"
+              style={{
+                left: `${Math.random() * 100}%`,
+                top: `${Math.random() * 100}%`,
+                animationDelay: `${Math.random() * 3}s`,
+                animationDuration: `${3 + Math.random() * 4}s`,
+              }}
+            >
+              {isCryptoChar ? (
+                <CryptoParticle delay={Math.random() * 3} />
+              ) : (
+                <div className="w-1 h-1 bg-primary animate-float" />
+              )}
+            </div>
+          );
+        })}
       </div>
+      
+      {/* Portal Animation Overlay */}
+      {isPortaling && (
+        <motion.div
+          initial={{ scale: 0, opacity: 0 }}
+          animate={{ scale: 50, opacity: 1 }}
+          transition={{ duration: 1, ease: "easeInOut" }}
+          className="absolute inset-0 bg-primary z-50 rounded-full"
+          style={{ 
+            transformOrigin: "center",
+            filter: "blur(20px)"
+          }}
+        />
+      )}
 
       {/* Content */}
       <div className="relative z-10 text-center px-4 max-w-4xl mx-auto">
@@ -39,11 +89,11 @@ export const Hero = () => {
           initial={{ y: -50, opacity: 0 }}
           animate={{ y: 0, opacity: 1 }}
           transition={{ duration: 0.8, delay: 0.3 }}
-          className="font-pixel text-2xl sm:text-3xl md:text-4xl text-primary mb-6 animate-glow-pulse"
+          className="font-pixel text-xl sm:text-2xl md:text-3xl text-primary mb-6"
         >
           WELCOME TO
           <br />
-          <span className="text-3xl sm:text-4xl md:text-5xl animate-neon-flicker">
+          <span className="text-2xl sm:text-3xl md:text-4xl animate-neon-flicker">
             THE BASEMENT
           </span>
         </motion.h1>
@@ -69,11 +119,13 @@ export const Hero = () => {
           animate={{ scale: 1, opacity: 1 }}
           transition={{ duration: 0.5, delay: 0.7 }}
         >
-          <Link to="/chat">
-            <Button className="font-pixel text-sm sm:text-base px-8 py-6 bg-primary text-primary-foreground hover:bg-primary/80 shadow-glow-cyan-lg transition-all hover:scale-105">
-              Enter Basement
-            </Button>
-          </Link>
+          <Button 
+            onClick={handleEnterBasement}
+            disabled={isPortaling}
+            className="font-pixel text-sm sm:text-base px-8 py-6 bg-primary text-primary-foreground hover:bg-primary/80 transition-all hover:scale-105"
+          >
+            {isPortaling ? "ENTERING..." : "Enter Basement"}
+          </Button>
         </motion.div>
 
       </div>

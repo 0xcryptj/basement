@@ -35,7 +35,7 @@ export const JackpotGame = () => {
   const [lastWinner, setLastWinner] = useState<Player | null>(null);
   const [animatingBet, setAnimatingBet] = useState<string | null>(null);
   const [isSpinning, setIsSpinning] = useState(false);
-  const [spinOffset, setSpinOffset] = useState(0);
+  const [selectedWinnerIndex, setSelectedWinnerIndex] = useState(0);
   const carouselRef = useRef<HTMLDivElement>(null);
   
   const { winnerId, showConfetti, showSparkles, celebrateWinner } = useWinnerAnimation();
@@ -136,10 +136,9 @@ export const JackpotGame = () => {
           cumulativeTickets += playerTickets;
         }
 
-        // Calculate spin offset to land on winner
+        // Calculate winner index
         const winnerIndex = updatedPlayers.findIndex(p => p.id === winner.id);
-        const finalOffset = -(winnerIndex * 120) + (3 * 120 * updatedPlayers.length);
-        setSpinOffset(finalOffset);
+        setSelectedWinnerIndex(winnerIndex);
         
         setTimeout(() => {
           setIsSpinning(false);
@@ -290,34 +289,30 @@ export const JackpotGame = () => {
               <div className="relative">
                 {/* Arrow Indicator */}
                 <motion.div 
-                  className="absolute left-1/2 -translate-x-1/2 -top-6 z-10"
+                  className="absolute left-1/2 -translate-x-1/2 -top-8 z-20"
                   animate={{ 
-                    y: [0, 10, 0],
-                    scale: [1, 1.1, 1]
+                    y: [0, 8, 0]
                   }}
                   transition={{ 
-                    duration: 1.5, 
+                    duration: 1, 
                     repeat: Infinity,
                     ease: "easeInOut"
                   }}
                 >
-                  <ChevronDown className="w-8 h-8 text-accent drop-shadow-glow" />
+                  <ChevronDown className="w-10 h-10 text-accent filter drop-shadow-[0_0_8px_rgba(236,72,153,0.8)]" />
                 </motion.div>
                 
                 {/* Carousel Container */}
-                <div className="relative overflow-hidden bg-background/30 border border-primary/20 rounded-lg py-4 shadow-inner">
-                  <motion.div
+                <div className="relative overflow-hidden bg-background/30 border-2 border-primary/30 rounded-lg py-6 shadow-inner">
+                  {/* Center indicator line */}
+                  <div className="absolute left-1/2 top-0 bottom-0 w-0.5 bg-accent/50 z-10 -translate-x-1/2" />
+                  
+                  <div 
                     ref={carouselRef}
-                    className="flex gap-4 px-4"
-                    animate={{
-                      x: isSpinning ? spinOffset : 0
-                    }}
-                    transition={{
-                      duration: isSpinning ? 4 : 0.3,
-                      ease: isSpinning ? [0.32, 0.72, 0, 1] : "easeOut"
-                    }}
+                    className="flex gap-4 px-4 jackpot-carousel"
                     style={{
-                      transform: `translateX(calc(50% - 60px))`
+                      animation: isSpinning ? `spinCarousel 4s cubic-bezier(0.32, 0.72, 0, 1) forwards` : 'none',
+                      transform: isSpinning ? 'none' : `translateX(calc(50% - 60px - ${selectedWinnerIndex * 120}px))`
                     }}
                   >
                     {/* Repeat players for continuous effect */}
@@ -328,29 +323,20 @@ export const JackpotGame = () => {
                       return (
                         <motion.div
                           key={`${player.id}-${idx}`}
-                          className={`shrink-0 w-28 bg-background border p-3 rounded-lg flex flex-col items-center gap-2 transition-all ${
+                          className={`shrink-0 w-28 bg-background border-2 p-3 rounded-lg flex flex-col items-center gap-2 transition-all ${
                             isWinner 
-                              ? "border-accent shadow-glow-magenta" 
+                              ? "border-accent shadow-glow-magenta scale-110" 
                               : "border-primary/20"
                           }`}
                           animate={isAnimating ? {
-                            scale: [1, 1.05, 1],
-                            rotate: [0, 2, -2, 0],
-                            backgroundColor: ["rgba(0, 0, 0, 0)", "rgba(0, 245, 255, 0.1)", "rgba(0, 0, 0, 0)"]
+                            rotate: [0, 3, -3, 0]
                           } : isWinner ? {
                             rotate: [0, 5, -5, 0],
-                            boxShadow: [
-                              "0 0 20px rgba(236, 72, 153, 0.5)",
-                              "0 0 40px rgba(236, 72, 153, 0.8)",
-                              "0 0 20px rgba(236, 72, 153, 0.5)"
-                            ]
-                          } : {
-                            rotate: [0, 1, -1, 0]
-                          }}
+                            scale: [1.1, 1.15, 1.1]
+                          } : {}}
                           transition={{
-                            duration: isWinner ? 1.5 : 0.5,
-                            repeat: isWinner ? Infinity : isAnimating ? 0 : Infinity,
-                            repeatDelay: isWinner ? 0 : 2
+                            duration: isWinner ? 1.5 : 0.8,
+                            repeat: isWinner ? Infinity : isAnimating ? 3 : 0,
                           }}
                         >
                           {isWinner && <WinnerSparkles show={showSparkles} />}
@@ -388,7 +374,7 @@ export const JackpotGame = () => {
                         </motion.div>
                       );
                     })}
-                  </motion.div>
+                  </div>
                 </div>
               </div>
             )}
