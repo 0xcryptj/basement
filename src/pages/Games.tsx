@@ -6,7 +6,6 @@ import { CoinflipGame } from "@/components/games/CoinflipGame";
 import { DailyCase } from "@/components/games/DailyCase";
 import { WinnerHistory } from "@/components/games/WinnerHistory";
 import { LuckOfTheDay } from "@/components/games/LuckOfTheDay";
-import { LeftChatSidebar } from "@/components/LeftChatSidebar";
 import { useWallet } from "@/contexts/WalletContext";
 import { Button } from "@/components/ui/button";
 import { Link } from "react-router-dom";
@@ -46,7 +45,6 @@ const Games = () => {
     <div className="min-h-screen bg-background">
       <Navbar />
       <GlobalStats />
-      <LeftChatSidebar />
 
       {/* Main content with left margin for sidebar */}
       <div className="ml-[280px] pt-20 pb-12 pr-4">

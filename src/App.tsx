@@ -6,6 +6,7 @@ import { BrowserRouter, Routes, Route } from "react-router-dom";
 import { WalletProvider } from "@/contexts/WalletContext";
 import { MatrixRain } from "@/components/MatrixRain";
 import { WaitingPlayers } from "@/components/WaitingPlayers";
+import { LeftChatSidebar } from "@/components/LeftChatSidebar";
 import Index from "./pages/Index";
 import Chat from "./pages/Chat";
 import Forum from "./pages/Forum";
@@ -26,6 +27,7 @@ const App = () => (
       <TooltipProvider>
         <MatrixRain />
         <WaitingPlayers />
+        <LeftChatSidebar />
         <Toaster />
         <Sonner />
         <BrowserRouter>

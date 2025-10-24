@@ -32,16 +32,19 @@ export const LeftChatSidebar = () => {
   const [loading, setLoading] = useState(false);
   const [isCollapsed, setIsCollapsed] = useState(false);
   const [onlineCount, setOnlineCount] = useState(255);
+  const [activeChannel, setActiveChannel] = useState<string>("luckyblock_ch");
 
   useEffect(() => {
-    loadMessages();
-    const channel = subscribeToMessages();
-    return () => {
-      supabase.removeChannel(channel);
-    };
-  }, []);
+    if (activeChannel) {
+      loadMessages(activeChannel);
+      const channel = subscribeToMessages(activeChannel);
+      return () => {
+        supabase.removeChannel(channel);
+      };
+    }
+  }, [activeChannel]);
 
-  const loadMessages = async () => {
+  const loadMessages = async (channelId: string) => {
     setLoading(true);
     const { data, error } = await supabase
       .from('Message')
@@ -54,6 +57,7 @@ export const LeftChatSidebar = () => {
           avatarUrl
         )
       `)
+      .eq('channelId', channelId)
       .order('createdAt', { ascending: true })
       .limit(50);
 
@@ -63,15 +67,16 @@ export const LeftChatSidebar = () => {
     setLoading(false);
   };
 
-  const subscribeToMessages = () => {
+  const subscribeToMessages = (channelId: string) => {
     const channel = supabase
-      .channel(`messages-general`)
+      .channel(`messages-${channelId}`)
       .on(
         'postgres_changes',
         {
           event: 'INSERT',
           schema: 'public',
           table: 'Message',
+          filter: `channelId=eq.${channelId}`,
         },
         async (payload) => {
           const { data: userData } = await supabase
@@ -95,7 +100,7 @@ export const LeftChatSidebar = () => {
   };
 
   const sendMessage = async () => {
-    if (!inputMessage.trim() || !address) return;
+    if (!inputMessage.trim() || !address || !activeChannel) return;
 
     try {
       const { data: existingUser } = await supabase
@@ -121,18 +126,10 @@ export const LeftChatSidebar = () => {
         userId = newUser.id;
       }
 
-      // Get default channel
-      const { data: channelData } = await supabase
-        .from('Channel')
-        .select('id')
-        .eq('isPrivate', false)
-        .limit(1)
-        .single();
-
       const { error } = await supabase.from('Message').insert([{
         id: crypto.randomUUID(),
         userId: userId,
-        channelId: channelData?.id || '',
+        channelId: activeChannel,
         content: inputMessage.trim(),
       }]);
 
@@ -198,17 +195,30 @@ export const LeftChatSidebar = () => {
 
         {!isCollapsed && (
           <>
-            {/* Live Airdrop Banner */}
-            <div className="m-3 p-3 bg-gradient-to-r from-primary/20 to-secondary/20 border border-primary/30 rounded-lg">
-              <div className="flex items-center justify-between">
-                <div>
-                  <div className="font-pixel text-[0.55rem] text-primary mb-1">LIVE</div>
-                  <div className="font-pixel text-lg text-accent">AIRDROP</div>
-                </div>
-                <div className="flex items-center gap-2 bg-background/50 px-3 py-1.5 rounded-lg">
-                  <span className="font-pixel text-xs text-primary">0.250</span>
-                  <span className="text-xs">◎</span>
-                </div>
+            {/* Channel Selector */}
+            <div className="m-3 space-y-2">
+              <div className="font-pixel text-[0.5rem] text-muted-foreground">CHANNELS</div>
+              <div className="space-y-1">
+                {["luckyblock_ch", "basement_ch", "arcade_ch"].map((channelId) => {
+                  const channelNames: Record<string, string> = {
+                    luckyblock_ch: "#luckyblock",
+                    basement_ch: "#basement",
+                    arcade_ch: "#arcade"
+                  };
+                  return (
+                    <button
+                      key={channelId}
+                      onClick={() => setActiveChannel(channelId)}
+                      className={`w-full text-left px-3 py-2 font-mono text-xs rounded transition-all ${
+                        activeChannel === channelId
+                          ? "bg-primary/20 text-primary border border-primary/30"
+                          : "text-muted-foreground hover:bg-background/50 hover:text-foreground"
+                      }`}
+                    >
+                      {channelNames[channelId]}
+                    </button>
+                  );
+                })}
               </div>
             </div>
 
