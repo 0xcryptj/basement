@@ -65,7 +65,7 @@ export const Navbar = () => {
   return (
     <nav className="fixed top-0 left-0 right-0 z-50 border-b-2 border-primary bg-background/95 backdrop-blur-md shadow-glow-cyan" role="navigation" aria-label="Main navigation">
       <div className="max-w-screen-2xl mx-auto px-2 sm:px-4 lg:px-6">
-        <div className="flex h-14 sm:h-16 items-center justify-between gap-4">
+        <div className="flex h-14 sm:h-16 items-center gap-2 md:gap-4">
           {/* Logo - Far Left - Fixed width to match sidebar */}
           <Link to="/" className="flex items-center gap-2 group shrink-0 focus:outline-none focus:ring-2 focus:ring-primary/50 rounded-lg transition-all duration-200 w-[280px]" aria-label="Home">
             <img src={logoIcon} alt="" className="w-8 h-8 sm:w-10 sm:h-10 group-hover:scale-110 transition-transform duration-200 ml-2" />
@@ -75,7 +75,7 @@ export const Navbar = () => {
           </Link>
 
           {/* Desktop Navigation */}
-          <div className="hidden lg:flex items-center gap-1">
+          <div className="hidden lg:flex items-center gap-1 flex-1">
             {navLinks.map((link) => (
               <Link
                 key={link.to}
@@ -121,7 +121,7 @@ export const Navbar = () => {
           {/* Mobile Menu Button */}
           <button
             onClick={() => setIsMenuOpen(!isMenuOpen)}
-            className="md:hidden text-primary p-2 rounded-lg hover:bg-primary/10 transition-all duration-200 focus:outline-none focus:ring-2 focus:ring-primary/50"
+            className="md:hidden text-primary p-2 rounded-lg hover:bg-primary/10 transition-all duration-200 focus:outline-none focus:ring-2 focus:ring-primary/50 ml-auto"
             aria-label={isMenuOpen ? "Close menu" : "Open menu"}
             aria-expanded={isMenuOpen}
             aria-controls="mobile-menu"

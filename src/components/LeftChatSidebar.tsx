@@ -114,6 +114,25 @@ export const LeftChatSidebar = () => {
   const sendMessage = async () => {
     if (!inputMessage.trim() || !address || !activeChannel) return;
 
+    const tempId = crypto.randomUUID();
+    const messageContent = inputMessage.trim();
+    
+    // Optimistic update - add message immediately
+    const optimisticMessage: Message = {
+      id: tempId,
+      content: messageContent,
+      createdAt: new Date().toISOString(),
+      userId: 'temp',
+      user: {
+        id: 'temp',
+        username: `user_${address.slice(0, 8)}`,
+        walletAddress: address,
+      }
+    };
+    
+    setMessages((prev) => [...prev, optimisticMessage]);
+    setInputMessage('');
+
     try {
       const { data: existingUser } = await supabase
         .from('User')
@@ -139,17 +158,18 @@ export const LeftChatSidebar = () => {
       }
 
       const { error } = await supabase.from('Message').insert([{
-        id: crypto.randomUUID(),
+        id: tempId,
         userId: userId,
         channelId: activeChannel,
-        content: inputMessage.trim(),
+        content: messageContent,
       }]);
 
       if (error) throw error;
 
-      setInputMessage('');
     } catch (error) {
       console.error('Error sending message:', error);
+      // Remove optimistic message on error
+      setMessages((prev) => prev.filter(msg => msg.id !== tempId));
       toast({
         title: 'Error',
         description: 'Failed to send message',

@@ -30,6 +30,13 @@ interface Post {
   dislikes: number;
 }
 
+interface Board {
+  id: number;
+  slug: string;
+  title: string;
+  about: string | null;
+}
+
 const Forum = () => {
   const { toast } = useToast();
   const [searchQuery, setSearchQuery] = useState("");
@@ -41,10 +48,24 @@ const Forum = () => {
   const [newReply, setNewReply] = useState("");
   const [showNewThread, setShowNewThread] = useState(false);
   const [loading, setLoading] = useState(false);
+  const [boards, setBoards] = useState<Board[]>([]);
+  const [selectedBoard, setSelectedBoard] = useState<number>(1);
+  const [showNewBoard, setShowNewBoard] = useState(false);
+  const [newBoardTitle, setNewBoardTitle] = useState("");
+  const [newBoardAbout, setNewBoardAbout] = useState("");
+
+  useEffect(() => {
+    loadBoards();
+    loadThreads();
+  }, []);
 
   useEffect(() => {
     loadThreads();
-  }, []);
+  }, [selectedBoard]);
+
+  useEffect(() => {
+    loadThreads();
+  }, [selectedBoard]);
 
   useEffect(() => {
     if (selectedThread) {
@@ -53,12 +74,24 @@ const Forum = () => {
     }
   }, [selectedThread]);
 
+  const loadBoards = async () => {
+    const { data, error } = await supabase
+      .from('Board')
+      .select('*')
+      .eq('isHidden', false)
+      .order('id', { ascending: true });
+
+    if (!error && data) {
+      setBoards(data);
+    }
+  };
+
   const loadThreads = async () => {
     setLoading(true);
     const { data, error } = await supabase
       .from('Thread')
       .select('*')
-      .eq('boardId', 1)
+      .eq('boardId', selectedBoard)
       .order('bumpAt', { ascending: false })
       .limit(50);
 
@@ -128,6 +161,47 @@ const Forum = () => {
     setNewThreadText("");
     setShowNewThread(false);
     loadThreads();
+  };
+
+  const createBoard = async () => {
+    if (!newBoardTitle.trim()) {
+      toast({
+        title: "Error",
+        description: "Board title is required",
+        variant: "destructive",
+      });
+      return;
+    }
+
+    const slug = newBoardTitle.toLowerCase().replace(/\s+/g, '-');
+
+    const { error } = await supabase.from('Board').insert([{
+      slug,
+      title: newBoardTitle,
+      about: newBoardAbout || null,
+      isHidden: false,
+      createdAt: new Date().toISOString(),
+      updatedAt: new Date().toISOString(),
+    }]);
+
+    if (error) {
+      toast({
+        title: "Error",
+        description: "Failed to create board",
+        variant: "destructive",
+      });
+      return;
+    }
+
+    toast({
+      title: "Success",
+      description: "Board created successfully",
+    });
+
+    setNewBoardTitle("");
+    setNewBoardAbout("");
+    setShowNewBoard(false);
+    loadBoards();
   };
 
   const createPost = async () => {
@@ -212,6 +286,65 @@ const Forum = () => {
         </div>
 
         <div className="container mx-auto px-4 max-w-6xl">
+          {/* Board Selector */}
+          <div className="mb-4 flex gap-2 flex-wrap items-center">
+            {boards.map((board) => (
+              <Button
+                key={board.id}
+                onClick={() => setSelectedBoard(board.id)}
+                variant={selectedBoard === board.id ? "default" : "outline"}
+                size="sm"
+                className="font-mono text-xs"
+              >
+                /{board.slug}/
+              </Button>
+            ))}
+            <Button
+              onClick={() => setShowNewBoard(!showNewBoard)}
+              variant="outline"
+              size="sm"
+              className="font-mono text-xs ml-auto"
+            >
+              + New Board
+            </Button>
+          </div>
+
+          {/* New Board Form */}
+          {showNewBoard && (
+            <motion.div
+              initial={{ opacity: 0, height: 0 }}
+              animate={{ opacity: 1, height: "auto" }}
+              className="bg-[#1a1a1d]/80 backdrop-blur-sm border border-primary/30 p-4 mb-4"
+            >
+              <h3 className="font-mono text-sm text-primary mb-3">Create New Board</h3>
+              <Input
+                value={newBoardTitle}
+                onChange={(e) => setNewBoardTitle(e.target.value)}
+                placeholder="Board Title (e.g., Gaming)"
+                className="mb-3 font-mono text-sm bg-background/50 border-primary/20"
+              />
+              <Textarea
+                value={newBoardAbout}
+                onChange={(e) => setNewBoardAbout(e.target.value)}
+                placeholder="Description (optional)"
+                className="mb-3 font-mono text-sm bg-background/50 border-primary/20"
+                rows={3}
+              />
+              <div className="flex gap-2">
+                <Button onClick={createBoard} className="font-mono text-xs">
+                  Create Board
+                </Button>
+                <Button
+                  onClick={() => setShowNewBoard(false)}
+                  variant="outline"
+                  className="font-mono text-xs"
+                >
+                  Cancel
+                </Button>
+              </div>
+            </motion.div>
+          )}
+
           {selectedThread ? (
             // Thread View
             <div className="space-y-4">
@@ -356,7 +489,9 @@ const Forum = () => {
                 {/* Threads List */}
                 <div className="bg-[#1a1a1d]/80 backdrop-blur-sm border border-primary/20">
                   <div className="bg-primary/10 border-b border-primary/20 px-4 py-2 flex items-center justify-between">
-                    <h2 className="font-mono text-xs text-primary font-bold">Random - /b/</h2>
+                    <h2 className="font-mono text-xs text-primary font-bold">
+                      {boards.find(b => b.id === selectedBoard)?.title || 'Board'} - /{boards.find(b => b.id === selectedBoard)?.slug}/
+                    </h2>
                     <Button 
                       size="sm"
                       onClick={() => setShowNewThread(!showNewThread)}
