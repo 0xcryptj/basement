@@ -289,12 +289,23 @@ export const JackpotGame = () => {
             ) : (
               <div className="relative">
                 {/* Arrow Indicator */}
-                <div className="absolute left-1/2 -translate-x-1/2 -top-6 z-10">
-                  <ChevronDown className="w-8 h-8 text-accent animate-bounce" />
-                </div>
+                <motion.div 
+                  className="absolute left-1/2 -translate-x-1/2 -top-6 z-10"
+                  animate={{ 
+                    y: [0, 10, 0],
+                    scale: [1, 1.1, 1]
+                  }}
+                  transition={{ 
+                    duration: 1.5, 
+                    repeat: Infinity,
+                    ease: "easeInOut"
+                  }}
+                >
+                  <ChevronDown className="w-8 h-8 text-accent drop-shadow-glow" />
+                </motion.div>
                 
                 {/* Carousel Container */}
-                <div className="relative overflow-hidden bg-background/30 border border-primary/20 rounded-lg py-4">
+                <div className="relative overflow-hidden bg-background/30 border border-primary/20 rounded-lg py-4 shadow-inner">
                   <motion.div
                     ref={carouselRef}
                     className="flex gap-4 px-4"
@@ -317,7 +328,7 @@ export const JackpotGame = () => {
                       return (
                         <motion.div
                           key={`${player.id}-${idx}`}
-                          className={`shrink-0 w-28 bg-background border p-3 rounded-lg flex flex-col items-center gap-2 ${
+                          className={`shrink-0 w-28 bg-background border p-3 rounded-lg flex flex-col items-center gap-2 transition-all ${
                             isWinner 
                               ? "border-accent shadow-glow-magenta" 
                               : "border-primary/20"
@@ -325,7 +336,17 @@ export const JackpotGame = () => {
                           animate={isAnimating ? {
                             scale: [1, 1.05, 1],
                             backgroundColor: ["rgba(0, 0, 0, 0)", "rgba(0, 245, 255, 0.1)", "rgba(0, 0, 0, 0)"]
+                          } : isWinner ? {
+                            boxShadow: [
+                              "0 0 20px rgba(236, 72, 153, 0.5)",
+                              "0 0 40px rgba(236, 72, 153, 0.8)",
+                              "0 0 20px rgba(236, 72, 153, 0.5)"
+                            ]
                           } : {}}
+                          transition={{
+                            duration: isWinner ? 1.5 : 0.5,
+                            repeat: isWinner ? Infinity : 0
+                          }}
                         >
                           {isWinner && <WinnerSparkles show={showSparkles} />}
                           

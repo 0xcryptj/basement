@@ -8,17 +8,19 @@ import { LiveGames } from "@/components/LiveGames";
 
 const Index = () => {
   return (
-    <div className="min-h-screen bg-background">
+    <div className="min-h-screen flex flex-col bg-background">
       <Navbar />
       <ChainIndicator />
       <ChatSidebar />
       <GlobalStats />
-      <div className="container mx-auto px-4 pt-20 ml-0 md:ml-[60px] transition-all duration-300">
-        <div className="max-w-md mx-auto mb-8">
-          <LiveGames />
+      <div className="flex-1">
+        <div className="container mx-auto px-4 pt-20 ml-0 md:ml-[60px] transition-all duration-300">
+          <div className="max-w-md mx-auto mb-8">
+            <LiveGames />
+          </div>
         </div>
+        <Hero />
       </div>
-      <Hero />
       <Footer />
     </div>
   );

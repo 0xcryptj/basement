@@ -32,7 +32,6 @@ const App = () => (
     <WalletProvider>
       <TooltipProvider>
         <MatrixRain />
-        <WaitingPlayers />
         <LeftChatSidebar />
         <Toaster />
         <Sonner />

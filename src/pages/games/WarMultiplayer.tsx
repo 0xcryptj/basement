@@ -77,9 +77,9 @@ const WarMultiplayer = () => {
 
   if (!isConnected) {
     return (
-      <div className="min-h-screen bg-background">
+      <div className="min-h-screen flex flex-col bg-background">
         <Navbar />
-        <div className="pt-20 container mx-auto px-4 pb-12 flex items-center justify-center min-h-[60vh]">
+        <div className="flex-1 pt-20 container mx-auto px-4 pb-12 flex items-center justify-center">
           <Card className="bg-card border-2 border-primary p-8 text-center">
             <h2 className="font-pixel text-xl text-primary mb-4">Connect Wallet</h2>
             <p className="font-mono text-sm text-muted-foreground">
@@ -93,10 +93,10 @@ const WarMultiplayer = () => {
   }
 
   return (
-    <div className="min-h-screen bg-background">
+    <div className="min-h-screen flex flex-col bg-background">
       <Navbar />
       
-      <div className="pt-20 container mx-auto px-4 pb-12">
+      <div className="flex-1 pt-20 container mx-auto px-4 pb-12">
         <div className="text-center mb-8">
           <h1 className="font-pixel text-3xl md:text-5xl text-primary mb-4 animate-glow-pulse">
             /WAR/ MULTIPLAYER
