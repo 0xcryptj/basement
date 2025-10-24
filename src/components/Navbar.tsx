@@ -4,7 +4,6 @@ import { Menu, X } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { WalletButton } from "./WalletButton";
 import { WalletBalance } from "./WalletBalance";
-import { NavbarAnimatedBox } from "./NavbarAnimatedBox";
 import { supabase } from "@/integrations/supabase/client";
 import logoIcon from "@/assets/logo-icon.svg";
 
@@ -64,15 +63,13 @@ export const Navbar = () => {
   const isActive = (path: string) => location.pathname === path;
 
   return (
-    <>
-      <NavbarAnimatedBox />
-      <nav className="fixed top-0 left-0 right-0 z-50 border-b-2 border-primary bg-background/95 backdrop-blur-md shadow-glow-cyan" role="navigation" aria-label="Main navigation">
+    <nav className="fixed top-0 left-0 right-0 z-50 border-b-2 border-primary bg-background/95 backdrop-blur-md shadow-glow-cyan" role="navigation" aria-label="Main navigation">
       <div className="max-w-screen-2xl mx-auto px-2 sm:px-4 lg:px-6">
         <div className="flex h-14 sm:h-16 items-center justify-between gap-4">
-          {/* Logo - Far Left */}
-          <Link to="/" className="flex items-center gap-1.5 group shrink-0 focus:outline-none focus:ring-2 focus:ring-primary/50 rounded-lg transition-all duration-200 -ml-2" aria-label="Home">
-            <img src={logoIcon} alt="" className="w-8 h-8 sm:w-10 sm:h-10 group-hover:scale-110 transition-transform duration-200" />
-            <span className="text-primary font-pixel text-[0.65rem] sm:text-xs animate-glow-pulse">
+          {/* Logo - Far Left - Fixed width to match sidebar */}
+          <Link to="/" className="flex items-center gap-2 group shrink-0 focus:outline-none focus:ring-2 focus:ring-primary/50 rounded-lg transition-all duration-200 w-[280px]" aria-label="Home">
+            <img src={logoIcon} alt="" className="w-8 h-8 sm:w-10 sm:h-10 group-hover:scale-110 transition-transform duration-200 ml-2" />
+            <span className="text-primary font-pixel text-xs sm:text-sm animate-glow-pulse">
               THE BASEMENT
             </span>
           </Link>
@@ -163,6 +160,5 @@ export const Navbar = () => {
         )}
       </div>
     </nav>
-    </>
   );
 };
