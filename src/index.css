@@ -44,12 +44,12 @@ All colors MUST be HSL.
     --glow-cyan: 0 0 30px rgba(59, 130, 246, 0.4);
     --glow-purple: 0 0 30px rgba(147, 51, 234, 0.4);
     --glow-magenta: 0 0 30px rgba(236, 72, 153, 0.4);
-    
+
     /* Gradients */
     --gradient-neon: linear-gradient(135deg, rgba(59, 130, 246, 0.2), rgba(147, 51, 234, 0.2));
     --gradient-arcade: linear-gradient(180deg, rgba(147, 51, 234, 0.2), rgba(236, 72, 153, 0.2));
     --gradient-glow: radial-gradient(circle, rgba(59, 130, 246, 0.15), transparent);
-    
+
     /* Animations */
     --transition-smooth: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
     --transition-bounce: all 0.4s cubic-bezier(0.68, -0.55, 0.265, 1.55);
@@ -58,13 +58,13 @@ All colors MUST be HSL.
 
 @layer base {
   @font-face {
-    font-family: 'Press Start 2P';
-    src: local('Press Start 2P');
+    font-family: "Press Start 2P";
+    src: local("Press Start 2P");
   }
-  
+
   @font-face {
-    font-family: 'Share Tech Mono';
-    src: local('Share Tech Mono');
+    font-family: "Share Tech Mono";
+    src: local("Share Tech Mono");
   }
 
   * {
@@ -73,32 +73,28 @@ All colors MUST be HSL.
 
   body {
     min-height: 100vh;
-    background-image: url('@/assets/bk3-new.png');
+    background-image: url("@/assets/bk3.png");
     background-size: cover;
     background-position: center;
     background-attachment: fixed;
     color: hsl(var(--foreground));
-    font-family: 'Share Tech Mono', monospace;
+    font-family: "Share Tech Mono", monospace;
     position: relative;
   }
-  
+
   /* Background overlay with rgba */
   body::before {
-    content: '';
+    content: "";
     position: fixed;
     inset: 0;
-    background: linear-gradient(
-      135deg,
-      rgba(15, 23, 42, 0.85) 0%,
-      rgba(30, 41, 59, 0.90) 100%
-    );
+    background: linear-gradient(135deg, rgba(15, 23, 42, 0.85) 0%, rgba(30, 41, 59, 0.9) 100%);
     pointer-events: none;
     z-index: 0;
   }
-  
+
   /* Subtle scanlines */
   body::after {
-    content: '';
+    content: "";
     position: fixed;
     inset: 0;
     background: repeating-linear-gradient(
@@ -111,15 +107,20 @@ All colors MUST be HSL.
     pointer-events: none;
     z-index: 0;
   }
-  
+
   /* Content above overlays */
   #root {
     position: relative;
     z-index: 1;
   }
-  
-  h1, h2, h3, h4, h5, h6 {
-    font-family: 'Press Start 2P', cursive;
+
+  h1,
+  h2,
+  h3,
+  h4,
+  h5,
+  h6 {
+    font-family: "Press Start 2P", cursive;
     text-transform: uppercase;
     letter-spacing: 0.1em;
   }
@@ -128,47 +129,52 @@ All colors MUST be HSL.
 /* Utility Classes */
 @layer components {
   .font-pixel {
-    font-family: 'Press Start 2P', cursive;
+    font-family: "Press Start 2P", cursive;
     text-transform: uppercase;
   }
-  
+
   .font-mono {
-    font-family: 'Share Tech Mono', monospace;
+    font-family: "Share Tech Mono", monospace;
   }
-  
+
   .shadow-glow-cyan {
     box-shadow: var(--glow-cyan);
   }
-  
+
   .shadow-glow-purple {
     box-shadow: var(--glow-purple);
   }
-  
+
   .shadow-glow-magenta {
     box-shadow: var(--glow-magenta);
   }
-  
+
   .animate-glow-pulse {
     animation: glow-pulse 2s ease-in-out infinite;
   }
-  
+
   @keyframes glow-pulse {
-    0%, 100% {
-      text-shadow: 0 0 5px hsl(var(--primary)), 0 0 10px hsl(var(--primary));
+    0%,
+    100% {
+      text-shadow:
+        0 0 5px hsl(var(--primary)),
+        0 0 10px hsl(var(--primary));
     }
     50% {
-      text-shadow: 0 0 20px hsl(var(--primary)), 0 0 30px hsl(var(--primary));
+      text-shadow:
+        0 0 20px hsl(var(--primary)),
+        0 0 30px hsl(var(--primary));
     }
   }
-  
+
   .hover-scale {
     transition: transform 0.2s ease;
   }
-  
+
   .hover-scale:hover {
     transform: scale(1.05);
   }
-  
+
   .pattern-diagonal-lines {
     background-image: repeating-linear-gradient(
       45deg,
