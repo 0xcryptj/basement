@@ -3,6 +3,8 @@ import { Button } from "@/components/ui/button";
 import { Navbar } from "@/components/Navbar";
 import { Footer } from "@/components/Footer";
 import { useNavigate } from "react-router-dom";
+import { ChatSidebar } from "@/components/ChatSidebar";
+import { ChainIndicator } from "@/components/ChainIndicator";
 import warGameImg from "@/assets/war.png";
 import chessGameImg from "@/assets/chess-game.png";
 import connect4GameImg from "@/assets/connect4.png";
@@ -32,12 +34,12 @@ const Arcade = () => {
       color: "primary",
       image: warGameImg,
     },
-    {
+      {
       id: "2",
       name: "CHESS",
       description: "On-chain strategy",
       minBet: "",
-      status: "coming-soon",
+      status: "live",
       color: "secondary",
       image: chessGameImg,
     },
@@ -88,6 +90,8 @@ const Arcade = () => {
   return (
     <div className="min-h-screen bg-background">
       <Navbar />
+      <ChainIndicator />
+      <ChatSidebar />
       
       <div className="pt-20 container mx-auto px-4 pb-12">
         {/* Header */}

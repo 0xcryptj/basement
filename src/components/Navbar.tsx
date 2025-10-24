@@ -3,6 +3,7 @@ import { Link, useLocation } from "react-router-dom";
 import { Menu, X, Wallet } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { WalletButton } from "./WalletButton";
+import logoIcon from "@/assets/logo-icon.svg";
 
 export const Navbar = () => {
   const [isMenuOpen, setIsMenuOpen] = useState(false);
@@ -23,6 +24,7 @@ export const Navbar = () => {
         <div className="flex h-16 items-center justify-between">
           {/* Logo */}
           <Link to="/" className="flex items-center space-x-2 group">
+            <img src={logoIcon} alt="Logo" className="w-8 h-8 sm:w-10 sm:h-10" />
             <div className="text-primary font-pixel text-lg sm:text-xl animate-glow-pulse">
               THE BASEMENT
             </div>

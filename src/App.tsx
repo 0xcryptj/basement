@@ -9,7 +9,7 @@ import Chat from "./pages/Chat";
 import Forum from "./pages/Forum";
 import Arcade from "./pages/Arcade";
 import War from "./pages/games/WarEnhanced";
-import Chess from "./pages/games/Chess";
+import Chess from "./pages/games/ChessMultiplayer";
 import Connect4 from "./pages/games/Connect4";
 import CoinToss from "./pages/games/CoinTossEnhanced";
 import LuckyBlock from "./pages/games/LuckyBlockEnhanced";
