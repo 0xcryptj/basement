@@ -16,7 +16,10 @@ import Account from "./pages/Account";
 import Statistics from "./pages/Statistics";
 import Transactions from "./pages/Transactions";
 import War from "./pages/games/WarLobby";
-import Chess from "./pages/games/ChessMultiplayer";
+import Chess from "./pages/games/Chess";
+import ChessLobby from "./pages/games/ChessLobby";
+import ChessMultiplayer from "./pages/games/ChessMultiplayer";
+import WarMultiplayer from "./pages/games/WarMultiplayer";
 import Connect4 from "./pages/games/Connect4Lobby";
 import CoinToss from "./pages/games/CoinTossLobby";
 import LuckyBlock from "./pages/games/LuckyBlockEnhanced";
@@ -44,7 +47,9 @@ const App = () => (
             <Route path="/statistics" element={<Statistics />} />
             <Route path="/transactions" element={<Transactions />} />
             <Route path="/games/war" element={<War />} />
-            <Route path="/games/chess" element={<Chess />} />
+            <Route path="/games/war/:matchId" element={<WarMultiplayer />} />
+            <Route path="/games/chess" element={<ChessLobby />} />
+            <Route path="/games/chess/:matchId" element={<ChessMultiplayer />} />
             <Route path="/games/connect4" element={<Connect4 />} />
             <Route path="/games/cointoss" element={<CoinToss />} />
             <Route path="/games/luckyblock" element={<LuckyBlock />} />

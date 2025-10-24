@@ -1,5 +1,5 @@
-import { useState, useEffect } from "react";
-import { Sparkles, Timer, Trophy, Users } from "lucide-react";
+import { useState, useEffect, useRef } from "react";
+import { Sparkles, Timer, Trophy, Users, ChevronDown } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { useToast } from "@/hooks/use-toast";
 import { useWallet } from "@/contexts/WalletContext";
@@ -34,6 +34,9 @@ export const JackpotGame = () => {
   const [balance] = useState(10.5);
   const [lastWinner, setLastWinner] = useState<Player | null>(null);
   const [animatingBet, setAnimatingBet] = useState<string | null>(null);
+  const [isSpinning, setIsSpinning] = useState(false);
+  const [spinOffset, setSpinOffset] = useState(0);
+  const carouselRef = useRef<HTMLDivElement>(null);
   
   const { winnerId, showConfetti, showSparkles, celebrateWinner } = useWinnerAnimation();
 
@@ -48,6 +51,22 @@ export const JackpotGame = () => {
       setUserChance((totalUserWager / potSize) * 100);
     }
   }, [players, potSize, userId, isConnected]);
+
+  // Countdown timer logic
+  useEffect(() => {
+    if (players.length < 2 || timeLeft === 0) return;
+    
+    const timer = setInterval(() => {
+      setTimeLeft(prev => {
+        if (prev <= 1) {
+          return 0;
+        }
+        return prev - 1;
+      });
+    }, 1000);
+
+    return () => clearInterval(timer);
+  }, [players.length, timeLeft]);
 
   const handlePlaceBet = async () => {
     if (!isConnected) {
@@ -86,8 +105,15 @@ export const JackpotGame = () => {
       description: `You wagered ${wagerAmount} ${network === 'solana' ? 'SOL' : 'ETH'}`,
     });
 
-    // Provably fair winner selection after 3 players
-    if (updatedPlayers.length >= 3 && !lastWinner) {
+    // Start countdown when 2 bets are placed
+    if (updatedPlayers.length === 2) {
+      setTimeLeft(60);
+    }
+
+    // Provably fair winner selection after countdown
+    if (updatedPlayers.length >= 2 && timeLeft === 0 && !lastWinner) {
+      setIsSpinning(true);
+      
       setTimeout(() => {
         const serverSeed = generateServerSeed();
         const publicSeed = generatePublicSeed();
@@ -109,15 +135,23 @@ export const JackpotGame = () => {
           }
           cumulativeTickets += playerTickets;
         }
+
+        // Calculate spin offset to land on winner
+        const winnerIndex = updatedPlayers.findIndex(p => p.id === winner.id);
+        const finalOffset = -(winnerIndex * 120) + (3 * 120 * updatedPlayers.length);
+        setSpinOffset(finalOffset);
         
-        setLastWinner(winner);
-        celebrateWinner(winner.id);
-        
-        toast({
-          title: "🎉 WINNER! 🎉",
-          description: `${winner.username} won ${(potSize * 0.9).toFixed(4)} ${network === 'solana' ? 'SOL' : 'ETH'}!`,
-        });
-      }, 2000);
+        setTimeout(() => {
+          setIsSpinning(false);
+          setLastWinner(winner);
+          celebrateWinner(winner.id);
+          
+          toast({
+            title: "🎉 WINNER! 🎉",
+            description: `${winner.username} won ${(potSize * 0.9).toFixed(4)} ${network === 'solana' ? 'SOL' : 'ETH'}!`,
+          });
+        }, 4000);
+      }, 500);
     }
   };
 
@@ -239,7 +273,7 @@ export const JackpotGame = () => {
             </div>
           )}
 
-          {/* Player List with Animations */}
+          {/* Jackpot Carousel with Spinning Animation */}
           <div className="space-y-3">
             <div className="flex items-center justify-between">
               <h3 className="font-pixel text-xs text-primary">
@@ -253,41 +287,48 @@ export const JackpotGame = () => {
                 No players yet. Be the first!
               </div>
             ) : (
-              <div className="space-y-2 max-h-64 overflow-y-auto">
-                <AnimatePresence mode="popLayout">
-                  {sortedPlayers.map((player, idx) => {
-                    const isWinner = player.id === winnerId;
-                    const isAnimating = player.id === animatingBet;
-                    
-                    return (
-                      <motion.div
-                        key={player.id}
-                        layout
-                        initial={{ opacity: 0, x: -20, scale: 0.9 }}
-                        animate={{ 
-                          opacity: 1, 
-                          x: 0,
-                          scale: isAnimating ? [0.9, 1.05, 1] : 1,
-                          backgroundColor: isWinner 
-                            ? ["rgba(0, 0, 0, 0)", "rgba(236, 72, 153, 0.2)", "rgba(0, 0, 0, 0)"]
-                            : isAnimating
-                            ? ["rgba(0, 0, 0, 0)", "rgba(0, 245, 255, 0.1)", "rgba(0, 0, 0, 0)"]
-                            : "rgba(0, 0, 0, 0)"
-                        }}
-                        exit={{ opacity: 0, x: 20 }}
-                        transition={{ 
-                          delay: idx * 0.05,
-                          layout: { duration: 0.3 }
-                        }}
-                        className={`bg-background border p-3 flex items-center justify-between hover:bg-background/70 hover-scale relative ${
-                          isWinner 
-                            ? "border-accent shadow-glow-magenta" 
-                            : "border-primary/20"
-                        }`}
-                      >
-                        {isWinner && <WinnerSparkles show={showSparkles} />}
-                        
-                        <div className="flex items-center gap-3 relative z-10">
+              <div className="relative">
+                {/* Arrow Indicator */}
+                <div className="absolute left-1/2 -translate-x-1/2 -top-6 z-10">
+                  <ChevronDown className="w-8 h-8 text-accent animate-bounce" />
+                </div>
+                
+                {/* Carousel Container */}
+                <div className="relative overflow-hidden bg-background/30 border border-primary/20 rounded-lg py-4">
+                  <motion.div
+                    ref={carouselRef}
+                    className="flex gap-4 px-4"
+                    animate={{
+                      x: isSpinning ? spinOffset : 0
+                    }}
+                    transition={{
+                      duration: isSpinning ? 4 : 0.3,
+                      ease: isSpinning ? [0.32, 0.72, 0, 1] : "easeOut"
+                    }}
+                    style={{
+                      transform: `translateX(calc(50% - 60px))`
+                    }}
+                  >
+                    {/* Repeat players for continuous effect */}
+                    {[...sortedPlayers, ...sortedPlayers, ...sortedPlayers, ...sortedPlayers].map((player, idx) => {
+                      const isWinner = player.id === winnerId;
+                      const isAnimating = player.id === animatingBet;
+                      
+                      return (
+                        <motion.div
+                          key={`${player.id}-${idx}`}
+                          className={`shrink-0 w-28 bg-background border p-3 rounded-lg flex flex-col items-center gap-2 ${
+                            isWinner 
+                              ? "border-accent shadow-glow-magenta" 
+                              : "border-primary/20"
+                          }`}
+                          animate={isAnimating ? {
+                            scale: [1, 1.05, 1],
+                            backgroundColor: ["rgba(0, 0, 0, 0)", "rgba(0, 245, 255, 0.1)", "rgba(0, 0, 0, 0)"]
+                          } : {}}
+                        >
+                          {isWinner && <WinnerSparkles show={showSparkles} />}
+                          
                           <motion.div
                             animate={isWinner ? { scale: [1, 1.2, 1], rotate: [0, 10, -10, 0] } : {}}
                             transition={{ duration: 0.5, repeat: isWinner ? Infinity : 0, repeatDelay: 1 }}
@@ -295,36 +336,34 @@ export const JackpotGame = () => {
                             <PlayerAvatar
                               username={player.username}
                               avatarUrl={player.avatar}
-                              size="sm"
+                              size="md"
                               ringColor={isWinner ? "accent" : "primary"}
                             />
                           </motion.div>
-                          <div>
-                            <div className={`font-mono text-sm ${isWinner ? "text-accent font-bold" : "text-foreground"}`}>
+                          
+                          <div className="text-center w-full">
+                            <div className={`font-mono text-xs truncate ${isWinner ? "text-accent font-bold" : "text-foreground"}`}>
                               {player.username}
                               {isWinner && " 🏆"}
                             </div>
                             <motion.div 
-                              className="font-mono text-xs text-muted-foreground"
+                              className="font-mono text-[0.6rem] text-muted-foreground"
                               animate={isAnimating ? { scale: [1, 1.15, 1] } : {}}
                             >
-                              {player.wager.toFixed(4)} {network === 'solana' ? 'SOL' : 'ETH'}
+                              {player.wager.toFixed(3)} {network === 'solana' ? 'SOL' : 'ETH'}
+                            </motion.div>
+                            <motion.div 
+                              className={`font-pixel text-xs ${isWinner ? "text-accent" : "text-primary"} mt-1`}
+                              animate={isAnimating || isWinner ? { scale: [1, 1.2, 1] } : {}}
+                            >
+                              {player.chance.toFixed(1)}%
                             </motion.div>
                           </div>
-                        </div>
-                        <div className="text-right relative z-10">
-                          <motion.div 
-                            className={`font-pixel text-sm ${isWinner ? "text-accent" : "text-primary"}`}
-                            animate={isAnimating || isWinner ? { scale: [1, 1.2, 1] } : {}}
-                          >
-                            {player.chance.toFixed(2)}%
-                          </motion.div>
-                          <div className="font-mono text-xs text-muted-foreground">chance</div>
-                        </div>
-                      </motion.div>
-                    );
-                  })}
-                </AnimatePresence>
+                        </motion.div>
+                      );
+                    })}
+                  </motion.div>
+                </div>
               </div>
             )}
           </div>

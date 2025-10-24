@@ -8,6 +8,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { useWallet } from "@/contexts/WalletContext";
 import { useToast } from "@/hooks/use-toast";
 import { cn } from "@/lib/utils";
+import { GameCreationModal } from "./GameCreationModal";
 
 interface GameMatch {
   id: string;
@@ -18,6 +19,9 @@ interface GameMatch {
   network: string;
   game_type: string;
   created_at: string;
+  game_state?: {
+    creatorChoice?: string;
+  };
   player1?: {
     username: string;
     avatarUrl: string;
@@ -32,7 +36,7 @@ interface GameMatch {
 }
 
 interface GameLobbyProps {
-  gameType: "cointoss" | "war" | "connect4";
+  gameType: "cointoss" | "war" | "connect4" | "chess";
   gameTitle: string;
   gameDescription: string;
   onJoinGame: (matchId: string) => void;
@@ -56,6 +60,7 @@ export const GameLobby = ({
   const [waitingForMatch, setWaitingForMatch] = useState(false);
   const [sortBy, setSortBy] = useState<"high" | "low">("high");
   const [showAll, setShowAll] = useState(true);
+  const [showCreationModal, setShowCreationModal] = useState(false);
 
   useEffect(() => {
     if (isConnected) {
@@ -83,7 +88,32 @@ export const GameLobby = ({
       .limit(20);
 
     if (!error && data) {
-      setMatches(data as any);
+      // Add mock games if no real games
+      if (data.length === 0) {
+        const mockGames: GameMatch[] = Array.from({ length: 6 }, (_, i) => ({
+          id: `mock-${i}`,
+          player1_id: `mock-player-${i * 2}`,
+          player2_id: i % 2 === 0 ? `mock-player-${i * 2 + 1}` : null,
+          wager_amount: 0.05 + (i * 0.02),
+          status: i % 2 === 0 ? 'active' : 'waiting',
+          network: network,
+          game_type: gameType,
+          created_at: new Date(Date.now() - i * 60000).toISOString(),
+          player1: {
+            username: `Player${i * 2}`,
+            avatarUrl: '',
+            level: Math.floor(Math.random() * 100) + 1
+          },
+          player2: i % 2 === 0 ? {
+            username: `Player${i * 2 + 1}`,
+            avatarUrl: '',
+            level: Math.floor(Math.random() * 100) + 1
+          } : undefined
+        }));
+        setMatches(mockGames);
+      } else {
+        setMatches(data as any);
+      }
     }
     setLoading(false);
   };
@@ -106,7 +136,7 @@ export const GameLobby = ({
     return channel;
   };
 
-  const createGame = async () => {
+  const createGame = async (amount: number, selectedChoice: string) => {
     if (!userId || !network) {
       toast({
         title: "Connect Wallet",
@@ -116,7 +146,7 @@ export const GameLobby = ({
       return;
     }
 
-    if (wagerAmount <= 0) {
+    if (amount <= 0) {
       toast({
         title: "Invalid Wager",
         description: "Please enter a valid wager amount",
@@ -131,9 +161,10 @@ export const GameLobby = ({
       .insert([{
         player1_id: userId,
         game_type: gameType,
-        wager_amount: wagerAmount,
+        wager_amount: amount,
         network: network,
-        status: 'waiting'
+        status: 'waiting',
+        game_state: { creatorChoice: selectedChoice }
       }])
       .select()
       .single();
@@ -187,7 +218,17 @@ export const GameLobby = ({
   );
 
   return (
-    <div className="w-full space-y-6">
+    <>
+      <GameCreationModal
+        open={showCreationModal}
+        onClose={() => setShowCreationModal(false)}
+        gameType={gameType as any}
+        onCreateGame={createGame}
+        balance={balance}
+        network={network}
+      />
+      
+      <div className="w-full space-y-6">
       {/* Waiting State Overlay */}
       {waitingForMatch && (
         <Card className="bg-accent/10 backdrop-blur-sm border-2 border-accent p-6 animate-fade-in">
@@ -285,8 +326,8 @@ export const GameLobby = ({
               </div>
 
               <Button
-                onClick={createGame}
-                disabled={!isConnected || creating || wagerAmount <= 0}
+                onClick={() => setShowCreationModal(true)}
+                disabled={!isConnected || creating}
                 className="font-pixel text-sm px-6 py-5 bg-primary hover:bg-primary/90 text-primary-foreground shadow-glow-cyan transition-all duration-200 hover:scale-105"
               >
                 {creating ? (
@@ -414,13 +455,20 @@ export const GameLobby = ({
                   </div>
 
                   {/* Wager & Actions */}
-                  <div className="flex items-center gap-3 w-full sm:w-auto justify-between sm:justify-end">
-                    <div className="flex items-center gap-1">
-                      <span className="font-mono text-xs text-primary">≡</span>
-                      <span className="font-mono text-sm sm:text-base text-foreground font-bold">
-                        {match.wager_amount.toFixed(3)}
-                      </span>
-                    </div>
+                    <div className="flex items-center gap-3 w-full sm:w-auto justify-between sm:justify-end">
+                      <div className="flex flex-col items-end">
+                        <div className="flex items-center gap-1">
+                          <span className="font-mono text-xs text-primary">≡</span>
+                          <span className="font-mono text-sm sm:text-base text-foreground font-bold">
+                            {match.wager_amount.toFixed(3)}
+                          </span>
+                        </div>
+                        {match.game_state?.creatorChoice && (
+                          <div className="font-mono text-[0.6rem] text-muted-foreground">
+                            {match.game_state.creatorChoice}
+                          </div>
+                        )}
+                      </div>
 
                     <div className="flex items-center gap-2">
                       {match.status === 'waiting' && match.player1_id !== userId && (
@@ -454,5 +502,6 @@ export const GameLobby = ({
         )}
       </div>
     </div>
+    </>
   );
 };
