@@ -9,6 +9,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
 import { useWallet } from "@/contexts/WalletContext";
 import { motion, AnimatePresence } from "framer-motion";
+import { EmojiPicker } from "@/components/EmojiPicker";
 
 interface Message {
   id: string;
@@ -269,10 +270,11 @@ export const LeftChatSidebar = () => {
             {/* Input Area */}
             <div className="p-3 border-t border-primary/20">
               <div className="flex items-center gap-2 mb-2">
+                <EmojiPicker onEmojiSelect={(emoji) => setInputMessage(prev => prev + emoji)} />
                 <Input
                   value={inputMessage}
                   onChange={(e) => setInputMessage(e.target.value)}
-                  onKeyDown={(e) => e.key === "Enter" && sendMessage()}
+                  onKeyDown={(e) => e.key === "Enter" && !e.shiftKey && sendMessage()}
                   placeholder="Type Message Here..."
                   disabled={!address}
                   className="flex-1 font-mono text-xs bg-background/50 border-primary/20 h-8 focus:border-primary"
