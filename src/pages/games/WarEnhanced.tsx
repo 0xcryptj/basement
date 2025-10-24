@@ -131,7 +131,7 @@ const WarEnhanced = () => {
       <div className="min-h-screen bg-background">
         <Navbar />
         <GlobalStats />
-        <div className="pt-20 container mx-auto px-4 pb-12 flex items-center justify-center min-h-[60vh]">
+        <div className="pt-20 container mx-auto px-4 pb-12 flex items-center justify-center min-h-[60vh] lg:ml-[280px] transition-all duration-300">
           <Card className="bg-card border-2 border-primary p-8 text-center animate-scale-in">
             <h2 className="font-pixel text-xl text-primary mb-4">Connect Wallet</h2>
             <p className="font-mono text-sm text-muted-foreground">
@@ -149,7 +149,7 @@ const WarEnhanced = () => {
       <Navbar />
       <GlobalStats />
       
-      <div className="pt-20 container mx-auto px-4 pb-12">
+      <div className="pt-20 container mx-auto px-4 pb-12 lg:ml-[280px] transition-all duration-300">
         <div className="text-center mb-8 animate-fade-in">
           <h1 className="font-pixel text-3xl md:text-5xl text-primary mb-4 animate-glow-pulse">
             /WAR/ {network === 'solana' ? '◎' : '⟠'}

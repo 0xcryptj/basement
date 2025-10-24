@@ -77,7 +77,7 @@ const LuckyBlockEnhanced = () => {
       <Navbar />
       <GlobalStats />
       
-      <div className="relative pt-20 pb-12 ml-0 md:ml-[280px] transition-all duration-300">
+      <div className="relative pt-20 pb-12 ml-0 lg:ml-[280px] transition-all duration-300">
         <div className="max-w-[1400px] mx-auto px-6">
           {/* Header */}
           <div className="flex flex-col md:flex-row items-start md:items-center justify-between mb-8 gap-4">

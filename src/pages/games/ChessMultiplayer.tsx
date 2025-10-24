@@ -231,7 +231,7 @@ const ChessMultiplayer = () => {
       <ChainIndicator />
       <ChatSidebar />
 
-      <div className="pt-20 container mx-auto px-4 pb-12">
+      <div className="pt-20 container mx-auto px-4 pb-12 lg:ml-[280px] transition-all duration-300">
         <div className="text-center mb-8">
           <h1 className="font-pixel text-3xl md:text-5xl text-primary mb-4 animate-glow-pulse">
             /CHESS/

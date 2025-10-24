@@ -160,7 +160,7 @@ export const LeftChatSidebar = () => {
       <motion.div
         initial={{ x: -300 }}
         animate={{ x: 0, width: isCollapsed ? "60px" : "280px" }}
-        className="fixed left-0 top-16 h-[calc(100vh-4rem)] bg-[hsl(220,30%,8%)] border-r border-primary/20 z-30 flex flex-col hidden md:flex"
+        className="fixed left-0 top-16 h-[calc(100vh-4rem)] bg-[hsl(220,30%,8%)] border-r border-primary/20 z-40 flex flex-col hidden lg:flex shadow-glow-cyan"
       >
         {/* Header */}
         <div className="p-3 border-b border-primary/20 flex items-center justify-between">

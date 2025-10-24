@@ -84,7 +84,7 @@ const CoinTossEnhanced = () => {
       <div className="min-h-screen flex flex-col bg-background">
         <Navbar />
         <GlobalStats />
-        <main className="flex-1 flex items-center justify-center px-4 sm:px-6 lg:px-8 pt-20 pb-12">
+        <main className="flex-1 flex items-center justify-center px-4 sm:px-6 lg:px-8 pt-20 pb-12 lg:ml-[280px] transition-all duration-300">
           <Card className="w-full max-w-md bg-card border-2 border-primary p-6 sm:p-8 text-center animate-scale-in shadow-glow-cyan">
             <Coins className="w-16 h-16 sm:w-20 sm:h-20 mx-auto mb-4 text-primary animate-glow-pulse" />
             <h2 className="font-pixel text-base sm:text-xl text-primary mb-3 sm:mb-4">Connect Wallet</h2>
@@ -103,7 +103,7 @@ const CoinTossEnhanced = () => {
       <Navbar />
       <GlobalStats />
       
-      <main className="flex-1 px-4 sm:px-6 lg:px-8 pt-20 pb-12">
+      <main className="flex-1 px-4 sm:px-6 lg:px-8 pt-20 pb-12 lg:ml-[280px] transition-all duration-300">
         <div className="max-w-screen-lg mx-auto w-full">
           {/* Header Section */}
           <header className="text-center mb-8 sm:mb-12 animate-fade-in">
