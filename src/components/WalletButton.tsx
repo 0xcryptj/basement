@@ -1,31 +1,51 @@
 import { useState } from "react";
-import { Wallet } from "lucide-react";
+import { Wallet, X } from "lucide-react";
 import { Button } from "@/components/ui/button";
-import {
-  Dialog,
-  DialogContent,
-  DialogDescription,
-  DialogHeader,
-  DialogTitle,
-  DialogTrigger,
-} from "@/components/ui/dialog";
+import { Dialog, DialogContent } from "@/components/ui/dialog";
 import { useWallet } from "@/contexts/WalletContext";
 import { useToast } from "@/hooks/use-toast";
+import { motion, AnimatePresence } from "framer-motion";
+
+type WalletOption = {
+  id: string;
+  name: string;
+  icon: string;
+  network: 'solana' | 'base';
+  detected?: boolean;
+};
 
 export const WalletButton = () => {
-  const { isConnected, network, address, connectPhantom, connectMetaMask, disconnect } = useWallet();
+  const { isConnected, network, address, walletType, connectWallet, disconnect } = useWallet();
   const { toast } = useToast();
   const [isDialogOpen, setIsDialogOpen] = useState(false);
+  const [selectedNetwork, setSelectedNetwork] = useState<'solana' | 'base'>('solana');
 
-  const handleConnect = async (selectedNetwork: "solana" | "base") => {
+  const solanaWallets: WalletOption[] = [
+    { id: 'phantom', name: 'Phantom', icon: '👻', network: 'solana', detected: !!(window as any).phantom?.solana },
+    { id: 'solflare', name: 'Solflare', icon: '🌞', network: 'solana' },
+    { id: 'slope', name: 'Slope', icon: '⛰️', network: 'solana' },
+    { id: 'glow', name: 'Glow', icon: '💜', network: 'solana' },
+    { id: 'backpack', name: 'Backpack', icon: '🎒', network: 'solana' },
+  ];
+
+  const ethWallets: WalletOption[] = [
+    { id: 'metamask', name: 'MetaMask', icon: '🦊', network: 'base', detected: !!(window as any).ethereum?.isMetaMask },
+    { id: 'coinbase', name: 'Coinbase Wallet', icon: '🔵', network: 'base', detected: !!(window as any).ethereum?.isCoinbaseWallet },
+    { id: 'torus', name: 'Torus', icon: '🔷', network: 'base' },
+    { id: 'ledger', name: 'Ledger', icon: '📱', network: 'base' },
+  ];
+
+  const displayedWallets = selectedNetwork === 'solana' ? solanaWallets : ethWallets;
+  const detectedWallets = displayedWallets.filter(w => w.detected);
+  const popularWallets = displayedWallets.filter(w => !w.detected);
+
+  const handleConnect = async (walletId: string) => {
     try {
-      if (selectedNetwork === "solana") {
-        await connectPhantom();
-        toast({ title: "Connected!", description: "Phantom wallet connected" });
-      } else {
-        await connectMetaMask();
-        toast({ title: "Connected!", description: "MetaMask wallet connected" });
-      }
+      await connectWallet(walletId as any, selectedNetwork);
+      toast({ 
+        title: "Connected!", 
+        description: `${walletId.charAt(0).toUpperCase() + walletId.slice(1)} wallet connected`
+      });
       setIsDialogOpen(false);
     } catch (error: any) {
       toast({
@@ -40,54 +60,116 @@ export const WalletButton = () => {
     return (
       <Button
         onClick={disconnect}
-        className={`font-pixel text-xs px-4 py-2 ${
+        className={`font-pixel text-xs px-3 py-2 ${
           network === "solana"
-            ? "bg-secondary text-secondary-foreground hover:bg-secondary/80 shadow-glow-purple"
-            : "bg-primary text-primary-foreground hover:bg-primary/80 shadow-glow-cyan"
+            ? "bg-secondary text-secondary-foreground hover:bg-secondary/80"
+            : "bg-primary text-primary-foreground hover:bg-primary/80"
         }`}
       >
-        <Wallet className="mr-2 h-4 w-4" />
-        {address.slice(0, 6)}...{address.slice(-4)}
+        <Wallet className="mr-2 h-3 w-3" />
+        {address.slice(0, 4)}...{address.slice(-4)}
       </Button>
     );
   }
 
   return (
-    <Dialog open={isDialogOpen} onOpenChange={setIsDialogOpen}>
-      <DialogTrigger asChild>
-        <Button className="font-pixel text-xs px-4 py-2 bg-primary text-primary-foreground hover:bg-primary/80 shadow-glow-cyan transition-all">
-          <Wallet className="mr-2 h-4 w-4" />
-          Connect Wallet
-        </Button>
-      </DialogTrigger>
-      <DialogContent className="bg-card border-2 border-primary">
-        <DialogHeader>
-          <DialogTitle className="font-pixel text-primary">Select Network</DialogTitle>
-          <DialogDescription className="font-mono text-muted-foreground">
-            Choose your preferred blockchain network
-          </DialogDescription>
-        </DialogHeader>
-        <div className="space-y-3 mt-4">
-          <Button
-            onClick={() => handleConnect("base")}
-            className="w-full font-pixel text-xs py-6 bg-primary text-primary-foreground hover:bg-primary/80 shadow-glow-cyan transition-all"
-          >
-            <div className="flex flex-col items-center">
-              <span>Base Network (MetaMask)</span>
-              <span className="text-[0.6rem] mt-1 opacity-70">Ethereum L2 • ⟠</span>
-            </div>
-          </Button>
-          <Button
-            onClick={() => handleConnect("solana")}
-            className="w-full font-pixel text-xs py-6 bg-secondary text-secondary-foreground hover:bg-secondary/80 shadow-glow-purple transition-all"
-          >
-            <div className="flex flex-col items-center">
-              <span>Solana Network (Phantom)</span>
-              <span className="text-[0.6rem] mt-1 opacity-70">High Speed Chain • ◎</span>
-            </div>
-          </Button>
-        </div>
-      </DialogContent>
-    </Dialog>
+    <>
+      <Button 
+        onClick={() => setIsDialogOpen(true)}
+        className="font-pixel text-xs px-3 py-2 bg-primary text-primary-foreground hover:bg-primary/80"
+      >
+        <Wallet className="mr-2 h-3 w-3" />
+        CONNECT
+      </Button>
+
+      <Dialog open={isDialogOpen} onOpenChange={setIsDialogOpen}>
+        <DialogContent className="bg-[hsl(220,30%,8%)] border border-primary/30 p-0 max-w-md">
+          {/* Header */}
+          <div className="flex items-center justify-between p-4 border-b border-primary/20">
+            <h2 className="font-pixel text-lg text-primary">CONNECT</h2>
+            <button 
+              onClick={() => setIsDialogOpen(false)}
+              className="text-muted-foreground hover:text-primary transition-colors"
+            >
+              <X className="h-5 w-5" />
+            </button>
+          </div>
+
+          {/* Network Tabs */}
+          <div className="flex gap-2 px-4 pt-4">
+            <button
+              onClick={() => setSelectedNetwork('solana')}
+              className={`flex-1 font-pixel text-xs py-2 px-4 rounded transition-all ${
+                selectedNetwork === 'solana'
+                  ? 'bg-secondary text-secondary-foreground'
+                  : 'bg-background/50 text-muted-foreground hover:text-foreground'
+              }`}
+            >
+              SOLANA
+            </button>
+            <button
+              onClick={() => setSelectedNetwork('base')}
+              className={`flex-1 font-pixel text-xs py-2 px-4 rounded transition-all ${
+                selectedNetwork === 'base'
+                  ? 'bg-primary text-primary-foreground'
+                  : 'bg-background/50 text-muted-foreground hover:text-foreground'
+              }`}
+            >
+              BASE (ETH)
+            </button>
+          </div>
+
+          {/* Wallet List */}
+          <div className="p-4 space-y-4 max-h-[400px] overflow-y-auto">
+            <AnimatePresence mode="wait">
+              <motion.div
+                key={selectedNetwork}
+                initial={{ opacity: 0, x: 20 }}
+                animate={{ opacity: 1, x: 0 }}
+                exit={{ opacity: 0, x: -20 }}
+                transition={{ duration: 0.2 }}
+                className="space-y-4"
+              >
+                {/* Detected Wallets */}
+                {detectedWallets.length > 0 && (
+                  <div className="space-y-2">
+                    <div className="font-pixel text-[0.6rem] text-muted-foreground">Detected</div>
+                    {detectedWallets.map((wallet) => (
+                      <button
+                        key={wallet.id}
+                        onClick={() => handleConnect(wallet.id)}
+                        className="w-full flex items-center gap-3 p-3 bg-background/50 hover:bg-primary/10 border border-primary/20 hover:border-primary/40 rounded transition-all group"
+                      >
+                        <span className="text-2xl">{wallet.icon}</span>
+                        <span className="font-mono text-sm text-foreground group-hover:text-primary transition-colors">
+                          {wallet.name}
+                        </span>
+                      </button>
+                    ))}
+                  </div>
+                )}
+
+                {/* Popular Wallets */}
+                <div className="space-y-2">
+                  <div className="font-pixel text-[0.6rem] text-muted-foreground">Popular</div>
+                  {popularWallets.map((wallet) => (
+                    <button
+                      key={wallet.id}
+                      onClick={() => handleConnect(wallet.id)}
+                      className="w-full flex items-center gap-3 p-3 bg-background/50 hover:bg-primary/10 border border-primary/20 hover:border-primary/40 rounded transition-all group"
+                    >
+                      <span className="text-2xl">{wallet.icon}</span>
+                      <span className="font-mono text-sm text-foreground group-hover:text-primary transition-colors">
+                        {wallet.name}
+                      </span>
+                    </button>
+                  ))}
+                </div>
+              </motion.div>
+            </AnimatePresence>
+          </div>
+        </DialogContent>
+      </Dialog>
+    </>
   );
 };
