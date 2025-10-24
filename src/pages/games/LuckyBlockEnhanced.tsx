@@ -63,103 +63,114 @@ const LuckyBlockEnhanced = () => {
   }, []);
 
   return (
-    <div className="min-h-screen bg-[hsl(220,45%,6%)] relative overflow-hidden">
-      {/* Hero Background */}
+    <div className="min-h-screen bg-[hsl(220,45%,6%)] relative overflow-x-hidden">
+      {/* Hero Background - More Visible */}
       <div 
-        className="absolute inset-0 opacity-5"
+        className="fixed inset-0 opacity-20 pointer-events-none"
         style={{
           backgroundImage: `url(${bk3Image})`,
           backgroundSize: 'cover',
           backgroundPosition: 'center',
+          backgroundAttachment: 'fixed',
         }}
       />
+      
+      {/* Subtle Matrix Rain Overlay */}
+      <div className="fixed inset-0 pointer-events-none opacity-30 mix-blend-screen">
+        <div className="absolute inset-0 bg-gradient-to-b from-transparent via-primary/5 to-transparent animate-scan" />
+      </div>
+      
+      {/* Dark overlay for contrast */}
+      <div className="fixed inset-0 bg-gradient-to-b from-background/60 via-background/40 to-background/60 pointer-events-none" />
       
       <Navbar />
       <GlobalStats />
       
-      <div className="relative pt-20 pb-12 ml-0 lg:ml-[280px] transition-all duration-300">
-        <div className="max-w-[1400px] mx-auto px-6">
+      <div className="relative pt-20 pb-12 ml-0 lg:ml-[280px] transition-all duration-300 overflow-x-hidden">
+        <div className="w-full max-w-[1400px] mx-auto px-4 sm:px-6 lg:px-8">
           {/* Header */}
-          <div className="flex flex-col md:flex-row items-start md:items-center justify-between mb-8 gap-4">
-            <div className="flex items-center gap-8">
+          <div className="flex flex-col lg:flex-row items-start lg:items-center justify-between mb-6 sm:mb-8 gap-4">
+            <div className="flex flex-col sm:flex-row items-start sm:items-center gap-4 sm:gap-8 w-full lg:w-auto">
               <div className="flex items-center gap-3">
-                <Sparkles className="w-8 h-8 text-primary" />
-                <h1 className="font-pixel text-2xl text-primary">JACKPOT</h1>
+                <Sparkles className="w-6 h-6 sm:w-8 sm:h-8 text-primary animate-glow-pulse" />
+                <h1 className="font-pixel text-xl sm:text-2xl text-primary">JACKPOT</h1>
               </div>
               <p className="font-mono text-xs text-muted-foreground">
                 Winner takes all...
               </p>
             </div>
             
-            <div className="flex items-center gap-4">
-              <Button className="font-pixel text-xs bg-purple-600/20 text-purple-400 border border-purple-500/30 hover:bg-purple-600/30">
+            <div className="flex flex-col sm:flex-row items-start sm:items-center gap-3 w-full lg:w-auto">
+              <Button className="w-full sm:w-auto font-pixel text-[0.65rem] sm:text-xs bg-purple-600/20 text-purple-400 border border-purple-500/30 hover:bg-purple-600/30 px-3 py-2 whitespace-nowrap">
                 $25K WEEKLY LEADERBOARD
               </Button>
-              <div className="flex items-center gap-2 bg-background/50 border border-primary/30 rounded-lg px-4 py-2">
-                <span className="font-mono text-sm text-primary">{userBalance.toFixed(8)}</span>
+              <div className="flex items-center gap-2 bg-background/50 border border-primary/30 rounded-lg px-3 sm:px-4 py-2 w-full sm:w-auto justify-between sm:justify-start">
+                <span className="font-mono text-xs sm:text-sm text-primary">{userBalance.toFixed(8)}</span>
               </div>
             </div>
           </div>
 
           {/* Main Game Area */}
-          <div className="grid lg:grid-cols-[1fr,320px] gap-6">
-            <div className="space-y-6">
+          <div className="grid lg:grid-cols-[1fr,300px] xl:grid-cols-[1fr,320px] gap-4 sm:gap-6">
+            <div className="space-y-4 sm:space-y-6 min-w-0">
               {/* Bet Controls */}
-              <Card className="bg-[hsl(220,30%,10%)] border border-primary/20 p-4 md:p-6">
-                <div className="flex flex-col md:flex-row items-start md:items-center justify-between gap-4">
-                  <div className="w-full md:w-auto">
-                    <p className="font-mono text-xs text-muted-foreground mb-1">Bet Amount ~$0</p>
-                    <div className="flex items-center gap-3">
-                      <div className="flex items-center gap-2 bg-background/50 border border-primary/20 rounded px-3 py-2">
+              <Card className="bg-[hsl(220,30%,10%)]/80 backdrop-blur-sm border border-primary/20 p-4 sm:p-6 overflow-hidden">
+                <div className="flex flex-col gap-4">
+                  <div className="w-full">
+                    <p className="font-mono text-xs text-muted-foreground mb-2">Bet Amount ~$0</p>
+                    <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-3">
+                      <div className="flex items-center gap-2 bg-background/50 border border-primary/20 rounded px-3 py-2 flex-1">
                         <span className="font-mono text-sm">≡</span>
                         <input
                           type="number"
                           value={wagerAmount}
                           onChange={(e) => setWagerAmount(parseFloat(e.target.value) || 0)}
-                          className="w-20 bg-transparent font-mono text-lg text-foreground outline-none"
+                          className="w-full bg-transparent font-mono text-base sm:text-lg text-foreground outline-none"
                           placeholder="0"
                         />
                       </div>
                       <Button
                         variant="outline"
-                        className="font-mono text-xs bg-background/50 border-primary/20 hover:bg-background"
+                        className="font-mono text-xs bg-background/50 border-primary/20 hover:bg-background whitespace-nowrap"
                       >
                         SOL <ChevronDown className="w-3 h-3 ml-1" />
                       </Button>
                     </div>
                   </div>
 
-                  <div className="flex items-center gap-2">
-                    <Button
-                      onClick={() => setWagerAmount(prev => prev + 0.1)}
-                      variant="outline"
-                      size="sm"
-                      className="font-mono text-xs bg-background/50 border-primary/20"
-                    >
-                      +0.1
-                    </Button>
-                    <Button
-                      onClick={() => setWagerAmount(prev => prev + 1)}
-                      variant="outline"
-                      size="sm"
-                      className="font-mono text-xs bg-background/50 border-primary/20"
-                    >
-                      +1
-                    </Button>
-                  </div>
+                  <div className="flex flex-wrap items-center gap-2 justify-between">
+                    <div className="flex items-center gap-2">
+                      <Button
+                        onClick={() => setWagerAmount(prev => prev + 0.1)}
+                        variant="outline"
+                        size="sm"
+                        className="font-mono text-xs bg-background/50 border-primary/20 hover:bg-primary/10"
+                      >
+                        +0.1
+                      </Button>
+                      <Button
+                        onClick={() => setWagerAmount(prev => prev + 1)}
+                        variant="outline"
+                        size="sm"
+                        className="font-mono text-xs bg-background/50 border-primary/20 hover:bg-primary/10"
+                      >
+                        +1
+                      </Button>
+                    </div>
 
-                  <div className="flex items-center gap-2">
-                    <span className="font-mono text-xs text-muted-foreground">Balance:</span>
-                    <div className="flex items-center gap-1">
-                      <span className="font-mono text-xs">≡</span>
-                      <span className="font-mono text-sm text-foreground">{userBalance.toFixed(8)}</span>
+                    <div className="flex items-center gap-2">
+                      <span className="font-mono text-xs text-muted-foreground">Balance:</span>
+                      <div className="flex items-center gap-1">
+                        <span className="font-mono text-xs">≡</span>
+                        <span className="font-mono text-xs sm:text-sm text-foreground">{userBalance.toFixed(8)}</span>
+                      </div>
                     </div>
                   </div>
 
                   <Button
                     onClick={placeBet}
                     disabled={!isConnected || isJoining || wagerAmount <= 0}
-                    className="font-pixel text-sm px-8 py-6 bg-purple-600 hover:bg-purple-700 text-white w-full md:w-auto"
+                    className="font-pixel text-sm px-6 sm:px-8 py-5 sm:py-6 bg-purple-600 hover:bg-purple-700 text-white w-full shadow-glow-purple transition-all duration-200 hover:scale-105"
                   >
                     {isJoining ? (
                       <>
@@ -174,42 +185,42 @@ const LuckyBlockEnhanced = () => {
               </Card>
 
               {/* Stats Grid */}
-              <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-                <Card className="bg-[hsl(220,30%,10%)] border-2 border-primary/30 p-4">
-                  <p className="font-mono text-xs text-muted-foreground mb-2">Jackpot Value</p>
+              <div className="grid grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-4">
+                <Card className="bg-[hsl(220,30%,10%)]/80 backdrop-blur-sm border-2 border-primary/30 p-3 sm:p-4 shadow-glow-cyan">
+                  <p className="font-mono text-[0.65rem] sm:text-xs text-muted-foreground mb-2">Jackpot Value</p>
                   <div className="flex items-center gap-1">
                     <span className="font-mono text-xs">≡</span>
-                    <span className="font-pixel text-xl text-primary">
+                    <span className="font-pixel text-lg sm:text-xl text-primary animate-glow-pulse">
                       {jackpotValue.toFixed(3)}
                     </span>
                   </div>
                 </Card>
 
-                <Card className="bg-[hsl(220,30%,10%)] border border-primary/20 p-4">
-                  <p className="font-mono text-xs text-muted-foreground mb-2">Your Wager</p>
+                <Card className="bg-[hsl(220,30%,10%)]/80 backdrop-blur-sm border border-primary/20 p-3 sm:p-4">
+                  <p className="font-mono text-[0.65rem] sm:text-xs text-muted-foreground mb-2">Your Wager</p>
                   <div className="flex items-center gap-1">
                     <span className="font-mono text-xs">≡</span>
-                    <span className="font-pixel text-xl text-foreground">
+                    <span className="font-pixel text-lg sm:text-xl text-foreground">
                       {wagerAmount.toFixed(3)}
                     </span>
                   </div>
                 </Card>
 
-                <Card className="bg-[hsl(220,30%,10%)] border border-primary/20 p-4">
-                  <p className="font-mono text-xs text-muted-foreground mb-2">Your Chance</p>
-                  <span className="font-pixel text-xl text-foreground">{yourChance.toFixed(2)}%</span>
+                <Card className="bg-[hsl(220,30%,10%)]/80 backdrop-blur-sm border border-primary/20 p-3 sm:p-4">
+                  <p className="font-mono text-[0.65rem] sm:text-xs text-muted-foreground mb-2">Your Chance</p>
+                  <span className="font-pixel text-lg sm:text-xl text-foreground">{yourChance.toFixed(2)}%</span>
                 </Card>
 
-                <Card className="bg-[hsl(220,30%,10%)] border border-primary/20 p-4">
-                  <p className="font-mono text-xs text-muted-foreground mb-2">Time Remaining</p>
-                  <span className="font-pixel text-xl text-foreground">
+                <Card className="bg-[hsl(220,30%,10%)]/80 backdrop-blur-sm border border-primary/20 p-3 sm:p-4">
+                  <p className="font-mono text-[0.65rem] sm:text-xs text-muted-foreground mb-2">Time Left</p>
+                  <span className="font-pixel text-lg sm:text-xl text-foreground">
                     {Math.floor(timeLeft / 60).toString().padStart(2, '0')}:{(timeLeft % 60).toString().padStart(2, '0')}
                   </span>
                 </Card>
               </div>
 
               {/* Player Slots */}
-              <Card className="bg-[hsl(220,30%,10%)] border border-primary/20 p-6">
+              <Card className="bg-[hsl(220,30%,10%)]/80 backdrop-blur-sm border border-primary/20 p-4 sm:p-6 overflow-hidden">
                 <div className="flex items-center justify-center mb-4">
                   <div className="w-0 h-0 border-l-8 border-r-8 border-t-12 border-l-transparent border-r-transparent border-t-primary" />
                 </div>
@@ -318,14 +329,14 @@ const LuckyBlockEnhanced = () => {
             </div>
 
             {/* Right Sidebar */}
-            <div className="space-y-4">
-              <Card className="bg-[hsl(220,30%,10%)] border border-primary/20 p-4">
-                <div className="flex items-center justify-between mb-4">
-                  <span className="font-pixel text-xs text-muted-foreground">ROUND</span>
+            <div className="space-y-4 min-w-0">
+              <Card className="bg-[hsl(220,30%,10%)]/80 backdrop-blur-sm border border-primary/20 p-4 overflow-hidden">
+                <div className="flex items-center justify-between mb-3 sm:mb-4">
+                  <span className="font-pixel text-[0.65rem] sm:text-xs text-muted-foreground">ROUND</span>
                   <span className="font-mono text-xs text-primary">#167268</span>
                 </div>
                 
-                <div className="aspect-square bg-background/30 border border-primary/10 rounded-lg flex items-center justify-center mb-4 overflow-hidden">
+                <div className="aspect-square bg-background/30 border border-primary/10 rounded-lg flex items-center justify-center mb-3 sm:mb-4 overflow-hidden">
                   <img 
                     src={bk3Image} 
                     alt="Round" 
@@ -348,10 +359,10 @@ const LuckyBlockEnhanced = () => {
                 </div>
               </Card>
 
-              <Card className="bg-[hsl(220,30%,10%)] border border-primary/20 p-4">
+              <Card className="bg-[hsl(220,30%,10%)]/80 backdrop-blur-sm border border-primary/20 p-4 overflow-hidden">
                 <div className="flex items-center gap-2 mb-3">
                   <Trophy className="w-4 h-4 text-accent" />
-                  <span className="font-pixel text-xs text-accent">LAST WINNER</span>
+                  <span className="font-pixel text-[0.65rem] sm:text-xs text-accent">LAST WINNER</span>
                 </div>
                 
                 <div className="flex items-center gap-3">
@@ -360,10 +371,10 @@ const LuckyBlockEnhanced = () => {
                       B
                     </AvatarFallback>
                   </Avatar>
-                  <div>
+                  <div className="min-w-0 flex-1">
                     <p className="font-mono text-sm text-foreground flex items-center gap-2">
-                      BOZO
-                      <span className="text-xs text-accent bg-accent/20 px-1.5 rounded">56</span>
+                      <span className="truncate">BOZO</span>
+                      <span className="text-xs text-accent bg-accent/20 px-1.5 rounded shrink-0">56</span>
                     </p>
                     <div className="flex items-center gap-1">
                       <span className="font-mono text-xs">≡</span>
@@ -380,10 +391,10 @@ const LuckyBlockEnhanced = () => {
                 </div>
               </Card>
 
-              <Card className="bg-[hsl(220,30%,10%)] border border-accent/20 p-4">
+              <Card className="bg-[hsl(220,30%,10%)]/80 backdrop-blur-sm border border-accent/20 p-4 overflow-hidden">
                 <div className="flex items-center gap-2 mb-3">
                   <Sparkles className="w-4 h-4 text-accent" />
-                  <span className="font-pixel text-xs text-accent">LUCK OF THE DAY</span>
+                  <span className="font-pixel text-[0.65rem] sm:text-xs text-accent">LUCK OF THE DAY</span>
                 </div>
                 
                 <div className="flex items-center gap-3">
@@ -392,10 +403,10 @@ const LuckyBlockEnhanced = () => {
                       C
                     </AvatarFallback>
                   </Avatar>
-                  <div>
+                  <div className="min-w-0 flex-1">
                     <p className="font-mono text-sm text-foreground flex items-center gap-2">
-                      Crashout
-                      <span className="text-xs text-accent bg-accent/20 px-1.5 rounded">4</span>
+                      <span className="truncate">Crashout</span>
+                      <span className="text-xs text-accent bg-accent/20 px-1.5 rounded shrink-0">4</span>
                     </p>
                     <div className="flex items-center gap-1">
                       <span className="font-mono text-xs">≡</span>
