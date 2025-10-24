@@ -57,11 +57,11 @@ export const LeftChatSidebar = () => {
         )
       `)
       .eq('channelId', channelId)
-      .order('createdAt', { ascending: true })
-      .limit(50);
+      .order('createdAt', { ascending: false })
+      .limit(100);
 
     if (!error && data) {
-      setMessages(data);
+      setMessages(data.reverse());
     }
     setLoading(false);
   };
@@ -77,20 +77,33 @@ export const LeftChatSidebar = () => {
           table: 'Message',
           filter: `channelId=eq.${channelId}`,
         },
-        async (payload) => {
-          const { data: userData } = await supabase
-            .from('User')
-            .select('id, username, walletAddress, avatarUrl')
-            .eq('id', payload.new.userId)
-            .single();
-
+        (payload) => {
+          // Add message immediately without waiting for user data
           setMessages((prev) => [
             ...prev,
             {
               ...payload.new,
-              user: userData || undefined,
+              user: undefined,
             } as Message,
           ]);
+          
+          // Fetch user data in background
+          supabase
+            .from('User')
+            .select('id, username, walletAddress, avatarUrl')
+            .eq('id', payload.new.userId)
+            .single()
+            .then(({ data: userData }) => {
+              if (userData) {
+                setMessages((prev) => 
+                  prev.map((msg) =>
+                    msg.id === payload.new.id
+                      ? { ...msg, user: userData }
+                      : msg
+                  )
+                );
+              }
+            });
         }
       )
       .subscribe();

@@ -4,6 +4,7 @@ import { Menu, X } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { WalletButton } from "./WalletButton";
 import { WalletBalance } from "./WalletBalance";
+import { NavbarAnimatedBox } from "./NavbarAnimatedBox";
 import { supabase } from "@/integrations/supabase/client";
 import logoIcon from "@/assets/logo-icon.svg";
 
@@ -63,7 +64,9 @@ export const Navbar = () => {
   const isActive = (path: string) => location.pathname === path;
 
   return (
-    <nav className="fixed top-0 left-0 right-0 z-50 border-b-2 border-primary bg-background/95 backdrop-blur-md shadow-glow-cyan" role="navigation" aria-label="Main navigation">
+    <>
+      <NavbarAnimatedBox />
+      <nav className="fixed top-0 left-0 right-0 z-50 border-b-2 border-primary bg-background/95 backdrop-blur-md shadow-glow-cyan" role="navigation" aria-label="Main navigation">
       <div className="max-w-screen-2xl mx-auto px-2 sm:px-4 lg:px-6">
         <div className="flex h-14 sm:h-16 items-center justify-between gap-4">
           {/* Logo - Far Left */}
@@ -160,5 +163,6 @@ export const Navbar = () => {
         )}
       </div>
     </nav>
+    </>
   );
 };

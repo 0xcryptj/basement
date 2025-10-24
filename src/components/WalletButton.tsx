@@ -30,6 +30,7 @@ export const WalletButton = () => {
   ];
 
   const ethWallets: WalletOption[] = [
+    { id: 'phantom', name: 'Phantom', icon: '👻', network: 'base', detected: !!(window as any).phantom?.ethereum },
     { id: 'metamask', name: 'MetaMask', icon: '🦊', network: 'base', detected: !!(window as any).ethereum?.isMetaMask },
     { id: 'coinbase', name: 'Coinbase Wallet', icon: '🔵', network: 'base', detected: !!(window as any).ethereum?.isCoinbaseWallet },
     { id: 'torus', name: 'Torus', icon: '🔷', network: 'base' },

@@ -45,7 +45,7 @@ export const Hero = () => {
       
       {/* Floating Particles - Mix of squares and crypto characters */}
       <div className="absolute inset-0 overflow-hidden">
-        {[...Array(320)].map((_, i) => {
+        {[...Array(80)].map((_, i) => {
           const isCryptoChar = i % 2 === 0;
           return (
             <div
