@@ -5,6 +5,7 @@ import { JackpotGame } from "@/components/games/JackpotGame";
 import { CoinflipGame } from "@/components/games/CoinflipGame";
 import { DailyCase } from "@/components/games/DailyCase";
 import { WinnerHistory } from "@/components/games/WinnerHistory";
+import { LuckOfTheDay } from "@/components/games/LuckOfTheDay";
 import { ChatSidebar } from "@/components/ChatSidebar";
 import { useWallet } from "@/contexts/WalletContext";
 import { Button } from "@/components/ui/button";
@@ -79,6 +80,15 @@ const Games = () => {
 
           {/* Right Column - Sidebar */}
           <div className="space-y-6">
+            <LuckOfTheDay
+              winner={{
+                username: "LuckyDegen",
+                amount: 12.5678,
+                chance: 0.87,
+                currency: "SOL",
+                game: "Jackpot",
+              }}
+            />
             <DailyCase />
             <WinnerHistory winners={mockWinners} />
           </div>
