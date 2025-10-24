@@ -8,6 +8,7 @@ import { useToast } from "@/hooks/use-toast";
 import { useWallet } from "@/contexts/WalletContext";
 import { useSound } from "@/hooks/useSound";
 import { supabase } from "@/integrations/supabase/client";
+import { generateCoinflipResult, generateServerSeed, generatePublicSeed } from "@/lib/provablyFair";
 
 const CoinTossEnhanced = () => {
   const { toast } = useToast();
@@ -47,7 +48,13 @@ const CoinTossEnhanced = () => {
     }
 
     setTimeout(() => {
-      const coinResult = Math.random() > 0.5 ? "heads" : "tails";
+      // Provably fair result
+      const serverSeed = generateServerSeed();
+      const publicSeed = generatePublicSeed();
+      const gameId = `coinflip-${userId}-${Date.now()}`;
+      
+      const result = generateCoinflipResult(serverSeed, publicSeed, gameId);
+      const coinResult = result.result.toLowerCase() as "heads" | "tails";
       const won = coinResult === selectedChoice;
       
       setResult(coinResult);
@@ -64,7 +71,7 @@ const CoinTossEnhanced = () => {
         play('lose');
         toast({
           title: "Better Luck Next Time",
-          description: `Coin landed on ${coinResult}`,
+          description: `Coin landed on ${coinResult}. Ticket: ${result.ticket}`,
           variant: "destructive",
         });
       }

@@ -12,6 +12,7 @@ import { Confetti } from "@/components/animations/Confetti";
 import { WinnerSparkles } from "@/components/animations/WinnerSparkles";
 import { useWinnerAnimation } from "@/hooks/useWinnerAnimation";
 import { motion, AnimatePresence } from "framer-motion";
+import { generateJackpotTicket, generateServerSeed, generatePublicSeed } from "@/lib/provablyFair";
 
 interface Player {
   id: string;
@@ -85,10 +86,30 @@ export const JackpotGame = () => {
       description: `You wagered ${wagerAmount} ${network === 'solana' ? 'SOL' : 'ETH'}`,
     });
 
-    // Simulate winner after 3 players
+    // Provably fair winner selection after 3 players
     if (updatedPlayers.length >= 3 && !lastWinner) {
       setTimeout(() => {
-        const winner = updatedPlayers[Math.floor(Math.random() * updatedPlayers.length)];
+        const serverSeed = generateServerSeed();
+        const publicSeed = generatePublicSeed();
+        const gameId = `jackpot-${Date.now()}`;
+        
+        // Calculate max ticket value based on pot size in lamports/wei
+        const potInSmallestUnit = Math.floor(newPot * 1e9);
+        const result = generateJackpotTicket(serverSeed, publicSeed, gameId, potInSmallestUnit);
+        
+        // Find winner based on ticket ranges
+        let cumulativeTickets = 0;
+        let winner = updatedPlayers[0];
+        
+        for (const player of updatedPlayers) {
+          const playerTickets = Math.floor(player.wager * 1e9);
+          if (parseInt(result.ticket) < cumulativeTickets + playerTickets) {
+            winner = player;
+            break;
+          }
+          cumulativeTickets += playerTickets;
+        }
+        
         setLastWinner(winner);
         celebrateWinner(winner.id);
         

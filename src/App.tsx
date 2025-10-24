@@ -12,6 +12,9 @@ import Chat from "./pages/Chat";
 import Forum from "./pages/Forum";
 import Arcade from "./pages/Arcade";
 import Games from "./pages/Games";
+import Account from "./pages/Account";
+import Statistics from "./pages/Statistics";
+import Transactions from "./pages/Transactions";
 import War from "./pages/games/WarLobby";
 import Chess from "./pages/games/ChessMultiplayer";
 import Connect4 from "./pages/games/Connect4Lobby";
@@ -37,6 +40,9 @@ const App = () => (
             <Route path="/forum" element={<Forum />} />
             <Route path="/arcade" element={<Arcade />} />
             <Route path="/games" element={<Games />} />
+            <Route path="/account" element={<Account />} />
+            <Route path="/statistics" element={<Statistics />} />
+            <Route path="/transactions" element={<Transactions />} />
             <Route path="/games/war" element={<War />} />
             <Route path="/games/chess" element={<Chess />} />
             <Route path="/games/connect4" element={<Connect4 />} />
