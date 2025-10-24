@@ -19,9 +19,9 @@ export const GameCard = ({ children, className, glowColor = "cyan", animated = t
   return (
     <Card
       className={cn(
-        "bg-card/80 backdrop-blur-sm border-2 p-6",
+        "bg-[hsl(220,30%,10%)] backdrop-blur-sm border p-4 rounded-lg",
         glowClass,
-        animated && "animate-scale-in hover-scale",
+        animated && "animate-scale-in",
         className
       )}
     >

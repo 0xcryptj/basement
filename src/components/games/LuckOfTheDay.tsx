@@ -37,10 +37,10 @@ export const LuckOfTheDay = ({ winner }: LuckOfTheDayProps) => {
   }
 
   return (
-    <GameCard className="border-accent relative overflow-hidden border-glow" glowColor="magenta">
+    <GameCard className="border-accent/30 relative overflow-hidden" glowColor="magenta">
       {/* Animated background */}
       <div className="absolute inset-0 overflow-hidden pointer-events-none">
-        {[...Array(12)].map((_, i) => (
+        {[...Array(8)].map((_, i) => (
           <motion.div
             key={i}
             className="absolute"
@@ -51,92 +51,79 @@ export const LuckOfTheDay = ({ winner }: LuckOfTheDayProps) => {
             transition={{
               duration: 2,
               repeat: Infinity,
-              delay: i * 0.2,
+              delay: i * 0.25,
             }}
             style={{
               left: `${Math.random() * 100}%`,
               top: `${Math.random() * 100}%`,
             }}
           >
-            <Star className="w-4 h-4 text-accent" fill="currentColor" />
+            <Star className="w-3 h-3 text-accent" fill="currentColor" />
           </motion.div>
         ))}
       </div>
 
-      <div className="relative z-10 space-y-4">
-        {/* Header with Animation */}
+      <div className="relative z-10 space-y-3">
+        {/* Header */}
         <motion.div
-          className="text-center space-y-2"
-          animate={{ scale: [1, 1.05, 1] }}
+          className="space-y-1"
+          animate={{ scale: [1, 1.02, 1] }}
           transition={{ duration: 2, repeat: Infinity }}
         >
-          <div className="flex items-center justify-center gap-2">
-            <Zap className="w-6 h-6 text-accent animate-pulse" />
-            <h3 className="font-pixel text-sm text-accent animate-glow-pulse">
+          <div className="flex items-center gap-2">
+            <Star className="w-5 h-5 text-accent" />
+            <h3 className="font-pixel text-xs text-accent">
               LUCK OF THE DAY
             </h3>
-            <Zap className="w-6 h-6 text-accent animate-pulse" />
           </div>
-          <div className="font-mono text-xs text-muted-foreground italic">
+          <div className="font-mono text-[0.6rem] text-muted-foreground">
             Against all odds...
           </div>
         </motion.div>
 
         {/* Winner Display */}
         <motion.div
-          initial={{ scale: 0.8, opacity: 0 }}
+          initial={{ scale: 0.9, opacity: 0 }}
           animate={{ scale: 1, opacity: 1 }}
-          className="bg-background border-2 border-accent/30 p-4 space-y-3"
+          className="bg-background/30 border border-accent/30 p-3 space-y-3 rounded"
         >
           <div className="flex items-center gap-3">
-            <motion.div
-              animate={{ rotate: [0, 360] }}
-              transition={{ duration: 3, repeat: Infinity, ease: "linear" }}
-            >
-              <PlayerAvatar
-                username={winner.username}
-                avatarUrl={winner.avatarUrl}
-                size="lg"
-                ringColor="accent"
-              />
-            </motion.div>
-            <div className="flex-1">
-              <div className="font-pixel text-sm text-foreground">{winner.username}</div>
-              <div className="font-mono text-xs text-muted-foreground">{winner.game}</div>
+            <PlayerAvatar
+              username={winner.username}
+              avatarUrl={winner.avatarUrl}
+              size="md"
+              ringColor="accent"
+              level={56}
+            />
+            <div className="flex-1 min-w-0">
+              <div className="font-pixel text-xs text-foreground truncate">{winner.username}</div>
+              <div className="font-mono text-[0.6rem] text-muted-foreground">{winner.game}</div>
             </div>
-            <Trophy className="w-8 h-8 text-accent animate-pulse" />
+            <Trophy className="w-6 h-6 text-accent flex-shrink-0" />
           </div>
 
           {/* Win Details */}
-          <div className="bg-card/50 p-3 space-y-2">
+          <div className="bg-background/50 p-2 space-y-2 rounded">
             <div className="flex justify-between items-center">
-              <span className="font-pixel text-[0.6rem] text-muted-foreground">WON</span>
-              <span className="font-mono text-lg text-accent">
+              <span className="font-pixel text-[0.5rem] text-muted-foreground">WON</span>
+              <span className="font-mono text-sm text-accent">
                 +{winner.amount.toFixed(4)} {winner.currency}
               </span>
             </div>
             <div className="flex justify-between items-center">
-              <span className="font-pixel text-[0.6rem] text-muted-foreground">WITH ODDS</span>
-              <motion.span
-                className="font-pixel text-sm text-destructive"
-                animate={{ scale: [1, 1.1, 1] }}
-                transition={{ duration: 1, repeat: Infinity }}
-              >
+              <span className="font-pixel text-[0.5rem] text-muted-foreground">ODDS</span>
+              <span className="font-pixel text-xs text-destructive">
                 {winner.chance.toFixed(2)}%
-              </motion.span>
+              </span>
             </div>
           </div>
 
           {/* Epic Win Badge */}
-          <motion.div
-            className="bg-gradient-to-r from-accent/20 to-secondary/20 border border-accent/50 p-2 text-center"
-            animate={{ boxShadow: ["0 0 10px rgba(236, 72, 153, 0.3)", "0 0 20px rgba(236, 72, 153, 0.6)", "0 0 10px rgba(236, 72, 153, 0.3)"] }}
-            transition={{ duration: 1.5, repeat: Infinity }}
-          >
-            <div className="font-pixel text-[0.5rem] text-accent">
+          <div className="bg-gradient-to-r from-accent/20 to-secondary/20 border border-accent/40 p-1.5 text-center rounded">
+            <div className="font-pixel text-[0.45rem] text-accent">
               ⭐ LEGENDARY WIN ⭐
             </div>
-          </motion.div>
+          </div>
         </motion.div>
       </div>
     </GameCard>

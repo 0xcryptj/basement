@@ -109,60 +109,59 @@ export const JackpotGame = () => {
     <>
       <Confetti active={showConfetti} />
       
-      <GameCard className="border-primary relative" glowColor="cyan">
-        <div className="space-y-6">
+      <GameCard className="border-primary/30 relative bg-[hsl(220,30%,10%)]" glowColor="cyan">
+        <div className="space-y-4">
           {/* Header */}
-          <div className="text-center space-y-2">
+          <div className="space-y-2">
             <motion.div
               initial={{ scale: 0.9, opacity: 0 }}
               animate={{ scale: 1, opacity: 1 }}
-              className="flex items-center justify-center gap-3"
+              className="flex items-center gap-3"
             >
-              <Sparkles className="w-8 h-8 text-primary animate-pulse" />
-              <h2 className="font-pixel text-2xl text-primary animate-glow-pulse">
+              <Sparkles className="w-6 h-6 text-primary" />
+              <h2 className="font-pixel text-xl text-primary">
                 JACKPOT
               </h2>
-              <Sparkles className="w-8 h-8 text-primary animate-pulse" />
             </motion.div>
-            <p className="font-mono text-sm text-muted-foreground italic">
+            <p className="font-mono text-xs text-muted-foreground">
               Winner takes all...
             </p>
           </div>
 
           {/* Pot Display with Animation */}
           <motion.div 
-            className="bg-background border-2 border-primary/30 p-6 text-center space-y-2 relative"
+            className="bg-background/30 border border-primary/20 p-4 text-center space-y-1 rounded relative"
             animate={{ 
-              scale: animatingBet ? [1, 1.05, 1] : [1, 1.01, 1],
-              borderColor: animatingBet ? ["rgba(0, 245, 255, 0.3)", "rgba(0, 245, 255, 0.8)", "rgba(0, 245, 255, 0.3)"] : undefined
+              scale: animatingBet ? [1, 1.03, 1] : 1,
+              borderColor: animatingBet ? ["rgba(0, 245, 255, 0.2)", "rgba(0, 245, 255, 0.5)", "rgba(0, 245, 255, 0.2)"] : undefined
             }}
             transition={{ duration: animatingBet ? 0.5 : 2, repeat: animatingBet ? 0 : Infinity }}
           >
-            <div className="font-pixel text-xs text-muted-foreground">TOTAL POT</div>
+            <div className="font-pixel text-[0.5rem] text-muted-foreground">TOTAL POT</div>
             <motion.div 
-              className="font-pixel text-5xl text-primary animate-glow-pulse"
-              animate={animatingBet ? { scale: [1, 1.15, 1] } : {}}
+              className="font-pixel text-3xl text-primary"
+              animate={animatingBet ? { scale: [1, 1.1, 1] } : {}}
               transition={{ duration: 0.5 }}
             >
               {potSize.toFixed(4)}
             </motion.div>
-            <div className="font-mono text-sm text-secondary">
+            <div className="font-mono text-xs text-secondary">
               {network === 'solana' ? '◎ SOL' : '⟠ ETH'}
             </div>
-            <div className="font-mono text-xs text-muted-foreground">
+            <div className="font-mono text-[0.55rem] text-muted-foreground">
               ≈ ${usdValue} USD
             </div>
           </motion.div>
 
           {/* Timer and Stats Grid */}
-          <div className="grid grid-cols-2 gap-4">
+          <div className="grid grid-cols-2 gap-3">
             <CountdownTimer timeLeft={timeLeft} />
             
-            <div className="bg-background border-2 border-accent p-4 text-center">
-              <Users className="w-6 h-6 text-accent mx-auto mb-2" />
-              <div className="font-pixel text-[0.6rem] text-muted-foreground mb-2">PLAYERS</div>
+            <div className="bg-background/30 border border-accent/20 p-3 text-center rounded">
+              <Users className="w-5 h-5 text-accent mx-auto mb-1" />
+              <div className="font-pixel text-[0.5rem] text-muted-foreground mb-1">PLAYERS</div>
               <motion.div 
-                className="font-pixel text-2xl text-accent"
+                className="font-pixel text-xl text-accent"
                 animate={animatingBet ? { scale: [1, 1.2, 1] } : {}}
               >
                 {players.length}
@@ -185,7 +184,7 @@ export const JackpotGame = () => {
               <Button
                 onClick={handlePlaceBet}
                 disabled={wagerAmount > balance}
-                className="w-full font-pixel text-sm py-6 bg-gradient-to-r from-primary to-secondary text-white hover:from-primary/80 hover:to-secondary/80 shadow-glow-cyan border-2 border-primary hover-scale"
+                className="w-full font-pixel text-xs py-5 bg-primary hover:bg-primary/80 text-primary-foreground border border-primary/30"
               >
                 PLACE BET
               </Button>

@@ -12,11 +12,11 @@ export const CountdownTimer = ({ timeLeft, label = "DRAWING IN" }: CountdownTime
   const isUrgent = timeLeft <= 10;
 
   return (
-    <div className="bg-background border-2 border-secondary p-4 text-center">
-      <Timer className="w-6 h-6 text-secondary mx-auto mb-2" />
-      <div className="font-pixel text-[0.6rem] text-muted-foreground mb-2">{label}</div>
+    <div className="bg-background/30 border border-secondary/20 p-3 text-center rounded">
+      <Timer className="w-5 h-5 text-secondary mx-auto mb-1" />
+      <div className="font-pixel text-[0.5rem] text-muted-foreground mb-1">{label}</div>
       <motion.div
-        className={`font-pixel text-2xl ${isUrgent ? "text-destructive animate-glow-pulse" : "text-secondary"}`}
+        className={`font-pixel text-xl ${isUrgent ? "text-destructive animate-glow-pulse" : "text-secondary"}`}
         animate={isUrgent ? { scale: [1, 1.1, 1] } : {}}
         transition={{ duration: 0.5, repeat: Infinity }}
       >

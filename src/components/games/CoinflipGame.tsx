@@ -52,19 +52,18 @@ export const CoinflipGame = () => {
   };
 
   return (
-    <GameCard className="border-secondary" glowColor="purple">
-      <div className="space-y-6">
+    <GameCard className="border-secondary/30 bg-[hsl(220,30%,10%)]" glowColor="purple">
+      <div className="space-y-4">
         {/* Header */}
-        <div className="text-center space-y-2">
-          <div className="flex items-center justify-center gap-3">
-            <Coins className="w-8 h-8 text-secondary animate-pulse" />
-            <h2 className="font-pixel text-2xl text-secondary animate-glow-pulse">
+        <div className="space-y-2">
+          <div className="flex items-center gap-3">
+            <Coins className="w-6 h-6 text-secondary" />
+            <h2 className="font-pixel text-xl text-secondary">
               COINFLIP
             </h2>
-            <Coins className="w-8 h-8 text-secondary animate-pulse" />
           </div>
-          <p className="font-mono text-sm text-muted-foreground italic">
-            50/50 • Double or nothing
+          <p className="font-mono text-xs text-muted-foreground">
+            The classic 50/50 game mode.
           </p>
         </div>
 
@@ -73,14 +72,14 @@ export const CoinflipGame = () => {
           <Button
             onClick={() => setSelectedSide("heads")}
             disabled={isFlipping}
-            className={`font-pixel text-sm py-8 border-2 transition-all ${
+            className={`font-pixel text-xs py-6 border transition-all ${
               selectedSide === "heads"
-                ? "bg-primary/20 border-primary text-primary shadow-glow-cyan"
-                : "bg-background border-primary/30 text-muted-foreground hover:border-primary/50"
+                ? "bg-primary/10 border-primary text-primary"
+                : "bg-background/50 border-primary/20 text-muted-foreground hover:border-primary/40"
             }`}
           >
-            <div className="space-y-2">
-              <div className="text-4xl">👑</div>
+            <div className="space-y-1">
+              <div className="text-2xl">👑</div>
               <div>HEADS</div>
             </div>
           </Button>
@@ -88,21 +87,21 @@ export const CoinflipGame = () => {
           <Button
             onClick={() => setSelectedSide("tails")}
             disabled={isFlipping}
-            className={`font-pixel text-sm py-8 border-2 transition-all ${
+            className={`font-pixel text-xs py-6 border transition-all ${
               selectedSide === "tails"
-                ? "bg-secondary/20 border-secondary text-secondary shadow-glow-purple"
-                : "bg-background border-secondary/30 text-muted-foreground hover:border-secondary/50"
+                ? "bg-secondary/10 border-secondary text-secondary"
+                : "bg-background/50 border-secondary/20 text-muted-foreground hover:border-secondary/40"
             }`}
           >
-            <div className="space-y-2">
-              <div className="text-4xl">⚡</div>
+            <div className="space-y-1">
+              <div className="text-2xl">⚡</div>
               <div>TAILS</div>
             </div>
           </Button>
         </div>
 
         {/* Coin Animation */}
-        <div className="relative h-32 flex items-center justify-center bg-background border-2 border-secondary/30">
+        <div className="relative h-24 flex items-center justify-center bg-background/30 border border-secondary/20 rounded">
           <AnimatePresence mode="wait">
             {isFlipping ? (
               <motion.div
@@ -111,7 +110,7 @@ export const CoinflipGame = () => {
                 animate={{ rotateY: 3600 }}
                 exit={{ opacity: 0 }}
                 transition={{ duration: 2, ease: "easeInOut" }}
-                className="text-8xl"
+                className="text-6xl"
               >
                 🪙
               </motion.div>
@@ -120,12 +119,12 @@ export const CoinflipGame = () => {
                 key="result"
                 initial={{ scale: 0, rotateY: 0 }}
                 animate={{ scale: 1, rotateY: 360 }}
-                className="text-center space-y-2"
+                className="text-center space-y-1"
               >
-                <div className="text-6xl">
+                <div className="text-5xl">
                   {result === "heads" ? "👑" : "⚡"}
                 </div>
-                <div className={`font-pixel text-sm ${result === selectedSide ? "text-primary" : "text-destructive"}`}>
+                <div className={`font-pixel text-xs ${result === selectedSide ? "text-primary" : "text-destructive"}`}>
                   {result.toUpperCase()}
                 </div>
               </motion.div>
@@ -134,7 +133,7 @@ export const CoinflipGame = () => {
                 key="idle"
                 animate={{ y: [0, -10, 0] }}
                 transition={{ duration: 2, repeat: Infinity }}
-                className="text-8xl opacity-30"
+                className="text-6xl opacity-30"
               >
                 🪙
               </motion.div>
@@ -157,7 +156,7 @@ export const CoinflipGame = () => {
             <Button
               onClick={handleFlip}
               disabled={isFlipping || wagerAmount > balance}
-              className="w-full font-pixel text-sm py-6 bg-gradient-to-r from-secondary to-accent text-white hover:from-secondary/80 hover:to-accent/80 shadow-glow-purple border-2 border-secondary hover-scale"
+              className="w-full font-pixel text-xs py-5 bg-primary hover:bg-primary/80 text-primary-foreground border border-primary/30"
             >
               {isFlipping ? (
                 <>
@@ -173,12 +172,12 @@ export const CoinflipGame = () => {
             </Button>
 
             {/* Potential Win */}
-            <div className="bg-background border border-secondary/20 p-4 text-center">
-              <div className="font-pixel text-[0.55rem] text-muted-foreground mb-1">POTENTIAL WIN</div>
-              <div className="font-mono text-lg text-secondary">
+            <div className="bg-background/30 border border-secondary/20 p-3 text-center rounded">
+              <div className="font-pixel text-[0.5rem] text-muted-foreground mb-1">POTENTIAL WIN</div>
+              <div className="font-mono text-base text-secondary">
                 {(wagerAmount * 1.9).toFixed(4)} {network === 'solana' ? 'SOL' : 'ETH'}
               </div>
-              <div className="font-mono text-xs text-muted-foreground mt-1">
+              <div className="font-mono text-[0.6rem] text-muted-foreground mt-0.5">
                 (10% house fee)
               </div>
             </div>
@@ -187,13 +186,13 @@ export const CoinflipGame = () => {
 
         {/* Recent Flips */}
         <div className="space-y-2">
-          <h3 className="font-pixel text-xs text-secondary">RECENT FLIPS</h3>
+          <h3 className="font-pixel text-[0.6rem] text-secondary">RECENT FLIPS</h3>
           <div className="grid grid-cols-5 gap-2">
             {["heads", "tails", "heads", "heads", "tails"].map((flip, idx) => (
               <div
                 key={idx}
-                className={`aspect-square flex items-center justify-center text-2xl bg-background border ${
-                  flip === "heads" ? "border-primary/30" : "border-secondary/30"
+                className={`aspect-square flex items-center justify-center text-xl bg-background/30 border rounded ${
+                  flip === "heads" ? "border-primary/20" : "border-secondary/20"
                 }`}
               >
                 {flip === "heads" ? "👑" : "⚡"}
