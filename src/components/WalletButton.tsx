@@ -9,35 +9,37 @@ import {
   DialogTitle,
   DialogTrigger,
 } from "@/components/ui/dialog";
-
-type Network = "solana" | "base" | null;
+import { useWallet } from "@/contexts/WalletContext";
+import { useToast } from "@/hooks/use-toast";
 
 export const WalletButton = () => {
-  const [isConnected, setIsConnected] = useState(false);
-  const [network, setNetwork] = useState<Network>(null);
-  const [address, setAddress] = useState("");
+  const { isConnected, network, address, connectPhantom, connectMetaMask, disconnect } = useWallet();
+  const { toast } = useToast();
+  const [isDialogOpen, setIsDialogOpen] = useState(false);
 
-  const connectWallet = async (selectedNetwork: Network) => {
-    // Mock connection - replace with actual wallet logic
-    if (selectedNetwork === "solana") {
-      setAddress("bLTgi8...oyYf");
-    } else {
-      setAddress("0x0F03...5B03");
+  const handleConnect = async (selectedNetwork: "solana" | "base") => {
+    try {
+      if (selectedNetwork === "solana") {
+        await connectPhantom();
+        toast({ title: "Connected!", description: "Phantom wallet connected" });
+      } else {
+        await connectMetaMask();
+        toast({ title: "Connected!", description: "MetaMask wallet connected" });
+      }
+      setIsDialogOpen(false);
+    } catch (error: any) {
+      toast({
+        title: "Connection Failed",
+        description: error.message || "Failed to connect wallet",
+        variant: "destructive",
+      });
     }
-    setNetwork(selectedNetwork);
-    setIsConnected(true);
   };
 
-  const disconnectWallet = () => {
-    setIsConnected(false);
-    setNetwork(null);
-    setAddress("");
-  };
-
-  if (isConnected) {
+  if (isConnected && address) {
     return (
       <Button
-        onClick={disconnectWallet}
+        onClick={disconnect}
         className={`font-pixel text-xs px-4 py-2 ${
           network === "solana"
             ? "bg-secondary text-secondary-foreground hover:bg-secondary/80 shadow-glow-purple"
@@ -45,13 +47,13 @@ export const WalletButton = () => {
         }`}
       >
         <Wallet className="mr-2 h-4 w-4" />
-        {address}
+        {address.slice(0, 6)}...{address.slice(-4)}
       </Button>
     );
   }
 
   return (
-    <Dialog>
+    <Dialog open={isDialogOpen} onOpenChange={setIsDialogOpen}>
       <DialogTrigger asChild>
         <Button className="font-pixel text-xs px-4 py-2 bg-primary text-primary-foreground hover:bg-primary/80 shadow-glow-cyan transition-all">
           <Wallet className="mr-2 h-4 w-4" />
@@ -67,21 +69,21 @@ export const WalletButton = () => {
         </DialogHeader>
         <div className="space-y-3 mt-4">
           <Button
-            onClick={() => connectWallet("base")}
+            onClick={() => handleConnect("base")}
             className="w-full font-pixel text-xs py-6 bg-primary text-primary-foreground hover:bg-primary/80 shadow-glow-cyan transition-all"
           >
             <div className="flex flex-col items-center">
-              <span>Base Network</span>
-              <span className="text-[0.6rem] mt-1 opacity-70">Ethereum L2</span>
+              <span>Base Network (MetaMask)</span>
+              <span className="text-[0.6rem] mt-1 opacity-70">Ethereum L2 • ⟠</span>
             </div>
           </Button>
           <Button
-            onClick={() => connectWallet("solana")}
+            onClick={() => handleConnect("solana")}
             className="w-full font-pixel text-xs py-6 bg-secondary text-secondary-foreground hover:bg-secondary/80 shadow-glow-purple transition-all"
           >
             <div className="flex flex-col items-center">
-              <span>Solana Network</span>
-              <span className="text-[0.6rem] mt-1 opacity-70">High Speed Chain</span>
+              <span>Solana Network (Phantom)</span>
+              <span className="text-[0.6rem] mt-1 opacity-70">High Speed Chain • ◎</span>
             </div>
           </Button>
         </div>

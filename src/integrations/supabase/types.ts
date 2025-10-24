@@ -131,6 +131,191 @@ export type Database = {
         }
         Relationships: []
       }
+      lucky_block_entries: {
+        Row: {
+          created_at: string | null
+          id: string
+          odds: number
+          round_id: string
+          user_id: string
+          wager_amount: number
+        }
+        Insert: {
+          created_at?: string | null
+          id?: string
+          odds?: number
+          round_id: string
+          user_id: string
+          wager_amount: number
+        }
+        Update: {
+          created_at?: string | null
+          id?: string
+          odds?: number
+          round_id?: string
+          user_id?: string
+          wager_amount?: number
+        }
+        Relationships: [
+          {
+            foreignKeyName: "lucky_block_entries_round_id_fkey"
+            columns: ["round_id"]
+            isOneToOne: false
+            referencedRelation: "lucky_block_rounds"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "lucky_block_entries_user_id_fkey"
+            columns: ["user_id"]
+            isOneToOne: false
+            referencedRelation: "User"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      lucky_block_rounds: {
+        Row: {
+          completed_at: string | null
+          created_at: string | null
+          ends_at: string
+          id: string
+          network: Database["public"]["Enums"]["network_type"]
+          pot_size: number
+          status: Database["public"]["Enums"]["match_status"]
+          winner_id: string | null
+        }
+        Insert: {
+          completed_at?: string | null
+          created_at?: string | null
+          ends_at: string
+          id?: string
+          network: Database["public"]["Enums"]["network_type"]
+          pot_size?: number
+          status?: Database["public"]["Enums"]["match_status"]
+          winner_id?: string | null
+        }
+        Update: {
+          completed_at?: string | null
+          created_at?: string | null
+          ends_at?: string
+          id?: string
+          network?: Database["public"]["Enums"]["network_type"]
+          pot_size?: number
+          status?: Database["public"]["Enums"]["match_status"]
+          winner_id?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "lucky_block_rounds_winner_id_fkey"
+            columns: ["winner_id"]
+            isOneToOne: false
+            referencedRelation: "User"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      matches: {
+        Row: {
+          completed_at: string | null
+          created_at: string | null
+          game_state: Json | null
+          game_type: Database["public"]["Enums"]["game_type"]
+          id: string
+          network: Database["public"]["Enums"]["network_type"]
+          player1_id: string
+          player2_id: string | null
+          started_at: string | null
+          status: Database["public"]["Enums"]["match_status"]
+          wager_amount: number
+          winner_id: string | null
+        }
+        Insert: {
+          completed_at?: string | null
+          created_at?: string | null
+          game_state?: Json | null
+          game_type: Database["public"]["Enums"]["game_type"]
+          id?: string
+          network: Database["public"]["Enums"]["network_type"]
+          player1_id: string
+          player2_id?: string | null
+          started_at?: string | null
+          status?: Database["public"]["Enums"]["match_status"]
+          wager_amount: number
+          winner_id?: string | null
+        }
+        Update: {
+          completed_at?: string | null
+          created_at?: string | null
+          game_state?: Json | null
+          game_type?: Database["public"]["Enums"]["game_type"]
+          id?: string
+          network?: Database["public"]["Enums"]["network_type"]
+          player1_id?: string
+          player2_id?: string | null
+          started_at?: string | null
+          status?: Database["public"]["Enums"]["match_status"]
+          wager_amount?: number
+          winner_id?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "matches_player1_id_fkey"
+            columns: ["player1_id"]
+            isOneToOne: false
+            referencedRelation: "User"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "matches_player2_id_fkey"
+            columns: ["player2_id"]
+            isOneToOne: false
+            referencedRelation: "User"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "matches_winner_id_fkey"
+            columns: ["winner_id"]
+            isOneToOne: false
+            referencedRelation: "User"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      matchmaking_queue: {
+        Row: {
+          created_at: string | null
+          game_type: Database["public"]["Enums"]["game_type"]
+          id: string
+          network: Database["public"]["Enums"]["network_type"]
+          user_id: string
+          wager_amount: number
+        }
+        Insert: {
+          created_at?: string | null
+          game_type: Database["public"]["Enums"]["game_type"]
+          id?: string
+          network: Database["public"]["Enums"]["network_type"]
+          user_id: string
+          wager_amount: number
+        }
+        Update: {
+          created_at?: string | null
+          game_type?: Database["public"]["Enums"]["game_type"]
+          id?: string
+          network?: Database["public"]["Enums"]["network_type"]
+          user_id?: string
+          wager_amount?: number
+        }
+        Relationships: [
+          {
+            foreignKeyName: "matchmaking_queue_user_id_fkey"
+            columns: ["user_id"]
+            isOneToOne: false
+            referencedRelation: "User"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       Message: {
         Row: {
           channelId: string
@@ -425,7 +610,9 @@ export type Database = {
       cleanup_old_messages: { Args: never; Returns: undefined }
     }
     Enums: {
-      [_ in never]: never
+      game_type: "war" | "chess" | "connect4" | "cointoss" | "luckyblock"
+      match_status: "waiting" | "active" | "completed" | "cancelled"
+      network_type: "solana" | "base"
     }
     CompositeTypes: {
       [_ in never]: never
@@ -552,6 +739,10 @@ export type CompositeTypes<
 
 export const Constants = {
   public: {
-    Enums: {},
+    Enums: {
+      game_type: ["war", "chess", "connect4", "cointoss", "luckyblock"],
+      match_status: ["waiting", "active", "completed", "cancelled"],
+      network_type: ["solana", "base"],
+    },
   },
 } as const
