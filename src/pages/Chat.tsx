@@ -106,15 +106,18 @@ const Chat = () => {
         },
         (payload) => {
           const newMsg = payload.new as any;
-          setMessages((prev) => [
-            ...prev,
-            {
-              id: newMsg.id,
-              user: newMsg.userId.slice(0, 8),
-              content: newMsg.content,
-              timestamp: new Date(newMsg.createdAt).toLocaleTimeString(),
-            },
-          ]);
+          const newMessage = {
+            id: newMsg.id,
+            user: newMsg.userId.slice(0, 8),
+            content: newMsg.content,
+            timestamp: new Date(newMsg.createdAt).toLocaleTimeString(),
+          };
+          
+          setMessages((prev) => {
+            // Prevent duplicates
+            if (prev.find(m => m.id === newMessage.id)) return prev;
+            return [...prev, newMessage];
+          });
         }
       )
       .subscribe();

@@ -44,9 +44,9 @@ All colors MUST be HSL.
     --glow-purple: 0 0 20px hsl(280 100% 60% / 0.5);
     --glow-magenta: 0 0 20px hsl(330 100% 60% / 0.5);
     
-    /* CRT Effects */
-    --scanline-opacity: 0.05;
-    --noise-opacity: 0.03;
+    /* CRT Effects - Dialed Down */
+    --scanline-opacity: 0.02;
+    --noise-opacity: 0.01;
     
     /* Gradients */
     --gradient-neon: linear-gradient(135deg, hsl(180 100% 50%), hsl(280 100% 60%));
@@ -116,15 +116,7 @@ All colors MUST be HSL.
   
   @keyframes noise {
     0%, 100% { transform: translate(0, 0); }
-    10% { transform: translate(-5%, -5%); }
-    20% { transform: translate(-10%, 5%); }
-    30% { transform: translate(5%, -10%); }
-    40% { transform: translate(-5%, 15%); }
-    50% { transform: translate(-10%, 5%); }
-    60% { transform: translate(15%, 0); }
-    70% { transform: translate(0, 10%); }
-    80% { transform: translate(-15%, 0); }
-    90% { transform: translate(10%, 5%); }
+    50% { transform: translate(1%, 1%); }
   }
   
   h1, h2, h3, h4, h5, h6 {

@@ -2,6 +2,7 @@ import { Gamepad2, Trophy, Coins } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Navbar } from "@/components/Navbar";
 import { Footer } from "@/components/Footer";
+import { useNavigate } from "react-router-dom";
 import warGameImg from "@/assets/war-game.png";
 import chessGameImg from "@/assets/chess-game.png";
 import connect4GameImg from "@/assets/connect4-game.png";
@@ -17,12 +18,14 @@ interface Game {
 }
 
 const Arcade = () => {
+  const navigate = useNavigate();
+  
   const games: Game[] = [
     {
       id: "1",
       name: "WAR",
       description: "Classic card battle",
-      minBet: "0.01 ETH",
+      minBet: "",
       status: "live",
       color: "primary",
       image: warGameImg,
@@ -31,7 +34,7 @@ const Arcade = () => {
       id: "2",
       name: "CHESS",
       description: "On-chain strategy",
-      minBet: "0.05 ETH",
+      minBet: "",
       status: "coming-soon",
       color: "secondary",
       image: chessGameImg,
@@ -40,12 +43,45 @@ const Arcade = () => {
       id: "3",
       name: "CONNECT4",
       description: "Connect to win",
-      minBet: "0.02 ETH",
-      status: "coming-soon",
+      minBet: "",
+      status: "live",
       color: "accent",
       image: connect4GameImg,
     },
+    {
+      id: "4",
+      name: "COIN TOSS",
+      description: "50/50 chance",
+      minBet: "",
+      status: "live",
+      color: "primary",
+      image: warGameImg,
+    },
+    {
+      id: "5",
+      name: "LUCKY BLOCK",
+      description: "Jackpot lottery",
+      minBet: "",
+      status: "live",
+      color: "secondary",
+      image: chessGameImg,
+    },
   ];
+
+  const handlePlayGame = (gameId: string) => {
+    const gameRoutes: { [key: string]: string } = {
+      "1": "/games/war",
+      "2": "/games/chess",
+      "3": "/games/connect4",
+      "4": "/games/cointoss",
+      "5": "/games/luckyblock",
+    };
+    
+    const route = gameRoutes[gameId];
+    if (route) {
+      navigate(route);
+    }
+  };
 
   return (
     <div className="min-h-screen bg-background">
@@ -130,12 +166,10 @@ const Arcade = () => {
               <p className="font-mono text-sm text-muted-foreground text-center mb-4">
                 {game.description}
               </p>
-              <p className="font-mono text-xs text-center text-primary mb-4">
-                Min Bet: {game.minBet}
-              </p>
 
               {/* Play Button */}
               <Button
+                onClick={() => game.status === "live" && handlePlayGame(game.id)}
                 disabled={game.status === "coming-soon"}
                 className={`w-full font-pixel text-xs ${
                   game.status === "live"
@@ -159,27 +193,33 @@ const Arcade = () => {
             <h2 className="font-pixel text-sm text-primary mb-4">
               SMART CONTRACTS
             </h2>
-            <div className="space-y-2 font-mono text-xs">
-              <div className="flex justify-between items-center">
-                <span className="text-muted-foreground">Base Token:</span>
+            <div className="space-y-3 font-mono text-xs">
+              <div>
+                <div className="flex items-center gap-2 mb-1">
+                  <span className="text-primary font-bold">⟠</span>
+                  <span className="text-muted-foreground">Base Token (ETH):</span>
+                </div>
                 <a 
                   href="https://dexscreener.com/base/0xfd730abb25c17e5bccf3bad3016ccc861bffbc7b"
                   target="_blank"
                   rel="noopener noreferrer"
-                  className="text-primary hover:shadow-glow-cyan transition-all"
+                  className="text-primary hover:shadow-glow-cyan transition-all break-all block pl-6"
                 >
-                  0xfd73...bc7b
+                  0xfd730abb25c17e5bccf3bad3016ccc861bffbc7b
                 </a>
               </div>
-              <div className="flex justify-between items-center">
-                <span className="text-muted-foreground">Solana Token:</span>
+              <div>
+                <div className="flex items-center gap-2 mb-1">
+                  <span className="text-secondary font-bold">◎</span>
+                  <span className="text-muted-foreground">Solana Token (SOL):</span>
+                </div>
                 <a 
                   href="https://dexscreener.com/solana/D4MXRKhzSMapDZ5bLEA1bmjrUPLZhHZRhSkS6wrBpump"
                   target="_blank"
                   rel="noopener noreferrer"
-                  className="text-secondary hover:shadow-glow-purple transition-all"
+                  className="text-secondary hover:shadow-glow-purple transition-all break-all block pl-6"
                 >
-                  D4MX...pump
+                  D4MXRKhzSMapDZ5bLEA1bmjrUPLZhHZRhSkS6wrBpump
                 </a>
               </div>
               <div className="flex justify-between items-center">

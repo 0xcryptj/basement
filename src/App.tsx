@@ -7,6 +7,11 @@ import Index from "./pages/Index";
 import Chat from "./pages/Chat";
 import Forum from "./pages/Forum";
 import Arcade from "./pages/Arcade";
+import War from "./pages/games/War";
+import Chess from "./pages/games/Chess";
+import Connect4 from "./pages/games/Connect4";
+import CoinToss from "./pages/games/CoinToss";
+import LuckyBlock from "./pages/games/LuckyBlock";
 import NotFound from "./pages/NotFound";
 
 const queryClient = new QueryClient();
@@ -22,6 +27,11 @@ const App = () => (
           <Route path="/chat" element={<Chat />} />
           <Route path="/forum" element={<Forum />} />
           <Route path="/arcade" element={<Arcade />} />
+          <Route path="/games/war" element={<War />} />
+          <Route path="/games/chess" element={<Chess />} />
+          <Route path="/games/connect4" element={<Connect4 />} />
+          <Route path="/games/cointoss" element={<CoinToss />} />
+          <Route path="/games/luckyblock" element={<LuckyBlock />} />
           {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
           <Route path="*" element={<NotFound />} />
         </Routes>
