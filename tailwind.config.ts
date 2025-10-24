@@ -63,6 +63,10 @@ export default {
         md: "calc(var(--radius) - 2px)",
         sm: "calc(var(--radius) - 4px)",
       },
+      fontFamily: {
+        pixel: ['"Press Start 2P"', 'cursive'],
+        mono: ['"Share Tech Mono"', 'monospace'],
+      },
       keyframes: {
         "accordion-down": {
           from: {
@@ -80,10 +84,59 @@ export default {
             height: "0",
           },
         },
+        "glow-pulse": {
+          "0%, 100%": {
+            filter: "drop-shadow(0 0 8px currentColor) brightness(1)",
+          },
+          "50%": {
+            filter: "drop-shadow(0 0 20px currentColor) brightness(1.3)",
+          },
+        },
+        "neon-flicker": {
+          "0%, 100%": { opacity: "1" },
+          "41.99%": { opacity: "1" },
+          "42%": { opacity: "0" },
+          "43%": { opacity: "0" },
+          "43.01%": { opacity: "1" },
+          "47.99%": { opacity: "1" },
+          "48%": { opacity: "0" },
+          "49%": { opacity: "0" },
+          "49.01%": { opacity: "1" },
+        },
+        "slide-in-bottom": {
+          "0%": {
+            transform: "translateY(100%)",
+            opacity: "0",
+          },
+          "100%": {
+            transform: "translateY(0)",
+            opacity: "1",
+          },
+        },
+        "float": {
+          "0%, 100%": { transform: "translateY(0px)" },
+          "50%": { transform: "translateY(-20px)" },
+        },
+        "scan": {
+          "0%": { transform: "translateY(-100%)" },
+          "100%": { transform: "translateY(100%)" },
+        },
       },
       animation: {
         "accordion-down": "accordion-down 0.2s ease-out",
         "accordion-up": "accordion-up 0.2s ease-out",
+        "glow-pulse": "glow-pulse 2s ease-in-out infinite",
+        "neon-flicker": "neon-flicker 5s linear infinite",
+        "slide-in-bottom": "slide-in-bottom 0.5s ease-out",
+        "float": "float 3s ease-in-out infinite",
+        "scan": "scan 8s linear infinite",
+      },
+      boxShadow: {
+        "glow-cyan": "0 0 20px hsl(180 100% 50% / 0.5)",
+        "glow-purple": "0 0 20px hsl(280 100% 60% / 0.5)",
+        "glow-magenta": "0 0 20px hsl(330 100% 60% / 0.5)",
+        "glow-cyan-lg": "0 0 40px hsl(180 100% 50% / 0.7)",
+        "glow-purple-lg": "0 0 40px hsl(280 100% 60% / 0.7)",
       },
     },
   },
