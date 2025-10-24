@@ -11,7 +11,7 @@ export const Navbar = () => {
 
   const navLinks = [
     { to: "/games/cointoss", label: "Coinflip" },
-    { to: "/games/luckyblock", label: "Lucky Block" },
+    { to: "/games/luckyblock", label: "Jackpot" },
     { to: "/games/war", label: "War" },
     { to: "/games/chess", label: "Chess" },
     { to: "/games/connect4", label: "Connect4" },

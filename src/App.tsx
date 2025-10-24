@@ -12,10 +12,10 @@ import Chat from "./pages/Chat";
 import Forum from "./pages/Forum";
 import Arcade from "./pages/Arcade";
 import Games from "./pages/Games";
-import War from "./pages/games/WarEnhanced";
+import War from "./pages/games/WarLobby";
 import Chess from "./pages/games/ChessMultiplayer";
-import Connect4 from "./pages/games/Connect4";
-import CoinToss from "./pages/games/CoinTossEnhanced";
+import Connect4 from "./pages/games/Connect4Lobby";
+import CoinToss from "./pages/games/CoinTossLobby";
 import LuckyBlock from "./pages/games/LuckyBlockEnhanced";
 import NotFound from "./pages/NotFound";
 
