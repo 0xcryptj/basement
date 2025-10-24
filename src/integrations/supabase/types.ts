@@ -131,6 +131,36 @@ export type Database = {
         }
         Relationships: []
       }
+      global_stats: {
+        Row: {
+          base_online: number | null
+          id: string
+          solana_online: number | null
+          total_players: number | null
+          total_volume: number | null
+          total_wagers_placed: number | null
+          updated_at: string | null
+        }
+        Insert: {
+          base_online?: number | null
+          id?: string
+          solana_online?: number | null
+          total_players?: number | null
+          total_volume?: number | null
+          total_wagers_placed?: number | null
+          updated_at?: string | null
+        }
+        Update: {
+          base_online?: number | null
+          id?: string
+          solana_online?: number | null
+          total_players?: number | null
+          total_volume?: number | null
+          total_wagers_placed?: number | null
+          updated_at?: string | null
+        }
+        Relationships: []
+      }
       lucky_block_entries: {
         Row: {
           created_at: string | null
@@ -536,37 +566,55 @@ export type Database = {
           avatarUrl: string | null
           balanceEth: number | null
           balanceUsd: number | null
+          bio: string | null
           createdAt: string | null
+          display_name: string | null
+          games_played: number | null
           id: string
           isVerified: boolean | null
           lastSeenAt: string | null
+          total_wagered: number | null
+          total_won: number | null
           updatedAt: string | null
           username: string | null
           walletAddress: string
+          wins: number | null
         }
         Insert: {
           avatarUrl?: string | null
           balanceEth?: number | null
           balanceUsd?: number | null
+          bio?: string | null
           createdAt?: string | null
+          display_name?: string | null
+          games_played?: number | null
           id: string
           isVerified?: boolean | null
           lastSeenAt?: string | null
+          total_wagered?: number | null
+          total_won?: number | null
           updatedAt?: string | null
           username?: string | null
           walletAddress: string
+          wins?: number | null
         }
         Update: {
           avatarUrl?: string | null
           balanceEth?: number | null
           balanceUsd?: number | null
+          bio?: string | null
           createdAt?: string | null
+          display_name?: string | null
+          games_played?: number | null
           id?: string
           isVerified?: boolean | null
           lastSeenAt?: string | null
+          total_wagered?: number | null
+          total_won?: number | null
           updatedAt?: string | null
           username?: string | null
           walletAddress?: string
+          wins?: number | null
         }
         Relationships: []
       }
@@ -608,6 +656,11 @@ export type Database = {
     }
     Functions: {
       cleanup_old_messages: { Args: never; Returns: undefined }
+      increment_wager_stats: { Args: { wager_amt: number }; Returns: undefined }
+      update_online_count: {
+        Args: { count_change: number; network_name: string }
+        Returns: undefined
+      }
     }
     Enums: {
       game_type: "war" | "chess" | "connect4" | "cointoss" | "luckyblock"

@@ -50,11 +50,28 @@ export const WalletProvider = ({ children }: { children: ReactNode }) => {
           
         if (user) {
           setUserId(user.id);
+          
+          // Update online count
+          await supabase.rpc('update_online_count', {
+            network_name: savedNetwork,
+            count_change: 1,
+          });
         }
       }
     };
     
     checkSession();
+
+    // Cleanup on unmount
+    return () => {
+      const savedNetwork = localStorage.getItem('wallet_network');
+      if (savedNetwork && isConnected) {
+        supabase.rpc('update_online_count', {
+          network_name: savedNetwork,
+          count_change: -1,
+        });
+      }
+    };
   }, []);
 
   const connectPhantom = async () => {
@@ -78,11 +95,16 @@ export const WalletProvider = ({ children }: { children: ReactNode }) => {
       if (existingUser) {
         userIdToSet = existingUser.id;
         
-        // Update last seen
+        // Update last seen and online count
         await supabase
           .from('User')
           .update({ lastSeenAt: new Date().toISOString() })
           .eq('id', existingUser.id);
+        
+        await supabase.rpc('update_online_count', {
+          network_name: 'solana',
+          count_change: 1,
+        });
       } else {
         // Create new user
         const { data: newUser, error } = await supabase
@@ -97,6 +119,12 @@ export const WalletProvider = ({ children }: { children: ReactNode }) => {
 
         if (error) throw error;
         userIdToSet = newUser.id;
+        
+        // Increment player count and online count
+        await supabase.rpc('update_online_count', {
+          network_name: 'solana',
+          count_change: 1,
+        });
       }
 
       setNetwork('solana');
@@ -160,6 +188,11 @@ export const WalletProvider = ({ children }: { children: ReactNode }) => {
           .from('User')
           .update({ lastSeenAt: new Date().toISOString() })
           .eq('id', existingUser.id);
+        
+        await supabase.rpc('update_online_count', {
+          network_name: 'base',
+          count_change: 1,
+        });
       } else {
         const { data: newUser, error } = await supabase
           .from('User')
@@ -173,6 +206,11 @@ export const WalletProvider = ({ children }: { children: ReactNode }) => {
 
         if (error) throw error;
         userIdToSet = newUser.id;
+        
+        await supabase.rpc('update_online_count', {
+          network_name: 'base',
+          count_change: 1,
+        });
       }
 
       setNetwork('base');
@@ -189,6 +227,14 @@ export const WalletProvider = ({ children }: { children: ReactNode }) => {
   };
 
   const disconnect = async () => {
+    // Update online count before disconnecting
+    if (network) {
+      await supabase.rpc('update_online_count', {
+        network_name: network,
+        count_change: -1,
+      });
+    }
+    
     setNetwork(null);
     setAddress(null);
     setUserId(null);

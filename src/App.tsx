@@ -11,8 +11,8 @@ import Arcade from "./pages/Arcade";
 import War from "./pages/games/War";
 import Chess from "./pages/games/Chess";
 import Connect4 from "./pages/games/Connect4";
-import CoinToss from "./pages/games/CoinToss";
-import LuckyBlock from "./pages/games/LuckyBlock";
+import CoinToss from "./pages/games/CoinTossEnhanced";
+import LuckyBlock from "./pages/games/LuckyBlockEnhanced";
 import NotFound from "./pages/NotFound";
 
 const queryClient = new QueryClient();
