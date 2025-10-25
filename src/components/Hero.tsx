@@ -87,14 +87,17 @@ export const Hero = () => {
       )}
 
       {/* Content */}
-      <div className="relative z-10 px-4 max-w-7xl mx-auto w-full flex justify-end">
-        <div className="text-center max-w-2xl mr-8 lg:mr-16">
+      <div className="relative z-10 px-4 max-w-7xl mx-auto w-full flex justify-center lg:justify-end">
+        <div className="text-center max-w-2xl lg:mr-8">
         {/* Main Title with Glitch Effect */}
         <motion.h1 
           initial={{ y: -50, opacity: 0 }}
           animate={{ y: 0, opacity: 1 }}
           transition={{ duration: 0.8, delay: 0.3 }}
           className="font-pixel text-xl sm:text-2xl md:text-3xl text-primary mb-6"
+          style={{ 
+            textShadow: '2px 2px 0px rgba(0, 0, 0, 0.8), 4px 4px 0px rgba(0, 0, 0, 0.4), 0 0 10px hsl(var(--primary) / 0.5)' 
+          }}
         >
           WELCOME TO
           <br />
@@ -110,10 +113,16 @@ export const Hero = () => {
           transition={{ duration: 0.8, delay: 0.5 }}
           className="relative inline-block mb-8"
         >
-          <p className="font-mono text-sm sm:text-base md:text-lg text-muted-foreground mb-2">
+          <p 
+            className="font-mono text-sm sm:text-base md:text-lg text-muted-foreground mb-2"
+            style={{ textShadow: '1px 1px 2px rgba(0, 0, 0, 0.8), 2px 2px 4px rgba(0, 0, 0, 0.4)' }}
+          >
             Retro Web3 Arcade • IRC Chat • Anonymous Forum
           </p>
-          <p className="font-mono text-xs sm:text-sm text-secondary">
+          <p 
+            className="font-mono text-xs sm:text-sm text-secondary"
+            style={{ textShadow: '1px 1px 2px rgba(0, 0, 0, 0.8), 2px 2px 4px rgba(0, 0, 0, 0.4)' }}
+          >
             Multi-Chain Support: Solana & Base
           </p>
         </motion.div>
@@ -128,6 +137,7 @@ export const Hero = () => {
             onClick={handleEnterBasement}
             disabled={isPortaling}
             className="font-pixel text-sm sm:text-base px-8 py-6 bg-primary text-primary-foreground hover:bg-primary/80 transition-all hover:scale-105"
+            style={{ textShadow: '1px 1px 2px rgba(0, 0, 0, 0.8)' }}
           >
             {isPortaling ? "ENTERING..." : "Enter Basement"}
           </Button>
