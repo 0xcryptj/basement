@@ -75,7 +75,7 @@ export const Navbar = () => {
           </Link>
 
           {/* Desktop Navigation */}
-          <div className="hidden lg:flex items-center gap-1 flex-1">
+          <div className="hidden lg:flex items-center gap-1">
             {navLinks.map((link) => (
               <Link
                 key={link.to}
@@ -112,16 +112,16 @@ export const Navbar = () => {
             </div>
           </div>
 
-          {/* Balance & Wallet Button - Desktop */}
-          <div className="hidden md:flex items-center gap-3 shrink-0">
+          {/* Balance & Wallet Button - Desktop - Always Far Right */}
+          <div className="hidden md:flex items-center gap-3 shrink-0 ml-auto">
             <WalletBalance />
             <WalletButton />
           </div>
 
-          {/* Mobile Menu Button */}
+          {/* Mobile Menu Button - Always Far Right */}
           <button
             onClick={() => setIsMenuOpen(!isMenuOpen)}
-            className="md:hidden text-primary p-2 rounded-lg hover:bg-primary/10 transition-all duration-200 focus:outline-none focus:ring-2 focus:ring-primary/50 ml-auto"
+            className="md:hidden text-primary p-2 rounded-lg hover:bg-primary/10 transition-all duration-200 focus:outline-none focus:ring-2 focus:ring-primary/50 ml-auto shrink-0"
             aria-label={isMenuOpen ? "Close menu" : "Open menu"}
             aria-expanded={isMenuOpen}
             aria-controls="mobile-menu"
