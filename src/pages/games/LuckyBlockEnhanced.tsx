@@ -152,7 +152,7 @@ const LuckyBlockEnhanced = () => {
   }, [timeLeft, players.length]);
 
   return (
-    <div className="min-h-screen bg-[hsl(220,45%,6%)] relative overflow-x-hidden">
+    <div className="min-h-screen bg-[hsl(220,45%,6%)] relative overflow-x-hidden w-full max-w-full">
       {/* Hero Background */}
       <div 
         className="fixed inset-0 opacity-20 pointer-events-none"
@@ -169,8 +169,8 @@ const LuckyBlockEnhanced = () => {
       
       <Navbar />
       
-      <div className="relative pt-20 pb-12 ml-0 lg:ml-[280px] transition-all duration-300 overflow-x-hidden">
-        <div className="w-full max-w-[1400px] mx-auto px-4 sm:px-6 lg:px-8">
+      <div className="relative pt-20 pb-12 ml-0 lg:ml-[280px] transition-all duration-300 overflow-x-hidden w-full max-w-full">
+        <div className="w-full max-w-screen-2xl mx-auto px-3 sm:px-4 md:px-6 lg:px-8">
           {/* Header */}
           <div className="flex flex-col lg:flex-row items-start lg:items-center justify-between mb-6 sm:mb-8 gap-4">
             <div className="flex flex-col sm:flex-row items-start sm:items-center gap-4 sm:gap-8 w-full lg:w-auto">
@@ -194,8 +194,8 @@ const LuckyBlockEnhanced = () => {
           </div>
 
           {/* Main Game Area */}
-          <div className="grid lg:grid-cols-[1fr,300px] xl:grid-cols-[1fr,320px] gap-4 sm:gap-6">
-            <div className="space-y-4 sm:space-y-6 min-w-0">
+          <div className="grid grid-cols-1 lg:grid-cols-[1fr,280px] xl:grid-cols-[1fr,320px] gap-4 sm:gap-6 w-full">
+            <div className="space-y-4 sm:space-y-6 min-w-0 w-full max-w-full">
               {/* Bet Controls */}
               <Card className="bg-[hsl(220,30%,10%)]/80 backdrop-blur-sm border border-primary/20 p-4 sm:p-6 overflow-hidden">
                 <div className="flex flex-col gap-4">
@@ -268,7 +268,7 @@ const LuckyBlockEnhanced = () => {
               </Card>
 
               {/* Stats Grid */}
-              <div className="grid grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-4">
+              <div className="grid grid-cols-2 md:grid-cols-4 gap-2 sm:gap-3 md:gap-4 w-full">
                 <Card className="bg-[hsl(220,30%,10%)]/80 backdrop-blur-sm border-2 border-primary/30 p-3 sm:p-4 shadow-glow-cyan">
                   <p className="font-mono text-[0.65rem] sm:text-xs text-muted-foreground mb-2 text-center">Jackpot Value</p>
                   <div className="flex items-center justify-center gap-1">
@@ -432,7 +432,7 @@ const LuckyBlockEnhanced = () => {
             </div>
 
             {/* Right Sidebar */}
-            <div className="space-y-4 min-w-0">
+            <div className="space-y-4 min-w-0 w-full max-w-full">
               <Card className="bg-[hsl(220,30%,10%)]/80 backdrop-blur-sm border border-primary/20 p-4 overflow-hidden">
                 <div className="flex items-center justify-between mb-3 sm:mb-4">
                   <span className="font-pixel text-[0.65rem] sm:text-xs text-muted-foreground">CURRENT ROUND</span>

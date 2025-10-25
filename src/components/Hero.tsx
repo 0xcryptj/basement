@@ -32,7 +32,7 @@ export const Hero = () => {
   };
 
   return (
-    <div className="relative min-h-screen flex items-center justify-center overflow-hidden">
+    <div className="relative min-h-screen flex items-center justify-center overflow-hidden w-full max-w-full">
       {/* Hero Background Image */}
       <motion.div 
         initial={{ scale: 1.1, opacity: 0 }}
@@ -87,61 +87,63 @@ export const Hero = () => {
       )}
 
       {/* Content */}
-      <div className="relative z-10 px-4 max-w-7xl mx-auto w-full flex justify-center items-center">
-        <div className="text-center max-w-2xl ml-48">
-        {/* Main Title with Glitch Effect */}
-        <motion.h1 
-          initial={{ y: -50, opacity: 0 }}
-          animate={{ y: 0, opacity: 1 }}
-          transition={{ duration: 0.8, delay: 0.3 }}
-          className="font-pixel text-xl sm:text-2xl md:text-3xl text-primary mb-6"
-          style={{ 
-            textShadow: '2px 2px 0px rgba(0, 0, 0, 0.8), 4px 4px 0px rgba(0, 0, 0, 0.4), 0 0 10px hsl(var(--primary) / 0.5)' 
-          }}
-        >
-          WELCOME TO
-          <br />
-          <span className="text-2xl sm:text-3xl md:text-4xl animate-neon-flicker">
-            THE BASEMENT
-          </span>
-        </motion.h1>
+      <div className="relative z-10 w-full max-w-full px-4 sm:px-6 md:px-8">
+        <div className="max-w-7xl mx-auto flex justify-center items-center">
+          <div className="text-center max-w-2xl ml-0 sm:ml-12 md:ml-24 lg:ml-48">
+            {/* Main Title with Glitch Effect */}
+            <motion.h1 
+              initial={{ y: -50, opacity: 0 }}
+              animate={{ y: 0, opacity: 1 }}
+              transition={{ duration: 0.8, delay: 0.3 }}
+              className="font-pixel text-xl sm:text-2xl md:text-3xl lg:text-4xl text-primary mb-4 sm:mb-6"
+              style={{ 
+                textShadow: '2px 2px 0px rgba(0, 0, 0, 0.8), 4px 4px 0px rgba(0, 0, 0, 0.4), 0 0 10px hsl(var(--primary) / 0.5)' 
+              }}
+            >
+              WELCOME TO
+              <br />
+              <span className="text-2xl sm:text-3xl md:text-4xl lg:text-5xl animate-neon-flicker">
+                THE BASEMENT
+              </span>
+            </motion.h1>
 
-        {/* Subtitle with Scanline */}
-        <motion.div 
-          initial={{ y: 50, opacity: 0 }}
-          animate={{ y: 0, opacity: 1 }}
-          transition={{ duration: 0.8, delay: 0.5 }}
-          className="relative inline-block mb-8"
-        >
-          <p 
-            className="font-mono text-sm sm:text-base md:text-lg text-muted-foreground mb-2"
-            style={{ textShadow: '1px 1px 2px rgba(0, 0, 0, 0.8), 2px 2px 4px rgba(0, 0, 0, 0.4)' }}
-          >
-            Retro Web3 Arcade • IRC Chat • Anonymous Forum
-          </p>
-          <p 
-            className="font-mono text-xs sm:text-sm text-secondary"
-            style={{ textShadow: '1px 1px 2px rgba(0, 0, 0, 0.8), 2px 2px 4px rgba(0, 0, 0, 0.4)' }}
-          >
-            Multi-Chain Support: Solana & Base
-          </p>
-        </motion.div>
+            {/* Subtitle with Scanline */}
+            <motion.div 
+              initial={{ y: 50, opacity: 0 }}
+              animate={{ y: 0, opacity: 1 }}
+              transition={{ duration: 0.8, delay: 0.5 }}
+              className="relative inline-block mb-6 sm:mb-8"
+            >
+              <p 
+                className="font-mono text-xs sm:text-sm md:text-base lg:text-lg text-muted-foreground mb-2"
+                style={{ textShadow: '1px 1px 2px rgba(0, 0, 0, 0.8), 2px 2px 4px rgba(0, 0, 0, 0.4)' }}
+              >
+                Retro Web3 Arcade • IRC Chat • Anonymous Forum
+              </p>
+              <p 
+                className="font-mono text-[0.65rem] sm:text-xs md:text-sm text-secondary"
+                style={{ textShadow: '1px 1px 2px rgba(0, 0, 0, 0.8), 2px 2px 4px rgba(0, 0, 0, 0.4)' }}
+              >
+                Multi-Chain Support: Solana & Base
+              </p>
+            </motion.div>
 
-        {/* CTA Button */}
-        <motion.div
-          initial={{ scale: 0.8, opacity: 0 }}
-          animate={{ scale: 1, opacity: 1 }}
-          transition={{ duration: 0.5, delay: 0.7 }}
-        >
-          <Button 
-            onClick={handleEnterBasement}
-            disabled={isPortaling}
-            className="font-pixel text-sm sm:text-base px-8 py-6 bg-primary text-primary-foreground hover:bg-primary/80 transition-all hover:scale-105"
-            style={{ textShadow: '1px 1px 2px rgba(0, 0, 0, 0.8)' }}
-          >
-            {isPortaling ? "ENTERING..." : "Enter Basement"}
-          </Button>
-        </motion.div>
+            {/* CTA Button */}
+            <motion.div
+              initial={{ scale: 0.8, opacity: 0 }}
+              animate={{ scale: 1, opacity: 1 }}
+              transition={{ duration: 0.5, delay: 0.7 }}
+            >
+              <Button 
+                onClick={handleEnterBasement}
+                disabled={isPortaling}
+                className="w-full sm:w-auto font-pixel text-xs sm:text-sm md:text-base px-6 sm:px-8 py-4 sm:py-6 bg-primary text-primary-foreground hover:bg-primary/80 transition-all hover:scale-105 touch-target-lg"
+                style={{ textShadow: '1px 1px 2px rgba(0, 0, 0, 0.8)', minHeight: '44px', minWidth: '44px' }}
+              >
+                {isPortaling ? "ENTERING..." : "Enter Basement"}
+              </Button>
+            </motion.div>
+          </div>
         </div>
       </div>
     </div>

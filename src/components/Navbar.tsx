@@ -63,13 +63,13 @@ export const Navbar = () => {
   const isActive = (path: string) => location.pathname === path;
 
   return (
-    <nav className="fixed top-0 left-0 right-0 z-50 border-b-2 border-primary bg-background/95 backdrop-blur-md shadow-glow-cyan" role="navigation" aria-label="Main navigation">
-      <div className="max-w-screen-2xl mx-auto px-2 sm:px-4 lg:px-6">
-        <div className="flex h-14 sm:h-16 items-center gap-2 md:gap-4">
-          {/* Logo - Far Left - Fixed width to match sidebar */}
-          <Link to="/" className="flex items-center gap-2 group shrink-0 focus:outline-none focus:ring-2 focus:ring-primary/50 rounded-lg transition-all duration-200 w-[280px]" aria-label="Home">
-            <img src={logoIcon} alt="" className="w-8 h-8 sm:w-10 sm:h-10 group-hover:scale-110 transition-transform duration-200 ml-2" />
-            <span className="text-primary font-pixel text-xs sm:text-sm animate-glow-pulse">
+    <nav className="fixed top-0 left-0 right-0 z-50 border-b-2 border-primary bg-background/95 backdrop-blur-md shadow-glow-cyan overflow-x-hidden max-w-full" role="navigation" aria-label="Main navigation">
+      <div className="max-w-screen-2xl mx-auto px-2 sm:px-4 lg:px-6 w-full">
+        <div className="flex h-14 sm:h-16 items-center gap-1 sm:gap-2 md:gap-4 w-full">
+          {/* Logo - Far Left - Responsive width */}
+          <Link to="/" className="flex items-center gap-1 sm:gap-2 group shrink-0 focus:outline-none focus:ring-2 focus:ring-primary/50 rounded-lg transition-all duration-200 w-auto lg:w-[280px]" aria-label="Home">
+            <img src={logoIcon} alt="" className="w-7 h-7 sm:w-8 sm:h-8 md:w-10 md:h-10 group-hover:scale-110 transition-transform duration-200 ml-1 sm:ml-2" />
+            <span className="text-primary font-pixel text-[0.65rem] sm:text-xs md:text-sm animate-glow-pulse whitespace-nowrap">
               THE BASEMENT
             </span>
           </Link>
