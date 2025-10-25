@@ -304,17 +304,17 @@ const LuckyBlockEnhanced = () => {
 
               {/* Animated Jackpot Carousel */}
               <Card className="bg-[hsl(220,30%,10%)]/80 backdrop-blur-sm border border-primary/20 p-4 sm:p-6 overflow-hidden">
-                {/* Arrow Indicator */}
-                <div className="flex justify-center mb-4">
-                  <div className="triangle-up animate-pulse" />
-                </div>
+              {/* Arrow Indicator */}
+              <div className="flex justify-center mb-4">
+                <div className="triangle-down animate-pulse" />
+              </div>
                 
-                {/* Carousel Container */}
-                <div className="relative overflow-hidden w-full">
-                  <div 
-                    id="jackpot-carousel" 
-                    className={`jackpot-track ${isSpinning ? '' : 'paused'} ${isSpinning ? 'slowing' : ''} flex justify-center gap-6 py-4`}
-                  >
+              {/* Carousel Container */}
+              <div className="relative overflow-hidden w-full">
+                <div 
+                  id="jackpot-carousel" 
+                  className={`jackpot-track ${!isSpinning ? 'paused' : ''} flex justify-center gap-6 py-4`}
+                >
                     {/* Duplicate players for seamless loop */}
                     {[...players, ...players, ...players].map((player, idx) => (
                       <div

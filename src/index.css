@@ -405,12 +405,12 @@ All colors MUST be HSL.
   animation: jackpotRotate 25s cubic-bezier(0.2, 0.8, 0.3, 1) forwards;
 }
 
-.triangle-up {
+.triangle-down {
   width: 0;
   height: 0;
   border-left: 12px solid transparent;
   border-right: 12px solid transparent;
-  border-bottom: 16px solid hsl(var(--primary));
+  border-top: 16px solid hsl(var(--primary));
   filter: drop-shadow(0 0 6px hsl(var(--primary) / 0.6));
 }
 
