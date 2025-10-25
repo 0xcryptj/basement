@@ -188,21 +188,21 @@ export const LeftChatSidebar = () => {
     <motion.div
       initial={{ x: -300 }}
       animate={{ x: 0 }}
-      className="fixed left-0 top-16 h-[calc(100vh-4rem)] w-[280px] bg-[hsl(220,30%,8%)]/50 backdrop-blur-md border-r border-primary/20 z-40 flex-col shadow-glow-cyan hidden lg:flex"
+      className="fixed left-0 top-14 sm:top-16 h-[calc(100vh-3.5rem)] sm:h-[calc(100vh-4rem)] w-full sm:w-72 md:w-80 lg:w-[280px] bg-[hsl(220,30%,8%)]/95 backdrop-blur-md border-r border-primary/20 z-40 flex-col shadow-glow-cyan hidden lg:flex overflow-hidden"
     >
       {/* Header */}
-      <div className="p-3 border-b border-primary/20 flex items-center justify-between">
+      <div className="p-2 sm:p-3 border-b border-primary/20 flex items-center justify-between">
         <div className="flex items-center gap-2">
-          <span className="font-pixel text-[0.65rem] text-primary">Degen Chat</span>
-          <Badge variant="secondary" className="font-mono text-[0.5rem] bg-primary/20 text-primary border-primary/30">
+          <span className="font-pixel text-[0.6rem] sm:text-[0.65rem] text-primary">Degen Chat</span>
+          <Badge variant="secondary" className="font-mono text-[0.45rem] sm:text-[0.5rem] bg-primary/20 text-primary border-primary/30">
             {onlineCount}
           </Badge>
         </div>
       </div>
 
       {/* Channel Selector */}
-      <div className="m-3 space-y-2">
-        <div className="font-pixel text-[0.5rem] text-muted-foreground">CHANNELS</div>
+      <div className="m-2 sm:m-3 space-y-2">
+        <div className="font-pixel text-[0.45rem] sm:text-[0.5rem] text-muted-foreground">CHANNELS</div>
         <div className="space-y-1">
           {["luckyblock_ch", "basement_ch", "arcade_ch"].map((channelId) => {
             const channelNames: Record<string, string> = {
@@ -214,7 +214,7 @@ export const LeftChatSidebar = () => {
               <button
                 key={channelId}
                 onClick={() => setActiveChannel(channelId)}
-                className={`w-full text-left px-3 py-2 font-mono text-xs rounded transition-all ${
+                className={`w-full text-left px-2 sm:px-3 py-1.5 sm:py-2 font-mono text-[0.6rem] sm:text-xs rounded transition-all touch-target-lg ${
                   activeChannel === channelId
                     ? "bg-primary/20 text-primary border border-primary/30"
                     : "text-muted-foreground hover:bg-background/50 hover:text-foreground"
@@ -228,39 +228,39 @@ export const LeftChatSidebar = () => {
       </div>
 
       {/* Messages */}
-      <ScrollArea className="flex-1 px-3">
+      <ScrollArea className="flex-1 px-2 sm:px-3">
         {loading ? (
-          <div className="text-center text-muted-foreground font-mono text-xs py-4">Loading...</div>
+          <div className="text-center text-muted-foreground font-mono text-[0.6rem] sm:text-xs py-4">Loading...</div>
         ) : (
-          <div className="space-y-3 py-2">
+          <div className="space-y-2 sm:space-y-3 py-2">
             {messages.map((message, idx) => (
               <motion.div
                 key={message.id}
                 initial={{ opacity: 0, y: 10 }}
                 animate={{ opacity: 1, y: 0 }}
                 transition={{ delay: idx * 0.05 }}
-                className="flex items-start gap-2"
+                className="flex items-start gap-1.5 sm:gap-2"
               >
                 <div className="relative flex-shrink-0">
-                  <Avatar className={`h-8 w-8 border-2 ${
+                  <Avatar className={`h-6 w-6 sm:h-8 sm:w-8 border-2 ${
                     idx % 2 === 0 ? 'border-[#14F195]' : 'border-[#0052FF]'
                   }`}>
                     <AvatarImage src={message.user?.avatarUrl} />
-                    <AvatarFallback className="bg-primary/20 text-primary text-xs font-pixel">
+                    <AvatarFallback className="bg-primary/20 text-primary text-[0.5rem] sm:text-xs font-pixel">
                       {message.user?.username?.[0]?.toUpperCase() || '?'}
                     </AvatarFallback>
                   </Avatar>
                 </div>
                 <div className="flex-1 min-w-0">
-                  <div className="flex items-baseline gap-2">
-                    <span className="font-pixel text-[0.6rem] text-primary truncate">
+                  <div className="flex items-baseline gap-1 sm:gap-2">
+                    <span className="font-pixel text-[0.5rem] sm:text-[0.6rem] text-primary truncate">
                       {getDisplayName(message)}
                     </span>
-                    <span className="font-mono text-[0.45rem] text-muted-foreground whitespace-nowrap">
+                    <span className="font-mono text-[0.4rem] sm:text-[0.45rem] text-muted-foreground whitespace-nowrap">
                       {new Date(message.createdAt).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
                     </span>
                   </div>
-                  <p className="font-mono text-[0.65rem] text-foreground/90 break-words mt-0.5 leading-relaxed">
+                  <p className="font-mono text-[0.6rem] sm:text-[0.65rem] text-foreground/90 break-words mt-0.5 leading-relaxed">
                     {message.content}
                   </p>
                 </div>
@@ -271,27 +271,27 @@ export const LeftChatSidebar = () => {
       </ScrollArea>
 
       {/* Input Area */}
-      <div className="p-3 border-t border-primary/20">
-        <div className="flex items-center gap-2 mb-2">
+      <div className="p-2 sm:p-3 border-t border-primary/20">
+        <div className="flex items-center gap-1.5 sm:gap-2 mb-2">
           <EmojiPicker onEmojiSelect={(emoji) => setInputMessage(prev => prev + emoji)} />
           <Input
             value={inputMessage}
             onChange={(e) => setInputMessage(e.target.value)}
             onKeyDown={(e) => e.key === "Enter" && !e.shiftKey && sendMessage()}
-            placeholder="Type Message Here... (@mention)"
+            placeholder="Type Message..."
             disabled={!address}
-            className="flex-1 font-mono text-xs bg-background/50 border-primary/20 h-8 focus:border-primary"
+            className="flex-1 font-mono text-[0.65rem] sm:text-xs bg-background/50 border-primary/20 h-8 sm:h-9 focus:border-primary"
           />
           <Button
             onClick={sendMessage}
             disabled={!address || !inputMessage.trim()}
             size="icon"
-            className="h-8 w-8 bg-primary hover:bg-primary/80"
+            className="h-8 w-8 sm:h-9 sm:w-9 bg-primary hover:bg-primary/80 touch-target-lg"
           >
             <Send className="w-3 h-3" />
           </Button>
         </div>
-        <div className="flex items-center justify-between text-[0.5rem] font-mono text-muted-foreground">
+        <div className="flex items-center justify-between text-[0.45rem] sm:text-[0.5rem] font-mono text-muted-foreground">
           <span className="cursor-pointer hover:text-primary">Chat Rules</span>
           <div className="flex items-center gap-1">
             <span>💬</span>

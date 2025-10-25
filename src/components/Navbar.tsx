@@ -52,6 +52,7 @@ export const Navbar = () => {
   }, []);
 
   const navLinks = [
+    { to: "/chat", label: "Chat" },
     { to: "/games/cointoss", label: "Coinflip" },
     { to: "/games/luckyblock", label: "Jackpot" },
     { to: "/games/war", label: "War" },

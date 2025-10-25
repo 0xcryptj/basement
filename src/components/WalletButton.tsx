@@ -73,13 +73,14 @@ export const WalletButton = () => {
       </Button>
 
       <Dialog open={isDialogOpen} onOpenChange={setIsDialogOpen}>
-        <DialogContent className="bg-[hsl(220,30%,8%)] border border-primary/30 p-0 max-w-md">
-          {/* Header */}
+        <DialogContent className="bg-[hsl(220,30%,8%)] border border-primary/30 p-0 max-w-md [&>button]:hidden">
+          {/* Header with custom close button */}
           <div className="flex items-center justify-between p-4 border-b border-primary/20">
             <h2 className="font-pixel text-lg text-primary">CONNECT</h2>
             <button 
               onClick={() => setIsDialogOpen(false)}
-              className="text-muted-foreground hover:text-primary transition-colors"
+              className="text-muted-foreground hover:text-primary transition-colors touch-target-lg"
+              aria-label="Close dialog"
             >
               <X className="h-5 w-5" />
             </button>

@@ -679,6 +679,10 @@ export type Database = {
     Functions: {
       cleanup_old_messages: { Args: never; Returns: undefined }
       increment_wager_stats: { Args: { wager_amt: number }; Returns: undefined }
+      is_own_wallet: {
+        Args: { _user_id: string; _wallet_address: string }
+        Returns: boolean
+      }
       update_online_count: {
         Args: { count_change: number; network_name: string }
         Returns: undefined
