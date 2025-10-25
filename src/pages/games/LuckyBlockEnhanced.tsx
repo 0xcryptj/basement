@@ -9,20 +9,27 @@ import { useWallet } from "@/contexts/WalletContext";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import bk3Image from "@/assets/bk3.png";
 
+interface Player {
+  id: number;
+  username: string;
+  wager: number;
+  chance: number;
+  avatar: string | null;
+}
+
 const LuckyBlockEnhanced = () => {
   const { toast } = useToast();
   const { isConnected, address } = useWallet();
   const [wagerAmount, setWagerAmount] = useState(0);
-  const [timeLeft, setTimeLeft] = useState(24);
+  const [timeLeft, setTimeLeft] = useState(0);
   const [isJoining, setIsJoining] = useState(false);
   const [userBalance] = useState(0.00095);
-  const [jackpotValue] = useState(0.019);
+  const [jackpotValue, setJackpotValue] = useState(0);
   const [yourChance] = useState(0.00);
-
-  // Mock players data
-  const mockPlayers = [
-    { id: 1, username: 'Harly', wager: 0.010, chance: 51.60, avatar: null },
-  ];
+  const [isSpinning, setIsSpinning] = useState(false);
+  const [winnerIndex, setWinnerIndex] = useState<number | null>(null);
+  
+  const [players, setPlayers] = useState<Player[]>([]);
 
   const placeBet = async () => {
     if (!isConnected) {
@@ -44,26 +51,109 @@ const LuckyBlockEnhanced = () => {
     }
 
     setIsJoining(true);
-    // Simulate bet placement
+    
+    // Simulate adding player
     setTimeout(() => {
+      const newPlayer: Player = {
+        id: players.length + 1,
+        username: address?.slice(0, 6) || 'Player',
+        wager: wagerAmount,
+        chance: 0,
+        avatar: null
+      };
+      
+      const updatedPlayers = [...players, newPlayer];
+      setPlayers(updatedPlayers);
+      
+      // Update jackpot and recalculate chances
+      const newJackpot = jackpotValue + wagerAmount;
+      setJackpotValue(newJackpot);
+      
+      // Recalculate odds for all players
+      const playersWithOdds = updatedPlayers.map(p => ({
+        ...p,
+        chance: (p.wager / newJackpot) * 100
+      }));
+      setPlayers(playersWithOdds);
+      
       toast({
         title: 'Bet Placed!',
         description: `Successfully placed bet of ${wagerAmount} SOL`,
       });
       setIsJoining(false);
+      
+      // Start countdown if we have 2+ players
+      if (updatedPlayers.length >= 2 && timeLeft === 0) {
+        setTimeLeft(30);
+      }
     }, 1500);
   };
 
+  const startRound = () => {
+    if (players.length < 2) {
+      toast({
+        title: 'Need More Players',
+        description: 'At least 2 players required to start',
+        variant: 'destructive',
+      });
+      return;
+    }
+
+    setIsSpinning(true);
+    
+    // Simulate spinning duration
+    const duration = 7000 + Math.random() * 3000;
+    
+    setTimeout(() => {
+      // Pick winner based on weighted odds
+      const random = Math.random() * 100;
+      let cumulative = 0;
+      let winner = 0;
+      
+      for (let i = 0; i < players.length; i++) {
+        cumulative += players[i].chance;
+        if (random <= cumulative) {
+          winner = i;
+          break;
+        }
+      }
+      
+      setWinnerIndex(winner);
+      setIsSpinning(false);
+      
+      setTimeout(() => {
+        toast({
+          title: '🎉 Winner!',
+          description: `${players[winner].username} won ${jackpotValue.toFixed(3)} SOL!`,
+        });
+      }, 500);
+    }, duration);
+  };
+
+  // Countdown timer - only starts when 2+ players
   useEffect(() => {
-    const timer = setInterval(() => {
-      setTimeLeft((prev) => (prev > 0 ? prev - 1 : 0));
-    }, 1000);
-    return () => clearInterval(timer);
-  }, []);
+    if (players.length < 2) {
+      setTimeLeft(0);
+      return;
+    }
+
+    if (timeLeft > 0) {
+      const timer = setInterval(() => {
+        setTimeLeft((prev) => {
+          if (prev <= 1) {
+            startRound();
+            return 0;
+          }
+          return prev - 1;
+        });
+      }, 1000);
+      return () => clearInterval(timer);
+    }
+  }, [timeLeft, players.length]);
 
   return (
     <div className="min-h-screen bg-[hsl(220,45%,6%)] relative overflow-x-hidden">
-      {/* Hero Background - More Visible */}
+      {/* Hero Background */}
       <div 
         className="fixed inset-0 opacity-20 pointer-events-none"
         style={{
@@ -73,11 +163,6 @@ const LuckyBlockEnhanced = () => {
           backgroundAttachment: 'fixed',
         }}
       />
-      
-      {/* Subtle Matrix Rain Overlay */}
-      <div className="fixed inset-0 pointer-events-none opacity-30 mix-blend-screen">
-        <div className="absolute inset-0 bg-gradient-to-b from-transparent via-primary/5 to-transparent animate-scan" />
-      </div>
       
       {/* Dark overlay for contrast */}
       <div className="fixed inset-0 bg-gradient-to-b from-background/60 via-background/40 to-background/60 pointer-events-none" />
@@ -93,7 +178,7 @@ const LuckyBlockEnhanced = () => {
                 <Sparkles className="w-6 h-6 sm:w-8 sm:h-8 text-primary animate-glow-pulse" />
                 <h1 className="font-pixel text-2xl text-primary">JACKPOT</h1>
               </div>
-              <p className="font-mono text-xs text-muted-foreground">
+              <p className="font-mono text-xs text-muted-foreground text-center sm:text-left">
                 Winner takes all...
               </p>
             </div>
@@ -185,8 +270,8 @@ const LuckyBlockEnhanced = () => {
               {/* Stats Grid */}
               <div className="grid grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-4">
                 <Card className="bg-[hsl(220,30%,10%)]/80 backdrop-blur-sm border-2 border-primary/30 p-3 sm:p-4 shadow-glow-cyan">
-                  <p className="font-mono text-[0.65rem] sm:text-xs text-muted-foreground mb-2">Jackpot Value</p>
-                  <div className="flex items-center gap-1">
+                  <p className="font-mono text-[0.65rem] sm:text-xs text-muted-foreground mb-2 text-center">Jackpot Value</p>
+                  <div className="flex items-center justify-center gap-1">
                     <span className="font-mono text-xs">≡</span>
                     <span className="font-pixel text-lg sm:text-xl text-primary animate-glow-pulse">
                       {jackpotValue.toFixed(3)}
@@ -195,8 +280,8 @@ const LuckyBlockEnhanced = () => {
                 </Card>
 
                 <Card className="bg-[hsl(220,30%,10%)]/80 backdrop-blur-sm border border-primary/20 p-3 sm:p-4">
-                  <p className="font-mono text-[0.65rem] sm:text-xs text-muted-foreground mb-2">Your Wager</p>
-                  <div className="flex items-center gap-1">
+                  <p className="font-mono text-[0.65rem] sm:text-xs text-muted-foreground mb-2 text-center">Your Wager</p>
+                  <div className="flex items-center justify-center gap-1">
                     <span className="font-mono text-xs">≡</span>
                     <span className="font-pixel text-lg sm:text-xl text-foreground">
                       {wagerAmount.toFixed(3)}
@@ -205,93 +290,114 @@ const LuckyBlockEnhanced = () => {
                 </Card>
 
                 <Card className="bg-[hsl(220,30%,10%)]/80 backdrop-blur-sm border border-primary/20 p-3 sm:p-4">
-                  <p className="font-mono text-[0.65rem] sm:text-xs text-muted-foreground mb-2">Your Chance</p>
-                  <span className="font-pixel text-lg sm:text-xl text-foreground">{yourChance.toFixed(2)}%</span>
+                  <p className="font-mono text-[0.65rem] sm:text-xs text-muted-foreground mb-2 text-center">Your Chance</p>
+                  <span className="font-pixel text-lg sm:text-xl text-foreground block text-center">{yourChance.toFixed(2)}%</span>
                 </Card>
 
                 <Card className="bg-[hsl(220,30%,10%)]/80 backdrop-blur-sm border border-primary/20 p-3 sm:p-4">
-                  <p className="font-mono text-[0.65rem] sm:text-xs text-muted-foreground mb-2">Time Left</p>
-                  <span className="font-pixel text-lg sm:text-xl text-foreground">
-                    {Math.floor(timeLeft / 60).toString().padStart(2, '0')}:{(timeLeft % 60).toString().padStart(2, '0')}
+                  <p className="font-mono text-[0.65rem] sm:text-xs text-muted-foreground mb-2 text-center">Time Left</p>
+                  <span className="font-pixel text-lg sm:text-xl text-foreground block text-center">
+                    {players.length < 2 ? '--:--' : `${Math.floor(timeLeft / 60).toString().padStart(2, '0')}:${(timeLeft % 60).toString().padStart(2, '0')}`}
                   </span>
                 </Card>
               </div>
 
-              {/* Player Slots */}
+              {/* Animated Jackpot Carousel */}
               <Card className="bg-[hsl(220,30%,10%)]/80 backdrop-blur-sm border border-primary/20 p-4 sm:p-6 overflow-hidden">
-                <div className="flex items-center justify-center mb-4">
-                  <div className="w-0 h-0 border-l-8 border-r-8 border-t-12 border-l-transparent border-r-transparent border-t-primary" />
+                {/* Arrow Indicator */}
+                <div className="flex justify-center mb-4">
+                  <div className="triangle-up animate-pulse" />
                 </div>
                 
-                <div className="grid grid-cols-3 md:grid-cols-6 gap-4 mb-6">
-                  {[...Array(6)].map((_, idx) => {
-                    const player = mockPlayers[idx];
-                    return (
+                {/* Carousel Container */}
+                <div className="relative overflow-hidden w-full">
+                  <div 
+                    id="jackpot-carousel" 
+                    className={`jackpot-track ${isSpinning ? '' : 'paused'} ${isSpinning ? 'slowing' : ''} flex justify-center gap-6 py-4`}
+                  >
+                    {/* Duplicate players for seamless loop */}
+                    {[...players, ...players, ...players].map((player, idx) => (
                       <div
-                        key={idx}
-                        className="aspect-square bg-background/50 border border-primary/20 rounded-lg flex flex-col items-center justify-center relative p-2"
+                        key={`${player.id}-${idx}`}
+                        className={`jackpot-card ${winnerIndex !== null && idx % players.length === winnerIndex ? 'winner' : ''}`}
                       >
-                        {player ? (
-                          <>
-                            <Avatar className="w-12 h-12 mb-2">
-                              <AvatarImage src={player.avatar || undefined} />
-                              <AvatarFallback className="bg-primary/20 text-primary font-pixel text-xs">
-                                {player.username[0].toUpperCase()}
-                              </AvatarFallback>
-                            </Avatar>
-                            <div className="absolute top-2 right-2 bg-background rounded px-1">
-                              <span className="font-mono text-[0.5rem] text-muted-foreground">21</span>
-                            </div>
-                            <div className="flex items-center gap-1">
-                              <span className="font-mono text-[0.5rem]">≡</span>
-                              <span className="font-mono text-xs text-foreground">
-                                {player.wager.toFixed(3)}
-                              </span>
-                            </div>
-                          </>
-                        ) : (
-                          <>
-                            <div className="w-12 h-12 rounded-full bg-background/50 border border-primary/10 flex items-center justify-center mb-2">
-                              <span className="text-2xl text-muted-foreground/30">?</span>
-                            </div>
-                            <span className="font-mono text-xs text-muted-foreground">Waiting</span>
-                            <div className="flex items-center gap-1">
-                              <span className="font-mono text-[0.5rem]">≡</span>
-                              <span className="font-mono text-xs text-muted-foreground">0.000</span>
-                            </div>
-                          </>
-                        )}
+                        <div className="flex flex-col items-center justify-center h-full text-center p-4">
+                          <Avatar className="w-14 h-14 mb-3 border-2 border-primary/30">
+                            <AvatarImage src={player.avatar || undefined} />
+                            <AvatarFallback className="bg-primary/20 text-primary font-pixel text-sm">
+                              {player.username[0].toUpperCase()}
+                            </AvatarFallback>
+                          </Avatar>
+                          <p className="text-cyan-200 text-sm font-mono mb-1">{player.username}</p>
+                          <div className="flex items-center gap-1">
+                            <span className="font-mono text-xs text-cyan-400">≡</span>
+                            <span className="text-xs text-cyan-400 font-mono">
+                              {player.wager.toFixed(3)}
+                            </span>
+                          </div>
+                          <p className="text-[0.65rem] text-cyan-500/70 mt-1 font-mono">
+                            {player.chance.toFixed(1)}%
+                          </p>
+                        </div>
                       </div>
-                    );
-                  })}
+                    ))}
+                    
+                    {/* Empty slots if less than 6 players */}
+                    {players.length < 6 && [...Array(6 - players.length)].map((_, idx) => (
+                      <div key={`empty-${idx}`} className="jackpot-card opacity-30">
+                        <div className="flex flex-col items-center justify-center h-full">
+                          <div className="w-14 h-14 rounded-full bg-background/50 border border-primary/10 flex items-center justify-center mb-3">
+                            <span className="text-3xl text-muted-foreground/30">?</span>
+                          </div>
+                          <span className="font-mono text-xs text-muted-foreground">Waiting</span>
+                        </div>
+                      </div>
+                    ))}
+                  </div>
                 </div>
 
                 {/* Bottom Info */}
-                <div className="flex flex-col md:flex-row items-start md:items-center justify-between gap-4 pt-4 border-t border-primary/20">
+                <div className="flex flex-col md:flex-row items-start md:items-center justify-between gap-4 pt-4 border-t border-primary/20 mt-4">
                   <div className="flex items-center gap-2">
                     <Users className="w-4 h-4 text-primary" />
-                    <span className="font-mono text-sm text-foreground">{mockPlayers.length} Players</span>
+                    <span className="font-mono text-sm text-foreground">{players.length} Players</span>
                   </div>
                   <div className="flex items-center gap-2">
                     <span className="font-mono text-xs text-muted-foreground">
-                      ≡ Payouts are settled in SOL
+                      ≡ Payouts in SOL
                     </span>
                   </div>
                   <div className="flex items-center gap-2">
                     <span className="font-mono text-xs text-primary">#</span>
-                    <span className="font-mono text-xs text-muted-foreground">Round: 167268</span>
+                    <span className="font-mono text-xs text-muted-foreground">Round: {Math.floor(Math.random() * 999999)}</span>
                   </div>
                 </div>
+
+                {players.length >= 2 && !isSpinning && (
+                  <div className="text-center mt-4">
+                    <Button
+                      onClick={startRound}
+                      className="font-pixel text-xs px-6 py-3 bg-primary/20 border border-primary text-primary hover:bg-primary/30 transition"
+                    >
+                      Draw Winner
+                    </Button>
+                  </div>
+                )}
               </Card>
 
               {/* Players List */}
-              {mockPlayers.length > 0 && (
+              {players.length > 0 && (
                 <Card className="bg-[hsl(220,30%,10%)] border border-primary/20 p-4">
+                  <h3 className="font-pixel text-xs text-primary mb-4 text-center">Current Entries</h3>
                   <div className="space-y-2">
-                    {mockPlayers.map((player) => (
+                    {players.map((player, idx) => (
                       <div
                         key={player.id}
-                        className="flex items-center justify-between p-3 bg-background/30 border border-primary/10 rounded-lg hover:border-primary/30 transition-colors"
+                        className={`flex items-center justify-between p-3 bg-background/30 border rounded-lg transition-all ${
+                          winnerIndex === idx 
+                            ? 'border-primary shadow-glow-cyan animate-winner-celebration' 
+                            : 'border-primary/10 hover:border-primary/30'
+                        }`}
                       >
                         <div className="flex items-center gap-3">
                           <Avatar className="w-10 h-10 border-2 border-primary/30">
@@ -303,14 +409,13 @@ const LuckyBlockEnhanced = () => {
                           <div>
                             <p className="font-mono text-sm text-foreground flex items-center gap-2">
                               {player.username}
-                              <span className="text-xs text-purple-400 bg-purple-600/20 px-1.5 rounded">21</span>
+                              {winnerIndex === idx && <Trophy className="w-4 h-4 text-yellow-400" />}
                             </p>
                             <div className="flex items-center gap-1">
                               <span className="font-mono text-xs">≡</span>
                               <span className="font-mono text-xs text-muted-foreground">
                                 {player.wager.toFixed(3)}
                               </span>
-                              <span className="font-mono text-xs text-muted-foreground">~$1.92</span>
                             </div>
                           </div>
                         </div>
@@ -330,8 +435,8 @@ const LuckyBlockEnhanced = () => {
             <div className="space-y-4 min-w-0">
               <Card className="bg-[hsl(220,30%,10%)]/80 backdrop-blur-sm border border-primary/20 p-4 overflow-hidden">
                 <div className="flex items-center justify-between mb-3 sm:mb-4">
-                  <span className="font-pixel text-[0.65rem] sm:text-xs text-muted-foreground">ROUND</span>
-                  <span className="font-mono text-xs text-primary">#167268</span>
+                  <span className="font-pixel text-[0.65rem] sm:text-xs text-muted-foreground">CURRENT ROUND</span>
+                  <span className="font-mono text-xs text-primary">#{Math.floor(Math.random() * 999999)}</span>
                 </div>
                 
                 <div className="aspect-square bg-background/30 border border-primary/10 rounded-lg flex items-center justify-center mb-3 sm:mb-4 overflow-hidden">
@@ -344,80 +449,27 @@ const LuckyBlockEnhanced = () => {
 
                 <div className="space-y-2">
                   <div className="flex items-center justify-between">
-                    <span className="font-mono text-xs text-muted-foreground">Won</span>
+                    <span className="font-mono text-xs text-muted-foreground">Total Pot</span>
                     <div className="flex items-center gap-1">
                       <span className="font-mono text-xs">≡</span>
-                      <span className="font-mono text-sm text-primary">0.386</span>
+                      <span className="font-mono text-sm text-primary">{jackpotValue.toFixed(3)}</span>
                     </div>
                   </div>
                   <div className="flex items-center justify-between">
-                    <span className="font-mono text-xs text-muted-foreground">Chance</span>
-                    <span className="font-mono text-sm text-primary">32.23%</span>
+                    <span className="font-mono text-xs text-muted-foreground">Players</span>
+                    <span className="font-mono text-sm text-primary">{players.length}</span>
                   </div>
                 </div>
               </Card>
 
-              <Card className="bg-[hsl(220,30%,10%)]/80 backdrop-blur-sm border border-primary/20 p-4 overflow-hidden">
-                <div className="flex items-center gap-2 mb-3">
-                  <Trophy className="w-4 h-4 text-accent" />
-                  <span className="font-pixel text-[0.65rem] sm:text-xs text-accent">LAST WINNER</span>
-                </div>
-                
-                <div className="flex items-center gap-3">
-                  <Avatar className="w-10 h-10 border-2 border-accent/30">
-                    <AvatarFallback className="bg-accent/20 text-accent font-pixel text-xs">
-                      B
-                    </AvatarFallback>
-                  </Avatar>
-                  <div className="min-w-0 flex-1">
-                    <p className="font-mono text-sm text-foreground flex items-center gap-2">
-                      <span className="truncate">BOZO</span>
-                      <span className="text-xs text-accent bg-accent/20 px-1.5 rounded shrink-0">56</span>
-                    </p>
-                    <div className="flex items-center gap-1">
-                      <span className="font-mono text-xs">≡</span>
-                      <span className="font-mono text-xs text-muted-foreground">0.386</span>
-                    </div>
-                  </div>
-                </div>
-                
-                <div className="mt-3 pt-3 border-t border-primary/10">
-                  <div className="flex items-center justify-between text-xs">
-                    <span className="font-mono text-muted-foreground">Chance</span>
-                    <span className="font-mono text-accent">32.23%</span>
-                  </div>
-                </div>
-              </Card>
-
-              <Card className="bg-[hsl(220,30%,10%)]/80 backdrop-blur-sm border border-accent/20 p-4 overflow-hidden">
-                <div className="flex items-center gap-2 mb-3">
-                  <Sparkles className="w-4 h-4 text-accent" />
-                  <span className="font-pixel text-[0.65rem] sm:text-xs text-accent">LUCK OF THE DAY</span>
-                </div>
-                
-                <div className="flex items-center gap-3">
-                  <Avatar className="w-10 h-10 border-2 border-accent/30">
-                    <AvatarFallback className="bg-accent/20 text-accent font-pixel text-xs">
-                      C
-                    </AvatarFallback>
-                  </Avatar>
-                  <div className="min-w-0 flex-1">
-                    <p className="font-mono text-sm text-foreground flex items-center gap-2">
-                      <span className="truncate">Crashout</span>
-                      <span className="text-xs text-accent bg-accent/20 px-1.5 rounded shrink-0">4</span>
-                    </p>
-                    <div className="flex items-center gap-1">
-                      <span className="font-mono text-xs">≡</span>
-                      <span className="font-mono text-xs text-accent">1.405</span>
-                    </div>
-                  </div>
-                </div>
-                
-                <div className="mt-3 pt-3 border-t border-accent/10">
-                  <div className="flex items-center justify-between text-xs">
-                    <span className="font-mono text-muted-foreground">Chance</span>
-                    <span className="font-mono text-accent">0.15%</span>
-                  </div>
+              <Card className="bg-[hsl(220,30%,10%)]/80 backdrop-blur-sm border border-primary/20 p-4">
+                <h3 className="font-pixel text-xs text-muted-foreground mb-3">How It Works</h3>
+                <div className="space-y-2 text-xs font-mono text-muted-foreground">
+                  <p>• Place your bet to enter</p>
+                  <p>• Odds based on wager size</p>
+                  <p>• Timer starts with 2+ players</p>
+                  <p>• Winner takes entire pot</p>
+                  <p>• Provably fair selection</p>
                 </div>
               </Card>
             </div>

@@ -23,16 +23,16 @@ export const WalletButton = () => {
 
   const solanaWallets: WalletOption[] = [
     { id: 'phantom', name: 'Phantom', icon: '👻', network: 'solana', detected: !!(window as any).phantom?.solana },
-    { id: 'solflare', name: 'Solflare', icon: '🌞', network: 'solana' },
-    { id: 'slope', name: 'Slope', icon: '⛰️', network: 'solana' },
-    { id: 'glow', name: 'Glow', icon: '💜', network: 'solana' },
+    { id: 'solflare', name: 'Solflare', icon: '🔥', network: 'solana' },
+    { id: 'slope', name: 'Slope', icon: '📐', network: 'solana' },
+    { id: 'glow', name: 'Glow', icon: '✨', network: 'solana' },
     { id: 'backpack', name: 'Backpack', icon: '🎒', network: 'solana' },
   ];
 
   const ethWallets: WalletOption[] = [
     { id: 'phantom', name: 'Phantom', icon: '👻', network: 'base', detected: !!(window as any).phantom?.ethereum },
     { id: 'metamask', name: 'MetaMask', icon: '🦊', network: 'base', detected: !!(window as any).ethereum?.isMetaMask },
-    { id: 'coinbase', name: 'Coinbase Wallet', icon: '🔵', network: 'base', detected: !!(window as any).ethereum?.isCoinbaseWallet },
+    { id: 'coinbase', name: 'Coinbase', icon: '💎', network: 'base', detected: !!(window as any).ethereum?.isCoinbaseWallet },
     { id: 'torus', name: 'Torus', icon: '🔷', network: 'base' },
     { id: 'ledger', name: 'Ledger', icon: '📱', network: 'base' },
   ];
