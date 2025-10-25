@@ -322,20 +322,20 @@ const LuckyBlockEnhanced = () => {
                         className={`jackpot-card ${winnerIndex !== null && idx % players.length === winnerIndex ? 'winner' : ''}`}
                       >
                         <div className="flex flex-col items-center justify-center h-full text-center p-4">
-                          <Avatar className="w-14 h-14 mb-3 border-2 border-primary/30">
+                          <Avatar className="w-14 h-14 mb-3 border-2 border-primary/50 shadow-glow-cyan">
                             <AvatarImage src={player.avatar || undefined} />
-                            <AvatarFallback className="bg-primary/20 text-primary font-pixel text-sm">
+                            <AvatarFallback className="bg-primary/30 text-primary font-pixel text-sm">
                               {player.username[0].toUpperCase()}
                             </AvatarFallback>
                           </Avatar>
-                          <p className="text-cyan-200 text-sm font-mono mb-1">{player.username}</p>
+                          <p className="text-foreground text-sm font-mono mb-1 font-semibold">{player.username}</p>
                           <div className="flex items-center gap-1">
-                            <span className="font-mono text-xs text-cyan-400">≡</span>
-                            <span className="text-xs text-cyan-400 font-mono">
+                            <span className="font-mono text-xs text-primary">≡</span>
+                            <span className="text-xs text-primary font-mono font-semibold">
                               {player.wager.toFixed(3)}
                             </span>
                           </div>
-                          <p className="text-[0.65rem] text-cyan-500/70 mt-1 font-mono">
+                          <p className="text-[0.65rem] text-primary/90 mt-1 font-mono font-semibold">
                             {player.chance.toFixed(1)}%
                           </p>
                         </div>
