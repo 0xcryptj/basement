@@ -313,10 +313,10 @@ const LuckyBlockEnhanced = () => {
               <div className="relative overflow-hidden w-full">
                 <div 
                   id="jackpot-carousel" 
-                  className={`jackpot-track ${!isSpinning ? 'paused' : ''} flex justify-center gap-6 py-4`}
+                  className={`jackpot-track ${isSpinning ? 'slowing' : ''} flex gap-6 py-4`}
                 >
-                    {/* Duplicate players for seamless loop */}
-                    {[...players, ...players, ...players].map((player, idx) => (
+                  {/* Duplicate players for seamless loop */}
+                    {players.length > 0 ? [...players, ...players, ...players, ...players, ...players, ...players].map((player, idx) => (
                       <div
                         key={`${player.id}-${idx}`}
                         className={`jackpot-card ${winnerIndex !== null && idx % players.length === winnerIndex ? 'winner' : ''}`}
@@ -340,10 +340,10 @@ const LuckyBlockEnhanced = () => {
                           </p>
                         </div>
                       </div>
-                    ))}
+                    )) : null}
                     
-                    {/* Empty slots if less than 6 players */}
-                    {players.length < 6 && [...Array(6 - players.length)].map((_, idx) => (
+                    {/* Empty slots if no players */}
+                    {players.length === 0 && [...Array(6)].map((_, idx) => (
                       <div key={`empty-${idx}`} className="jackpot-card opacity-30">
                         <div className="flex flex-col items-center justify-center h-full">
                           <div className="w-14 h-14 rounded-full bg-background/50 border border-primary/10 flex items-center justify-center mb-3">
