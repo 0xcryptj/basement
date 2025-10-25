@@ -87,7 +87,8 @@ export const Hero = () => {
       )}
 
       {/* Content */}
-      <div className="relative z-10 text-center px-4 max-w-4xl mx-auto">
+      <div className="relative z-10 px-4 max-w-7xl mx-auto w-full flex justify-end">
+        <div className="text-center max-w-2xl mr-8 lg:mr-16">
         {/* Main Title with Glitch Effect */}
         <motion.h1 
           initial={{ y: -50, opacity: 0 }}
@@ -131,7 +132,7 @@ export const Hero = () => {
             {isPortaling ? "ENTERING..." : "Enter Basement"}
           </Button>
         </motion.div>
-
+        </div>
       </div>
     </div>
   );
