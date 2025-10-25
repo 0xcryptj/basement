@@ -87,8 +87,8 @@ export const Hero = () => {
       )}
 
       {/* Content */}
-      <div className="relative z-10 px-4 max-w-7xl mx-auto w-full flex justify-center lg:justify-end">
-        <div className="text-center max-w-2xl lg:mr-8">
+      <div className="relative z-10 px-4 max-w-7xl mx-auto w-full flex justify-center items-center">
+        <div className="text-center max-w-2xl">
         {/* Main Title with Glitch Effect */}
         <motion.h1 
           initial={{ y: -50, opacity: 0 }}
