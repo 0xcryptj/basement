@@ -1,42 +1,6 @@
 {
   "_format": "hh-sol-cache-2",
   "files": {
-    "C:\\Users\\joarb\\OneDrive\\Desktop\\Basement\\chain\\contracts\\CoinToss.sol": {
-      "lastModificationDate": 1761686909150,
-      "contentHash": "6ed6f8ea286834240249ededd96ed079",
-      "sourceName": "contracts/CoinToss.sol",
-      "solcConfig": {
-        "version": "0.8.20",
-        "settings": {
-          "optimizer": {
-            "enabled": true,
-            "runs": 200
-          },
-          "evmVersion": "paris",
-          "outputSelection": {
-            "*": {
-              "*": [
-                "abi",
-                "evm.bytecode",
-                "evm.deployedBytecode",
-                "evm.methodIdentifiers",
-                "metadata"
-              ],
-              "": [
-                "ast"
-              ]
-            }
-          }
-        }
-      },
-      "imports": [],
-      "versionPragmas": [
-        "^0.8.20"
-      ],
-      "artifacts": [
-        "CoinToss"
-      ]
-    },
     "C:\\Users\\joarb\\OneDrive\\Desktop\\Basement\\chain\\node_modules\\@openzeppelin\\contracts\\utils\\ReentrancyGuard.sol": {
       "lastModificationDate": 1760520847817,
       "contentHash": "a92331adac11b453a4de0323fc948119",
@@ -148,8 +112,8 @@
       ]
     },
     "C:\\Users\\joarb\\OneDrive\\Desktop\\Basement\\chain\\contracts\\War.sol": {
-      "lastModificationDate": 1761686902804,
-      "contentHash": "83d7ef6d0fdde5252e6f3b44632112cf",
+      "lastModificationDate": 1761688729087,
+      "contentHash": "bcd8523057bc3f5ccabef725c53cc1dd",
       "sourceName": "contracts/War.sol",
       "solcConfig": {
         "version": "0.8.20",
@@ -184,8 +148,8 @@
       ]
     },
     "C:\\Users\\joarb\\OneDrive\\Desktop\\Basement\\chain\\contracts\\Connect4.sol": {
-      "lastModificationDate": 1761686907332,
-      "contentHash": "8681b374a030bd9ee6d7ad8899192d32",
+      "lastModificationDate": 1761688728339,
+      "contentHash": "69ba5dca0d93aff92f778a78a05a2439",
       "sourceName": "contracts/Connect4.sol",
       "solcConfig": {
         "version": "0.8.20",
@@ -220,8 +184,8 @@
       ]
     },
     "C:\\Users\\joarb\\OneDrive\\Desktop\\Basement\\chain\\contracts\\Chess.sol": {
-      "lastModificationDate": 1761686905894,
-      "contentHash": "3d35468669cb23602cb5ae5e7e836018",
+      "lastModificationDate": 1761688727737,
+      "contentHash": "f5f77974fcdaf92c92e260f3130b7d10",
       "sourceName": "contracts/Chess.sol",
       "solcConfig": {
         "version": "0.8.20",
