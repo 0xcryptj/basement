@@ -1,0 +1,24 @@
+#!/bin/sh
+# Pre-commit hook to prevent committing sensitive files
+
+# Check for .env files
+if git diff --cached --name-only | grep -E '\.env$|\.env\.'; then
+    echo "❌ ERROR: Attempted to commit .env file(s)!"
+    echo "These files contain sensitive data and should NEVER be committed."
+    git diff --cached --name-only | grep -E '\.env$|\.env\.'
+    echo ""
+    echo "Run: git reset HEAD <file>"
+    echo "Add to .gitignore if not already there"
+    exit 1
+fi
+
+# Check for common sensitive patterns (but allow in documentation)
+if git diff --cached | grep -E '(PRIVATE_KEY|SECRET_KEY|API_KEY|MNEMONIC).*=' | grep -v "docs\|md\|\.gitignore\|SECURITY"; then
+    echo "❌ ERROR: Detected potential sensitive data in commit!"
+    echo "Review your changes carefully before committing."
+    exit 1
+fi
+
+echo "✅ Pre-commit security check passed"
+exit 0
+
