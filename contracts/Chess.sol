@@ -9,7 +9,7 @@ pragma solidity ^0.8.20;
 
 contract Chess {
     // Constants
-    address public houseWallet = 0x0F030f98b1F3cE9DA7054AC9CD454d2a816b5B03;
+    address public houseWallet = 0x5cadda44709251088663e94b13ad3d5e38466b4d;
     uint256 public constant HOUSE_FEE_PERCENT = 10;
     uint256 public constant TIMEOUT_DURATION = 10 minutes;
     

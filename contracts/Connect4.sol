@@ -11,7 +11,7 @@ contract Connect4 {
     // Constants
     uint8 constant ROWS = 6;
     uint8 constant COLS = 7;
-    address public houseWallet = 0x0F030f98b1F3cE9DA7054AC9CD454d2a816b5B03;
+    address public houseWallet = 0x5cadda44709251088663e94b13ad3d5e38466b4d;
     uint256 public constant HOUSE_FEE_PERCENT = 10;
     uint256 public constant TIMEOUT_DURATION = 5 minutes;
     
