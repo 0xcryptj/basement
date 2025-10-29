@@ -57,29 +57,29 @@ const War = () => {
           </p>
         </div>
 
-        <div className="max-w-4xl mx-auto">
-          <Card className="bg-card border-2 border-primary p-8">
-            <div className="grid md:grid-cols-2 gap-8 mb-8">
+        <div className="max-w-4xl mx-auto px-4">
+          <Card className="bg-card border-2 border-primary p-4 sm:p-6 lg:p-8">
+            <div className="grid grid-cols-2 gap-4 sm:gap-6 lg:gap-8 mb-6 sm:mb-8">
               {/* Player Card */}
               <div className="text-center">
-                <h3 className="font-pixel text-sm text-primary mb-4">YOUR CARD</h3>
-                <div className="h-48 flex items-center justify-center bg-background border-2 border-primary rounded">
+                <h3 className="font-pixel text-xs sm:text-sm text-primary mb-2 sm:mb-4">YOUR CARD</h3>
+                <div className="h-32 sm:h-40 lg:h-48 flex items-center justify-center bg-background border-2 border-primary rounded">
                   {playerCard ? (
-                    <span className="font-pixel text-6xl text-primary">{playerCard}</span>
+                    <span className="font-pixel text-4xl sm:text-5xl lg:text-6xl text-primary">{playerCard}</span>
                   ) : (
-                    <Sword className="w-16 h-16 text-muted-foreground" />
+                    <Sword className="w-12 h-12 sm:w-14 sm:h-14 lg:w-16 lg:h-16 text-muted-foreground" />
                   )}
                 </div>
               </div>
 
               {/* Opponent Card */}
               <div className="text-center">
-                <h3 className="font-pixel text-sm text-secondary mb-4">OPPONENT CARD</h3>
-                <div className="h-48 flex items-center justify-center bg-background border-2 border-secondary rounded">
+                <h3 className="font-pixel text-xs sm:text-sm text-secondary mb-2 sm:mb-4">OPPONENT CARD</h3>
+                <div className="h-32 sm:h-40 lg:h-48 flex items-center justify-center bg-background border-2 border-secondary rounded">
                   {opponentCard ? (
-                    <span className="font-pixel text-6xl text-secondary">{opponentCard}</span>
+                    <span className="font-pixel text-4xl sm:text-5xl lg:text-6xl text-secondary">{opponentCard}</span>
                   ) : (
-                    <Sword className="w-16 h-16 text-muted-foreground" />
+                    <Sword className="w-12 h-12 sm:w-14 sm:h-14 lg:w-16 lg:h-16 text-muted-foreground" />
                   )}
                 </div>
               </div>

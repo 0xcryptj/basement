@@ -1,0 +1,341 @@
+<!doctype html>
+<html lang="en">
+<head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Sign in with Base - The Basement Arcade</title>
+    <link rel="icon" href="assets/icon.ico" type="image/x-icon">
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Courier New', monospace;
+            background: linear-gradient(135deg, #0a0a1e 0%, #1a1a3e 100%);
+            color: #ffffff;
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 20px;
+        }
+
+        .container {
+            max-width: 600px;
+            width: 100%;
+            background: rgba(0, 0, 0, 0.8);
+            border: 2px solid #0052ff;
+            border-radius: 15px;
+            padding: 40px;
+            box-shadow: 0 0 40px rgba(0, 82, 255, 0.5);
+        }
+
+        h1 {
+            font-size: 1.5rem;
+            color: #0052ff;
+            text-shadow: 0 0 20px rgba(0, 82, 255, 0.8);
+            margin-bottom: 10px;
+            text-align: center;
+        }
+
+        .subtitle {
+            text-align: center;
+            color: #888;
+            font-size: 0.9rem;
+            margin-bottom: 30px;
+        }
+
+        .button-group {
+            display: flex;
+            flex-direction: column;
+            gap: 15px;
+            margin-bottom: 30px;
+        }
+
+        button {
+            padding: 15px 25px;
+            font-family: 'Courier New', monospace;
+            font-size: 1rem;
+            font-weight: bold;
+            cursor: pointer;
+            border-radius: 8px;
+            transition: all 0.3s ease;
+            border: 2px solid;
+        }
+
+        #signin {
+            background: linear-gradient(135deg, #0052ff, #0066ff);
+            color: white;
+            border-color: #0052ff;
+        }
+
+        #signin:hover {
+            background: linear-gradient(135deg, #0066ff, #0088ff);
+            box-shadow: 0 0 20px rgba(0, 82, 255, 0.8);
+            transform: translateY(-2px);
+        }
+
+        #pay {
+            background: linear-gradient(135deg, #00ff88, #00cc66);
+            color: #000;
+            border-color: #00ff88;
+        }
+
+        #pay:hover {
+            background: linear-gradient(135deg, #00ffaa, #00dd77);
+            box-shadow: 0 0 20px rgba(0, 255, 136, 0.8);
+            transform: translateY(-2px);
+        }
+
+        #status {
+            padding: 20px;
+            background: rgba(0, 82, 255, 0.1);
+            border: 1px solid rgba(0, 82, 255, 0.3);
+            border-radius: 8px;
+            min-height: 100px;
+            font-size: 0.9rem;
+            line-height: 1.6;
+        }
+
+        .success {
+            color: #00ff88;
+        }
+
+        .error {
+            color: #ff0044;
+        }
+
+        .info {
+            color: #00bfff;
+        }
+
+        .code-block {
+            background: rgba(0, 0, 0, 0.5);
+            padding: 10px;
+            border-radius: 5px;
+            margin-top: 10px;
+            font-size: 0.8rem;
+            overflow-x: auto;
+        }
+
+        .back-link {
+            display: block;
+            text-align: center;
+            margin-top: 20px;
+            color: #0052ff;
+            text-decoration: none;
+            font-size: 0.9rem;
+        }
+
+        .back-link:hover {
+            color: #00bfff;
+            text-shadow: 0 0 10px rgba(0, 191, 255, 0.8);
+        }
+
+        .logo {
+            text-align: center;
+            margin-bottom: 20px;
+        }
+
+        .logo img {
+            width: 60px;
+            height: auto;
+            filter: drop-shadow(0 0 10px rgba(0, 82, 255, 0.8));
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="logo">
+            <img src="assets/tsvg.svg" alt="The Basement Logo">
+        </div>
+        
+        <h1>⚡ Sign in with Base</h1>
+        <p class="subtitle">Test Base Account SDK Integration</p>
+        
+        <div class="button-group">
+            <button id="signin">Sign in with Base</button>
+            <button id="pay">Pay with Base (Test)</button>
+        </div>
+        
+        <div id="status">
+            <p class="info">Click "Sign in with Base" to authenticate with your Base account.</p>
+            <p class="info">Click "Pay with Base" to test USDC payment on Base Sepolia testnet.</p>
+        </div>
+
+        <a href="index.html" class="back-link">← Back to The Basement</a>
+    </div>
+
+    <!-- Load Base Account SDK via CDN -->
+    <script src="https://unpkg.com/@base-org/account/dist/base-account.min.js"></script>
+    
+    <script>
+        // Initialize Base Account SDK with app configuration
+        const provider = window.createBaseAccountSDK({
+            appName: 'The Basement Arcade',
+            appLogoUrl: window.location.origin + '/assets/icon.ico',
+        }).getProvider();
+        
+        const statusDiv = document.getElementById("status");
+        let userAddress = null;
+
+        function showStatus(message, type = 'info') {
+            const className = type === 'success' ? 'success' : type === 'error' ? 'error' : 'info';
+            statusDiv.innerHTML = `<p class="${className}">${message}</p>`;
+        }
+
+        function showDetailedStatus(title, details) {
+            statusDiv.innerHTML = `
+                <p class="success">${title}</p>
+                <div class="code-block">${details}</div>
+            `;
+        }
+
+        // Sign in with Base using wallet_connect method with proper authentication flow
+        document.getElementById("signin").onclick = async () => {
+            try {
+                showStatus("🔄 Fetching nonce from server...", 'info');
+                
+                // 1. Fetch nonce from server (prevents replay attacks)
+                let nonce;
+                try {
+                    const nonceResponse = await fetch('/api/auth/nonce');
+                    const nonceData = await nonceResponse.json();
+                    nonce = nonceData.nonce;
+                    console.log('Server nonce:', nonce);
+                } catch (error) {
+                    console.warn('Server unavailable, generating local nonce');
+                    nonce = window.crypto.randomUUID().replace(/-/g, '');
+                }
+                
+                showStatus("🔄 Switching to Base network...", 'info');
+                
+                // 2. Switch to Base Chain first
+                try {
+                    await provider.request({
+                        method: "wallet_switchEthereumChain",
+                        params: [{ chainId: '0x2105' }],
+                    });
+                } catch (switchError) {
+                    console.warn('Chain switch warning:', switchError);
+                }
+                
+                showStatus("🔄 Requesting signature...", 'info');
+                
+                // Connect and authenticate using the new wallet_connect method
+                const { accounts } = await provider.request({
+                    method: 'wallet_connect',
+                    params: [{
+                        version: '1',
+                        capabilities: {
+                            signInWithEthereum: { 
+                                nonce, 
+                                chainId: '0x2105' // Base Mainnet - 8453
+                            }
+                        }
+                    }]
+                });
+                
+                const { address } = accounts[0];
+                const { message, signature } = accounts[0].capabilities.signInWithEthereum;
+                
+                userAddress = address;
+                
+                showStatus("🔄 Verifying signature with backend...", 'info');
+                
+                // 4. Verify signature with backend
+                try {
+                    const verifyResponse = await fetch('/api/auth/verify', {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify({ address, message, signature })
+                    });
+                    
+                    const verifyData = await verifyResponse.json();
+                    
+                    if (!verifyResponse.ok) {
+                        throw new Error(verifyData.error || 'Verification failed');
+                    }
+                    
+                    const details = `
+                        <strong>✅ Backend Verification: PASSED</strong><br><br>
+                        <strong>Address:</strong> ${address}<br>
+                        <strong>Signature:</strong> ${signature.slice(0, 20)}...${signature.slice(-10)}<br>
+                        <strong>Message:</strong> ${message.slice(0, 50)}...<br>
+                        <br>
+                        <strong>Your Base Account is now verified!</strong><br>
+                        Session created successfully.
+                    `;
+                    
+                    showDetailedStatus('🎉 Authentication Complete!', details);
+                    console.log('✅ Full authentication flow completed:', verifyData);
+                    
+                } catch (verifyError) {
+                    console.error('Verification error:', verifyError);
+                    const details = `
+                        <strong>⚠️ Wallet Connected but Verification Failed</strong><br><br>
+                        <strong>Address:</strong> ${address}<br>
+                        <strong>Error:</strong> ${verifyError.message}<br>
+                        <br>
+                        The signature was obtained but backend verification failed.<br>
+                        Check console for details.
+                    `;
+                    showDetailedStatus('⚠️ Partial Success', details);
+                }
+                
+            } catch (error) {
+                console.error('Sign-in error:', error);
+                showStatus(`❌ Sign-in failed: ${error.message}`, 'error');
+            }
+        };
+
+        // One-tap USDC payment using window.base API
+        document.getElementById("pay").onclick = async () => {
+            try {
+                showStatus("🔄 Processing payment...", 'info');
+                
+                const result = await window.base.pay({
+                    amount: "1.00", // $1 USD – SDK quotes equivalent USDC
+                    to: "0x2211d1D0020DAEA8039E46Cf1367962070d77DA9", // Test recipient
+                    testnet: true // Using Base Sepolia testnet
+                });
+
+                showStatus("⏳ Waiting for payment confirmation...", 'info');
+
+                const status = await window.base.getPaymentStatus({
+                    id: result.id,
+                    testnet: true
+                });
+                
+                const details = `
+                    <strong>Payment ID:</strong> ${result.id}<br>
+                    <strong>Status:</strong> ${status.status}<br>
+                    <strong>Amount:</strong> $1.00 USD (in USDC)<br>
+                    <strong>Network:</strong> Base Sepolia (Testnet)<br>
+                    <br>
+                    <strong>🎉 Payment successful!</strong>
+                `;
+                
+                showDetailedStatus('✅ Payment Complete!', details);
+                
+                console.log('Payment result:', result);
+                console.log('Payment status:', status);
+                
+            } catch (error) {
+                console.error('Payment error:', error);
+                showStatus(`❌ Payment failed: ${error.message}`, 'error');
+            }
+        };
+
+        // Show initial instructions
+        console.log('%c🏠 The Basement Arcade - Base Account SDK Test', 'font-size: 16px; color: #0052ff; font-weight: bold;');
+        console.log('%cTesting Sign in with Base and Base Pay', 'font-size: 12px; color: #00bfff;');
+        console.log('');
+        console.log('Authentication data will be logged here for verification.');
+    </script>
+</body>
+</html>
+

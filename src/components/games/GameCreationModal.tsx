@@ -10,7 +10,7 @@ interface GameCreationModalProps {
   open: boolean;
   onClose: () => void;
   gameType: "chess" | "connect4" | "cointoss" | "war";
-  onCreateGame: (wagerAmount: number, selectedChoice: string) => void;
+  onCreateGame: (wagerAmount: number, selectedChoice: string) => Promise<void>;
   balance: number;
   network: string;
 }
@@ -48,9 +48,17 @@ export const GameCreationModal = ({
     }
   };
 
-  const handleCreate = () => {
-    onCreateGame(wagerAmount, selectedChoice);
-    onClose();
+  const handleCreate = async () => {
+    try {
+      // The transaction signing happens in onCreateGame
+      // Don't close modal yet, let the parent handle the flow
+      await onCreateGame(wagerAmount, selectedChoice);
+      // Only close after successful creation
+      onClose();
+    } catch (error) {
+      // Error handled by parent, keep modal open
+      console.error('Error in create game:', error);
+    }
   };
 
   const choiceOptions = getChoiceOptions();

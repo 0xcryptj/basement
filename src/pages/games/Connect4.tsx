@@ -106,8 +106,8 @@ const Connect4 = () => {
           </p>
         </div>
 
-        <div className="max-w-3xl mx-auto">
-          <Card className="bg-card border-2 border-primary p-8">
+        <div className="max-w-3xl mx-auto px-4">
+          <Card className="bg-card border-2 border-primary p-4 sm:p-6 lg:p-8">
             {winner && (
               <div className="text-center mb-6">
                 <h2 className="font-pixel text-2xl text-accent animate-glow-pulse">
@@ -127,8 +127,8 @@ const Connect4 = () => {
             )}
 
             {/* Game Board */}
-            <div className="bg-background border-2 border-accent p-4 mb-6">
-              <div className="grid grid-cols-7 gap-2">
+            <div className="bg-background border-2 border-accent p-2 sm:p-4 mb-6 mx-auto max-w-fit">
+              <div className="grid grid-cols-7 gap-1 sm:gap-2">
                 {board.map((row, rowIdx) =>
                   row.map((cell, colIdx) => (
                     <button

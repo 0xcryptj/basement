@@ -102,7 +102,7 @@ export const JackpotGame = () => {
 
     toast({
       title: "Bet Placed! 🎰",
-      description: `You wagered ${wagerAmount} ${network === 'solana' ? 'SOL' : 'ETH'}`,
+      description: `You wagered ${wagerAmount} ETH`,
     });
 
     // Start countdown when 2 bets are placed

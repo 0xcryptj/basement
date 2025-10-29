@@ -1,6 +1,7 @@
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Plus, Minus } from "lucide-react";
+import { ethToUsd, formatEthWithUsd } from "@/lib/currency";
 
 interface BettingInputProps {
   value: number;
@@ -35,7 +36,7 @@ export const BettingInput = ({
         <div className="flex justify-between items-center">
           <span className="font-pixel text-[0.6rem] text-muted-foreground">BALANCE</span>
           <span className="font-mono text-sm text-foreground">
-            {balance.toFixed(4)} {currency}
+            {formatEthWithUsd(balance)}
           </span>
         </div>
       )}
@@ -51,15 +52,20 @@ export const BettingInput = ({
           <Minus className="w-4 h-4" />
         </Button>
 
-        <Input
-          type="number"
-          value={value}
-          onChange={(e) => onChange(parseFloat(e.target.value) || min)}
-          min={min}
-          max={max}
-          step="0.01"
-          className="flex-1 bg-background border-2 border-primary/30 text-center font-mono text-lg font-bold text-primary focus:border-primary focus:shadow-glow-cyan"
-        />
+        <div className="flex-1 flex flex-col">
+          <Input
+            type="number"
+            value={value}
+            onChange={(e) => onChange(parseFloat(e.target.value) || min)}
+            min={min}
+            max={max}
+            step="0.01"
+            className="bg-background border-2 border-primary/30 text-center font-mono text-lg font-bold text-primary focus:border-primary focus:shadow-glow-cyan"
+          />
+          <div className="text-center font-mono text-[0.6rem] text-muted-foreground mt-1">
+            ≈ ${ethToUsd(value).toFixed(2)} USD
+          </div>
+        </div>
 
         <Button
           type="button"

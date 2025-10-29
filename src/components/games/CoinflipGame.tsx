@@ -39,7 +39,7 @@ export const CoinflipGame = () => {
       if (flipResult === selectedSide) {
         toast({
           title: "🎉 YOU WIN! 🎉",
-          description: `Won ${(wagerAmount * 1.9).toFixed(4)} ${network === 'solana' ? 'SOL' : 'ETH'}`,
+          description: `Won ${(wagerAmount * 1.9).toFixed(4)} ETH`,
         });
       } else {
         toast({

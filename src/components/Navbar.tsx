@@ -76,12 +76,12 @@ export const Navbar = () => {
           </Link>
 
           {/* Desktop Navigation */}
-          <div className="hidden lg:flex items-center gap-1">
+          <div className="hidden lg:flex items-center gap-0.5">
             {navLinks.map((link) => (
               <Link
                 key={link.to}
                 to={link.to}
-                className={`px-3 xl:px-4 py-2 font-pixel text-xs rounded-lg transition-all duration-200 hover:scale-105 focus:outline-none focus:ring-2 focus:ring-primary/50 ${
+                className={`px-2 xl:px-3 py-2 font-pixel text-xs rounded-lg transition-all duration-200 hover:scale-105 focus:outline-none focus:ring-2 focus:ring-primary/50 ${
                   isActive(link.to)
                     ? "text-primary shadow-glow-cyan bg-primary/10"
                     : "text-muted-foreground hover:text-primary hover:bg-primary/5"
@@ -94,7 +94,7 @@ export const Navbar = () => {
           </div>
 
           {/* Stats - Desktop */}
-          <div className="hidden xl:flex items-center gap-4 font-mono text-[0.65rem] text-muted-foreground">
+          <div className="hidden xl:flex items-center gap-2 font-mono text-[0.65rem] text-muted-foreground ml-auto mr-2">
             <div className="flex items-center gap-1">
               <span className="text-primary">Bets:</span>
               <span>{stats.total_wagers_placed.toLocaleString()}</span>
@@ -104,17 +104,13 @@ export const Navbar = () => {
               <span>${stats.total_volume.toFixed(0)}</span>
             </div>
             <div className="flex items-center gap-1">
-              <span className="text-secondary">◎</span>
-              <span>{stats.solana_online}</span>
-            </div>
-            <div className="flex items-center gap-1">
               <span className="text-primary">⟠</span>
               <span>{stats.base_online}</span>
             </div>
           </div>
 
           {/* Balance & Wallet Button - Desktop - Always Far Right */}
-          <div className="hidden md:flex items-center gap-3 shrink-0 ml-auto">
+          <div className="hidden md:flex items-center gap-2 shrink-0 ml-auto">
             <WalletBalance />
             <WalletButton />
           </div>

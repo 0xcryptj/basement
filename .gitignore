@@ -29,3 +29,12 @@ dist-ssr
 .env.*.local
 **/.env
 **/chain/.env
+
+# Migration execution scripts with credentials
+execute-migration*.js
+execute-migration*.mjs
+run-migration*.js
+run-migration*.mjs
+*-secure.ps1
+*.credentials
+*.secrets

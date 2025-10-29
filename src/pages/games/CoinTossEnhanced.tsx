@@ -160,13 +160,15 @@ const CoinTossEnhanced = () => {
 
               {/* Coin Display - Responsive */}
               <div className="text-center mb-6 sm:mb-8" role="region" aria-live="polite" aria-label="Coin flip result">
-                <div className={`inline-flex items-center justify-center p-6 sm:p-8 lg:p-10 bg-background border-2 border-primary rounded-full transition-all duration-300 ${
-                  gameState === "flipping" ? "animate-spin" : ""
+                <div className={`inline-flex items-center justify-center p-4 sm:p-6 lg:p-8 bg-background border-2 border-primary rounded-full transition-all duration-500 ${
+                  gameState === "flipping" ? "animate-spin scale-110" : ""
                 } ${gameState === "finished" ? "animate-scale-in shadow-glow-cyan" : ""}`}>
                   <Coins 
-                    className={`w-16 h-16 sm:w-20 sm:h-20 lg:w-24 lg:h-24 transition-colors duration-300 ${
-                      result === "heads" ? "text-primary drop-shadow-[0_0_10px_hsl(var(--primary))]" :
-                      result === "tails" ? "text-secondary drop-shadow-[0_0_10px_hsl(var(--secondary))]" :
+                    className={`w-12 h-12 sm:w-16 sm:h-16 lg:w-20 lg:h-20 transition-all duration-500 ${
+                      gameState === "flipping" ? "animate-pulse" : ""
+                    } ${
+                      result === "heads" ? "text-primary drop-shadow-[0_0_10px_hsl(var(--primary))] scale-110" :
+                      result === "tails" ? "text-secondary drop-shadow-[0_0_10px_hsl(var(--secondary))] scale-110" :
                       "text-muted-foreground"
                     }`}
                     aria-hidden="true"

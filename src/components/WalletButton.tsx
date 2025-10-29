@@ -1,58 +1,67 @@
-import { useState } from "react";
+import { useState, ReactNode } from "react";
 import { Wallet, X } from "lucide-react";
 import { Button } from "@/components/ui/button";
-import { Dialog, DialogContent } from "@/components/ui/dialog";
+import { Dialog, DialogContent, DialogTitle, DialogDescription } from "@/components/ui/dialog";
 import { useWallet } from "@/contexts/WalletContext";
 import { useToast } from "@/hooks/use-toast";
-import { motion, AnimatePresence } from "framer-motion";
 import { ProfileMenu } from "./ProfileMenu";
+import phantomIcon from "@/assets/Phantom.svg";
+import metamaskIcon from "@/assets/metamask.svg";
+import baseIcon from "@/assets/base.svg";
 
 type WalletOption = {
   id: string;
   name: string;
-  icon: string;
-  network: 'solana' | 'base';
+  icon: ReactNode;
+  network: 'base';
   detected?: boolean;
 };
+
+interface WindowWithEthereum {
+  ethereum?: {
+    isMetaMask?: boolean;
+    isCoinbaseWallet?: boolean;
+    [key: string]: unknown;
+  };
+  phantom?: {
+    ethereum?: unknown;
+  };
+}
 
 export const WalletButton = () => {
   const { isConnected, network, address, walletType, connectWallet, disconnect } = useWallet();
   const { toast } = useToast();
   const [isDialogOpen, setIsDialogOpen] = useState(false);
-  const [selectedNetwork, setSelectedNetwork] = useState<'solana' | 'base'>('solana');
+  const selectedNetwork = 'base' as const; // Only Base supported
 
-  const solanaWallets: WalletOption[] = [
-    { id: 'phantom', name: 'Phantom', icon: '👻', network: 'solana', detected: !!(window as any).phantom?.solana },
-    { id: 'solflare', name: 'Solflare', icon: '🔥', network: 'solana' },
-    { id: 'slope', name: 'Slope', icon: '📐', network: 'solana' },
-    { id: 'glow', name: 'Glow', icon: '✨', network: 'solana' },
-    { id: 'backpack', name: 'Backpack', icon: '🎒', network: 'solana' },
-  ];
-
+  const windowWithEth = window as unknown as WindowWithEthereum;
+  
   const ethWallets: WalletOption[] = [
-    { id: 'phantom', name: 'Phantom', icon: '👻', network: 'base', detected: !!(window as any).phantom?.ethereum },
-    { id: 'metamask', name: 'MetaMask', icon: '🦊', network: 'base', detected: !!(window as any).ethereum?.isMetaMask },
-    { id: 'coinbase', name: 'Coinbase', icon: '💎', network: 'base', detected: !!(window as any).ethereum?.isCoinbaseWallet },
-    { id: 'torus', name: 'Torus', icon: '🔷', network: 'base' },
-    { id: 'ledger', name: 'Ledger', icon: '📱', network: 'base' },
+    { id: 'metamask', name: 'MetaMask', icon: <img src={metamaskIcon} alt="MetaMask" className="w-6 h-6" />, network: 'base', detected: !!windowWithEth.ethereum?.isMetaMask },
+    { id: 'coinbase', name: 'Coinbase Wallet', icon: <img src={baseIcon} alt="Coinbase Wallet" className="w-6 h-6" />, network: 'base', detected: !!windowWithEth.ethereum?.isCoinbaseWallet },
+    { id: 'phantom', name: 'Phantom', icon: <img src={phantomIcon} alt="Phantom" className="w-6 h-6 rounded-md" />, network: 'base', detected: !!windowWithEth.phantom?.ethereum },
   ];
 
-  const displayedWallets = selectedNetwork === 'solana' ? solanaWallets : ethWallets;
+  const displayedWallets = ethWallets;
   const detectedWallets = displayedWallets.filter(w => w.detected);
   const popularWallets = displayedWallets.filter(w => !w.detected);
 
   const handleConnect = async (walletId: string) => {
     try {
-      await connectWallet(walletId as any, selectedNetwork);
+      console.log('🔄 Initiating wallet connection...');
+      await connectWallet(walletId as 'metamask' | 'coinbase' | 'phantom', selectedNetwork);
+      console.log('✅ Connection successful in UI');
       toast({ 
         title: "Connected!", 
         description: `${walletId.charAt(0).toUpperCase() + walletId.slice(1)} wallet connected`
       });
       setIsDialogOpen(false);
-    } catch (error: any) {
+    } catch (error: unknown) {
+      console.error('❌ Connection failed in UI:', error);
+      const errorMessage = error instanceof Error ? error.message : "Failed to connect wallet";
       toast({
         title: "Connection Failed",
-        description: error.message || "Failed to connect wallet",
+        description: errorMessage,
         variant: "destructive",
       });
     }
@@ -73,7 +82,9 @@ export const WalletButton = () => {
       </Button>
 
       <Dialog open={isDialogOpen} onOpenChange={setIsDialogOpen}>
-        <DialogContent className="bg-[hsl(220,30%,8%)] border border-primary/30 p-0 max-w-md [&>button]:hidden">
+        <DialogContent className="bg-[hsl(220,30%,8%)] border border-primary/30 p-0 max-w-md w-[95vw] sm:w-full [&>button]:hidden">
+          <DialogTitle className="sr-only">Connect Wallet</DialogTitle>
+          <DialogDescription className="sr-only">Choose a wallet to connect to The Basement</DialogDescription>
           {/* Header with custom close button */}
           <div className="flex items-center justify-between p-4 border-b border-primary/20">
             <h2 className="font-pixel text-lg text-primary">CONNECT</h2>
@@ -86,41 +97,16 @@ export const WalletButton = () => {
             </button>
           </div>
 
-          {/* Network Tabs */}
-          <div className="flex gap-2 px-4 pt-4">
-            <button
-              onClick={() => setSelectedNetwork('solana')}
-              className={`flex-1 font-pixel text-xs py-2 px-4 rounded transition-all ${
-                selectedNetwork === 'solana'
-                  ? 'bg-secondary text-secondary-foreground'
-                  : 'bg-background/50 text-muted-foreground hover:text-foreground'
-              }`}
-            >
-              SOLANA
-            </button>
-            <button
-              onClick={() => setSelectedNetwork('base')}
-              className={`flex-1 font-pixel text-xs py-2 px-4 rounded transition-all ${
-                selectedNetwork === 'base'
-                  ? 'bg-primary text-primary-foreground'
-                  : 'bg-background/50 text-muted-foreground hover:text-foreground'
-              }`}
-            >
-              BASE (ETH)
-            </button>
+          {/* Network Header */}
+          <div className="px-4 pt-4">
+            <div className="bg-primary/10 border border-primary/30 rounded px-3 py-2">
+              <span className="font-pixel text-xs text-primary">BASE (ETH)</span>
+            </div>
           </div>
 
           {/* Wallet List */}
-          <div className="p-4 space-y-4 max-h-[400px] overflow-y-auto">
-            <AnimatePresence mode="wait">
-              <motion.div
-                key={selectedNetwork}
-                initial={{ opacity: 0, x: 20 }}
-                animate={{ opacity: 1, x: 0 }}
-                exit={{ opacity: 0, x: -20 }}
-                transition={{ duration: 0.2 }}
-                className="space-y-4"
-              >
+          <div className="p-3 sm:p-4 space-y-3 sm:space-y-4 max-h-[50vh] sm:max-h-[400px] overflow-y-auto">
+            <div className="space-y-4">
                 {/* Detected Wallets */}
                 {detectedWallets.length > 0 && (
                   <div className="space-y-2">
@@ -129,9 +115,9 @@ export const WalletButton = () => {
                       <button
                         key={wallet.id}
                         onClick={() => handleConnect(wallet.id)}
-                        className="w-full flex items-center gap-3 p-3 bg-background/50 hover:bg-primary/10 border border-primary/20 hover:border-primary/40 rounded transition-all group"
+                        className="w-full flex items-center gap-3 p-3 sm:p-4 bg-background/50 hover:bg-primary/10 border border-primary/20 hover:border-primary/40 rounded transition-all group touch-target-lg"
                       >
-                        <span className="text-2xl">{wallet.icon}</span>
+                        <div className="flex items-center justify-center w-8 h-8">{wallet.icon}</div>
                         <span className="font-mono text-sm text-foreground group-hover:text-primary transition-colors">
                           {wallet.name}
                         </span>
@@ -147,17 +133,16 @@ export const WalletButton = () => {
                     <button
                       key={wallet.id}
                       onClick={() => handleConnect(wallet.id)}
-                      className="w-full flex items-center gap-3 p-3 bg-background/50 hover:bg-primary/10 border border-primary/20 hover:border-primary/40 rounded transition-all group"
+                      className="w-full flex items-center gap-3 p-3 sm:p-4 bg-background/50 hover:bg-primary/10 border border-primary/20 hover:border-primary/40 rounded transition-all group touch-target-lg"
                     >
-                      <span className="text-2xl">{wallet.icon}</span>
+                      <div className="flex items-center justify-center w-8 h-8">{wallet.icon}</div>
                       <span className="font-mono text-sm text-foreground group-hover:text-primary transition-colors">
                         {wallet.name}
                       </span>
                     </button>
                   ))}
                 </div>
-              </motion.div>
-            </AnimatePresence>
+            </div>
           </div>
         </DialogContent>
       </Dialog>

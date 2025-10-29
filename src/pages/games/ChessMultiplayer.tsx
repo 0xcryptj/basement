@@ -307,9 +307,9 @@ const ChessMultiplayer = () => {
               </div>
             </div>
 
-            {/* Chess Board */}
-            <div className="aspect-square w-full max-w-xl mx-auto bg-card/80 backdrop-blur-sm border-2 border-primary p-2 shadow-glow-cyan">
-              <div className="grid grid-cols-8 gap-0 h-full">
+            {/* Chess Board - Fixed size on mobile */}
+            <div className="w-full max-w-[350px] sm:max-w-xl mx-auto bg-card/80 backdrop-blur-sm border-2 border-primary p-2 shadow-glow-cyan">
+              <div className="grid grid-cols-8 gap-0 aspect-square">
                 {board.map((row, rowIndex) =>
                   row.map((piece, colIndex) => {
                     const isLight = (rowIndex + colIndex) % 2 === 0;
@@ -320,7 +320,7 @@ const ChessMultiplayer = () => {
                       <button
                         key={`${rowIndex}-${colIndex}`}
                         onClick={() => handleSquareClick(rowIndex, colIndex)}
-                        className={`aspect-square flex items-center justify-center text-4xl md:text-5xl transition-all ${
+                        className={`aspect-square flex items-center justify-center text-2xl sm:text-3xl md:text-4xl lg:text-5xl transition-all ${
                           isLight ? "bg-[#f0d9b5]" : "bg-[#b58863]"
                         } ${
                           isSelected

@@ -19,6 +19,8 @@ interface GameMatch {
   network: string;
   game_type: string;
   created_at: string;
+  onchain_game_id?: string;
+  contract_tx_hash?: string;
   game_state?: {
     creatorChoice?: string;
   };
@@ -112,7 +114,7 @@ export const GameLobby = ({
         }));
         setMatches(mockGames);
       } else {
-        setMatches(data as any);
+        setMatches(data as unknown as GameMatch[]);
       }
     }
     setLoading(false);
@@ -156,32 +158,58 @@ export const GameLobby = ({
     }
 
     setCreating(true);
-    const { data, error } = await supabase
-      .from('matches')
-      .insert([{
-        player1_id: userId,
-        game_type: gameType,
-        wager_amount: amount,
-        network: network,
-        status: 'waiting',
-        game_state: { creatorChoice: selectedChoice }
-      }])
-      .select()
-      .single();
-
-    setCreating(false);
-
-    if (error) {
+    
+    try {
+      // Import contract utilities
+      const { createGame: createOnChainGame } = await import('@/lib/contracts');
+      
+      // Create game on-chain (this will prompt user to sign transaction)
       toast({
-        title: "Error",
-        description: "Failed to create game",
-        variant: "destructive"
+        title: "Sign Transaction",
+        description: "Please confirm the transaction in your wallet"
       });
-    } else {
-      setWaitingForMatch(true);
+      
+      const { gameId, txHash } = await createOnChainGame(gameType as 'War' | 'Chess' | 'Connect4', amount);
+      
+      // Store in database
+      const { data, error } = await supabase
+        .from('matches')
+        .insert([{
+          player1_id: userId,
+          game_type: gameType,
+          wager_amount: amount,
+          network: network,
+          status: 'waiting',
+          onchain_game_id: gameId,
+          contract_tx_hash: txHash,
+          game_state: { creatorChoice: selectedChoice }
+        }])
+        .select()
+        .single();
+
+      setCreating(false);
+
+      if (error) {
+        toast({
+          title: "Error",
+          description: "Failed to save game to database",
+          variant: "destructive"
+        });
+      } else {
+        setWaitingForMatch(true);
+        toast({
+          title: "Game Created!",
+          description: `Waiting for opponent to join... (TX: ${txHash.slice(0, 10)}...)`
+        });
+      }
+    } catch (error: unknown) {
+      setCreating(false);
+      console.error('Error creating game:', error);
+      const errorMessage = error instanceof Error ? error.message : "Failed to create game";
       toast({
-        title: "Game Created!",
-        description: "Waiting for opponent to join..."
+        title: "Transaction Failed",
+        description: errorMessage,
+        variant: "destructive"
       });
     }
   };
@@ -189,21 +217,50 @@ export const GameLobby = ({
   const joinGame = async (matchId: string) => {
     if (!userId) return;
 
-    const { error } = await supabase
-      .from('matches')
-      .update({ 
-        player2_id: userId,
-        status: 'active',
-        started_at: new Date().toISOString()
-      })
-      .eq('id', matchId);
-
-    if (!error) {
-      onJoinGame(matchId);
-    } else {
+    try {
+      const { joinGame: joinOnChainGame } = await import('@/lib/contracts');
+      
+      // Get game details
+      const match = matches.find(m => m.id === matchId);
+      if (!match) return;
+      
       toast({
-        title: "Error",
-        description: "Failed to join game",
+        title: "Sign Transaction",
+        description: "Please confirm the transaction in your wallet"
+      });
+      
+      // Join game on-chain
+      const { txHash } = await joinOnChainGame(gameType as 'War' | 'Chess' | 'Connect4', parseInt(match.onchain_game_id || '0'), match.wager_amount);
+      
+      // Update database
+      const { error } = await supabase
+        .from('matches')
+        .update({ 
+          player2_id: userId,
+          status: 'active',
+          started_at: new Date().toISOString()
+        })
+        .eq('id', matchId);
+
+      if (!error) {
+        onJoinGame(matchId);
+        toast({
+          title: "Game Joined!",
+          description: `Transaction confirmed (${txHash.slice(0, 10)}...)`
+        });
+      } else {
+        toast({
+          title: "Error",
+          description: "Failed to update game",
+          variant: "destructive"
+        });
+      }
+    } catch (error: unknown) {
+      console.error('Error joining game:', error);
+      const errorMessage = error instanceof Error ? error.message : "Failed to join game";
+      toast({
+        title: "Transaction Failed",
+        description: errorMessage,
         variant: "destructive"
       });
     }
@@ -222,7 +279,7 @@ export const GameLobby = ({
       <GameCreationModal
         open={showCreationModal}
         onClose={() => setShowCreationModal(false)}
-        gameType={gameType as any}
+        gameType={gameType as "cointoss" | "war" | "connect4" | "chess"}
         onCreateGame={createGame}
         balance={balance}
         network={network}
@@ -352,8 +409,8 @@ export const GameLobby = ({
               ALL GAMES <span className="text-primary">{matches.length}</span>
             </div>
               <div className="flex items-center gap-1 font-mono text-xs text-muted-foreground">
-                <span className="text-primary">{network === 'solana' ? '◎' : '⟠'}</span>
-                <span>Payouts are settled in {network === 'solana' ? 'SOL' : 'ETH'}</span>
+                <span className="text-primary">⟠</span>
+                <span>Payouts are settled in ETH</span>
               </div>
           </div>
 

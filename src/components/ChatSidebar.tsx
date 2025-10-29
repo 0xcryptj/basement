@@ -123,32 +123,73 @@ export const ChatSidebar = () => {
   };
 
   const sendMessage = async () => {
-    if (!inputMessage.trim() || !activeChannel || !address) return;
+    if (!inputMessage.trim() || !activeChannel) return;
 
     try {
-      // Ensure user exists
-      const { data: existingUser } = await supabase
-        .from('User')
-        .select('id')
-        .eq('walletAddress', address)
-        .single();
+      let userId: string | null = null;
 
-      let userId = existingUser?.id;
-
-      if (!existingUser) {
-        // Create user if doesn't exist
-        const { data: newUser, error: userError } = await supabase
+      // If user has wallet, use it; otherwise create anonymous user
+      if (address) {
+        const { data: existingUser } = await supabase
           .from('User')
-          .insert([{
-            id: crypto.randomUUID(),
-            walletAddress: address,
-            username: `user_${address.slice(0, 8)}`,
-          }])
           .select('id')
+          .eq('walletAddress', address)
           .single();
 
-        if (userError) throw userError;
-        userId = newUser.id;
+        userId = existingUser?.id || null;
+
+        if (!existingUser) {
+          const { data: newUser, error: userError } = await supabase
+            .from('User')
+            .insert([{
+              id: crypto.randomUUID(),
+              walletAddress: address,
+              username: `user_${address.slice(0, 8)}`,
+            }])
+            .select('id')
+            .single();
+
+          if (!userError && newUser) {
+            userId = newUser.id;
+          }
+        }
+      }
+
+      // For anonymous users, create or reuse anonymous ID
+      if (!userId) {
+        let storedAnonId = localStorage.getItem('basement_anon_id');
+        if (!storedAnonId) {
+          storedAnonId = `anon_${Date.now()}_${Math.random().toString(36).slice(2, 10)}`;
+          localStorage.setItem('basement_anon_id', storedAnonId);
+        }
+
+        const { data: existingAnon } = await supabase
+          .from('User')
+          .select('id')
+          .eq('walletAddress', storedAnonId)
+          .single();
+
+        if (existingAnon) {
+          userId = existingAnon.id;
+        } else {
+          const { data: newAnonUser, error: anonError } = await supabase
+            .from('User')
+            .insert([{
+              id: crypto.randomUUID(),
+              walletAddress: storedAnonId,
+              username: `Anon_${storedAnonId.slice(-6)}`,
+            }])
+            .select('id')
+            .single();
+
+          if (!anonError && newAnonUser) {
+            userId = newAnonUser.id;
+          }
+        }
+      }
+
+      if (!userId) {
+        throw new Error('Unable to create user session');
       }
 
       const { error } = await supabase.from('Message').insert([{
@@ -252,13 +293,12 @@ export const ChatSidebar = () => {
               value={inputMessage}
               onChange={(e) => setInputMessage(e.target.value)}
               onKeyDown={(e) => e.key === "Enter" && sendMessage()}
-              placeholder={address ? "Type message..." : "Connect wallet to chat"}
-              disabled={!address}
+              placeholder="Type message..."
               className="flex-1 font-mono text-xs bg-input border-primary focus:shadow-glow-cyan"
             />
             <Button
               onClick={sendMessage}
-              disabled={!address || !inputMessage.trim()}
+              disabled={!inputMessage.trim()}
               className="font-pixel text-xs px-3 bg-primary text-primary-foreground hover:bg-primary/80 shadow-glow-cyan"
             >
               <Send className="w-4 h-4" />

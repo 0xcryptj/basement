@@ -1,4 +1,5 @@
-import { Twitter, Sparkles } from "lucide-react";
+import xIcon from "@/assets/xicon.png";
+import zorbIcon from "@/assets/zorb.svg";
 
 export const Footer = () => {
   return (
@@ -51,16 +52,25 @@ export const Footer = () => {
                 className="text-primary hover:text-primary/80 transition-all hover:scale-110"
                 aria-label="Zora"
               >
-                <Sparkles className="w-4 h-4" />
+                <img src={zorbIcon} alt="Zora" className="w-4 h-4" />
               </a>
               <a
-                href="https://x.com/joseph1133287"
+                href="https://x.com/0xbasement"
                 target="_blank"
                 rel="noopener noreferrer"
                 className="text-secondary hover:text-secondary/80 transition-all hover:scale-110"
                 aria-label="X (Twitter)"
               >
-                <Twitter className="w-4 h-4" />
+                <img src={xIcon} alt="X (Twitter)" className="w-4 h-4" />
+              </a>
+              <a
+                href="https://pump.fun/0xbasement"
+                target="_blank"
+                rel="noopener noreferrer"
+                className="text-accent hover:text-accent/80 transition-all hover:scale-110"
+                aria-label="Pump.fun"
+              >
+                <span className="font-pixel text-xs">PUMP</span>
               </a>
             </div>
           </div>
