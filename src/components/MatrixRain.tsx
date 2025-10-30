@@ -20,13 +20,13 @@ export const MatrixRain = () => {
 
     // Matrix characters
     const chars = 'アイウエオカキクケコサシスセソタチツテトナニヌネノハヒフヘホマミムメモヤユヨラリルレロワヲン0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZ';
-    const fontSize = 14;
+    const fontSize = 16;
     const columns = canvas.width / fontSize;
     const drops: number[] = [];
 
     // Initialize drops
     for (let i = 0; i < columns; i++) {
-      drops[i] = Math.random() * -100;
+      drops[i] = Math.random() * -1000;
     }
 
     let lastTime = 0;

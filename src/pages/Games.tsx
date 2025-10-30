@@ -18,7 +18,7 @@ const mockWinners = [
     amount: 5.2345,
     chance: 67.8,
     timestamp: new Date().toISOString(),
-    currency: "SOL",
+    currency: "ETH",
   },
   {
     id: "2",
@@ -26,7 +26,7 @@ const mockWinners = [
     amount: 3.1234,
     chance: 45.2,
     timestamp: new Date().toISOString(),
-    currency: "SOL",
+    currency: "ETH",
   },
   {
     id: "3",
@@ -34,7 +34,7 @@ const mockWinners = [
     amount: 2.4567,
     chance: 32.1,
     timestamp: new Date().toISOString(),
-    currency: "SOL",
+    currency: "ETH",
   },
 ];
 
