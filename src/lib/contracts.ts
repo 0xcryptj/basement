@@ -13,7 +13,7 @@ async function loadCoinFlipABI(): Promise<{ abi: unknown[] } | null> {
   if (CoinFlipABI) return CoinFlipABI;
   
   try {
-    // eslint-disable-next-line @typescript-eslint/no-require-imports
+    // @ts-expect-error - ABI file may not exist until contracts are compiled
     const module = await import('../../chain/artifacts/contracts/CoinFlip.sol/CoinFlip.json');
     CoinFlipABI = module.default || module;
     return CoinFlipABI;
@@ -27,6 +27,7 @@ async function loadJackpotABI(): Promise<{ abi: unknown[] } | null> {
   if (JackpotABI) return JackpotABI;
   
   try {
+    // @ts-expect-error - ABI file may not exist until contracts are compiled
     const module = await import('../../chain/artifacts/contracts/Jackpot.sol/Jackpot.json');
     JackpotABI = module.default || module;
     return JackpotABI;
