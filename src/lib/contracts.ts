@@ -126,6 +126,21 @@ export async function createGame(
   console.log('📝 Creating game on-chain:', gameType, wagerAmount, chosenSide);
   
   try {
+    // Validate and format wager amount
+    if (wagerAmount <= 0) {
+      throw new Error('Wager amount must be greater than 0');
+    }
+    
+    // Parse wager amount with proper decimal handling for small values
+    let valueInWei;
+    try {
+      // Use fixed decimal representation to avoid scientific notation
+      const fixedDecimal = wagerAmount.toFixed(18);
+      valueInWei = parseEther(fixedDecimal);
+    } catch (parseError) {
+      throw new Error(`Invalid wager amount: ${wagerAmount}. Please use a valid decimal number.`);
+    }
+    
     const contract = await getGameContract(gameType);
     console.log('✅ Contract instance created');
     
@@ -137,11 +152,11 @@ export async function createGame(
         throw new Error('CoinFlip requires chosenSide parameter: 0 for heads, 1 for tails');
       }
       console.log('⏳ Sending CoinFlip transaction with chosenSide:', chosenSide);
-      tx = await contract.createGame(chosenSide, { value: parseEther(wagerAmount.toString()) });
+      tx = await contract.createGame(chosenSide, { value: valueInWei });
     } else {
       // War, Chess, Connect4 use standard createGame() with value
       console.log('⏳ Sending transaction to create game...');
-      tx = await contract.createGame({ value: parseEther(wagerAmount.toString()) });
+      tx = await contract.createGame({ value: valueInWei });
     }
     
     console.log('✅ Transaction sent, waiting for confirmation...');
@@ -177,6 +192,21 @@ export async function createGame(
     return { gameId, txHash: receipt.hash };
   } catch (error) {
     console.error('❌ Error creating game:', error);
+    
+    // Provide more user-friendly error messages
+    if (error instanceof Error) {
+      // Handle specific ethers errors
+      if (error.message.includes('insufficient funds')) {
+        throw new Error('Insufficient balance. Please add more ETH to your wallet.');
+      }
+      if (error.message.includes('user rejected')) {
+        throw new Error('Transaction rejected. Please confirm the transaction in your wallet.');
+      }
+      if (error.message.includes('network')) {
+        throw new Error('Network error. Please check your connection and try again.');
+      }
+    }
+    
     throw error;
   }
 }

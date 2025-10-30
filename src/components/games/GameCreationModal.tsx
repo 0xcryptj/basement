@@ -4,7 +4,6 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
-import { ChevronDown } from "lucide-react";
 
 interface GameCreationModalProps {
   open: boolean;
@@ -95,7 +94,7 @@ export const GameCreationModal = ({
                 variant="outline"
                 className="font-mono text-xs bg-background/50 border-primary/20"
               >
-                {network === 'solana' ? 'SOL' : 'ETH'} <ChevronDown className="w-3 h-3 ml-1" />
+ETH
               </Button>
             </div>
             <div className="flex items-center gap-2 text-xs font-mono text-muted-foreground">

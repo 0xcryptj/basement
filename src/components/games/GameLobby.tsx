@@ -235,18 +235,26 @@ export const GameLobby = ({
       });
       
       // Map game type to contract GameType (capitalized)
-      const gameTypeMap: Record<string, 'War' | 'Chess' | 'Connect4'> = {
+      const gameTypeMap: Record<string, 'War' | 'Chess' | 'Connect4' | 'CoinFlip'> = {
         'war': 'War',
         'chess': 'Chess',
-        'connect4': 'Connect4'
+        'connect4': 'Connect4',
+        'cointoss': 'CoinFlip', // Map cointoss to CoinFlip
+        'coinflip': 'CoinFlip'
       };
       
       const contractGameType = gameTypeMap[gameType.toLowerCase()];
       if (!contractGameType) {
-        throw new Error(`Unsupported game type: ${gameType}`);
+        throw new Error(`Unsupported game type: ${gameType}. Supported: war, chess, connect4, cointoss, coinflip`);
       }
       
-      const { gameId, txHash } = await createOnChainGame(contractGameType, amount);
+      // Map coin toss choice to CoinFlip format (0 = heads, 1 = tails)
+      let mappedChoice = selectedChoice;
+      if (gameType.toLowerCase() === 'cointoss' || gameType.toLowerCase() === 'coinflip') {
+        mappedChoice = selectedChoice === 'heads' ? '0' : '1';
+      }
+      
+      const { gameId, txHash } = await createOnChainGame(contractGameType, amount, mappedChoice ? parseInt(mappedChoice) : undefined);
       
       // Store in database
       const { data, error } = await supabase
@@ -439,7 +447,7 @@ export const GameLobby = ({
                   variant="outline"
                   className="font-mono text-xs bg-background/50 border-primary/20 hover:bg-background whitespace-nowrap"
                 >
-                  SOL <ChevronDown className="w-3 h-3 ml-1" />
+                  ETH
                 </Button>
                 <div className="flex gap-2">
                   <Button
