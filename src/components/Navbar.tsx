@@ -39,7 +39,7 @@ export const Navbar = () => {
           schema: 'public',
           table: 'global_stats',
         },
-        (payload: any) => {
+        (payload: { new: typeof stats }) => {
           setStats(payload.new);
         }
       )
