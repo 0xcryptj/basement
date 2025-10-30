@@ -43,6 +43,22 @@ async function main() {
   deployedAddresses.War = await war.getAddress();
   console.log("✅ War deployed to:", deployedAddresses.War);
 
+  // Deploy CoinFlip
+  console.log("\n🎮 Deploying CoinFlip contract...");
+  const CoinFlip = await hre.ethers.getContractFactory("CoinFlip");
+  const coinFlip = await CoinFlip.deploy();
+  await coinFlip.waitForDeployment();
+  deployedAddresses.CoinFlip = await coinFlip.getAddress();
+  console.log("✅ CoinFlip deployed to:", deployedAddresses.CoinFlip);
+
+  // Deploy Jackpot
+  console.log("\n🎮 Deploying Jackpot contract...");
+  const Jackpot = await hre.ethers.getContractFactory("Jackpot");
+  const jackpot = await Jackpot.deploy();
+  await jackpot.waitForDeployment();
+  deployedAddresses.Jackpot = await jackpot.getAddress();
+  console.log("✅ Jackpot deployed to:", deployedAddresses.Jackpot);
+
   // Save addresses
   const addressesFile = "./deployed-addresses.json";
   fs.writeFileSync(addressesFile, JSON.stringify(deployedAddresses, null, 2));
