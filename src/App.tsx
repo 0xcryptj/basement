@@ -15,6 +15,7 @@ import Games from "./pages/Games";
 import Account from "./pages/Account";
 import Statistics from "./pages/Statistics";
 import Transactions from "./pages/Transactions";
+import { ProtectedRoute } from "@/components/ProtectedRoute";
 import War from "./pages/games/WarLobby";
 import Chess from "./pages/games/Chess";
 import ChessLobby from "./pages/games/ChessLobby";
@@ -38,20 +39,20 @@ const App = () => (
         <BrowserRouter>
           <Routes>
             <Route path="/" element={<Index />} />
-            <Route path="/chat" element={<Chat />} />
+            <Route path="/chat" element={<ProtectedRoute><Chat /></ProtectedRoute>} />
             <Route path="/forum" element={<Forum />} />
-            <Route path="/arcade" element={<Arcade />} />
-            <Route path="/games" element={<Games />} />
-            <Route path="/account" element={<Account />} />
-            <Route path="/statistics" element={<Statistics />} />
-            <Route path="/transactions" element={<Transactions />} />
-            <Route path="/games/war" element={<War />} />
-            <Route path="/games/war/:matchId" element={<WarMultiplayer />} />
-            <Route path="/games/chess" element={<ChessLobby />} />
-            <Route path="/games/chess/:matchId" element={<ChessMultiplayer />} />
-            <Route path="/games/connect4" element={<Connect4 />} />
-            <Route path="/games/cointoss" element={<CoinToss />} />
-            <Route path="/games/luckyblock" element={<LuckyBlock />} />
+            <Route path="/arcade" element={<ProtectedRoute><Arcade /></ProtectedRoute>} />
+            <Route path="/games" element={<ProtectedRoute><Games /></ProtectedRoute>} />
+            <Route path="/account" element={<ProtectedRoute><Account /></ProtectedRoute>} />
+            <Route path="/statistics" element={<ProtectedRoute><Statistics /></ProtectedRoute>} />
+            <Route path="/transactions" element={<ProtectedRoute><Transactions /></ProtectedRoute>} />
+            <Route path="/games/war" element={<ProtectedRoute><War /></ProtectedRoute>} />
+            <Route path="/games/war/:matchId" element={<ProtectedRoute><WarMultiplayer /></ProtectedRoute>} />
+            <Route path="/games/chess" element={<ProtectedRoute><ChessLobby /></ProtectedRoute>} />
+            <Route path="/games/chess/:matchId" element={<ProtectedRoute><ChessMultiplayer /></ProtectedRoute>} />
+            <Route path="/games/connect4" element={<ProtectedRoute><Connect4 /></ProtectedRoute>} />
+            <Route path="/games/cointoss" element={<ProtectedRoute><CoinToss /></ProtectedRoute>} />
+            <Route path="/games/luckyblock" element={<ProtectedRoute><LuckyBlock /></ProtectedRoute>} />
             {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
             <Route path="*" element={<NotFound />} />
           </Routes>

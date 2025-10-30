@@ -28,7 +28,7 @@ export const Hero = () => {
 
   const handleEnterBasement = () => {
     setIsPortaling(true);
-    setTimeout(() => navigate("/chat"), 1000);
+    setTimeout(() => navigate("/forum"), 1000);
   };
 
   return (
@@ -118,13 +118,13 @@ export const Hero = () => {
                 className="font-mono text-xs sm:text-sm md:text-base lg:text-lg text-muted-foreground mb-2"
                 style={{ textShadow: '1px 1px 2px rgba(0, 0, 0, 0.8), 2px 2px 4px rgba(0, 0, 0, 0.4)' }}
               >
-                Retro Web3 Arcade • IRC Chat • Anonymous Forum
+                Retro Web3 Arcade • Anonymous Forum • Connect Wallet to Play
               </p>
               <p 
                 className="font-mono text-[0.65rem] sm:text-xs md:text-sm text-secondary"
                 style={{ textShadow: '1px 1px 2px rgba(0, 0, 0, 0.8), 2px 2px 4px rgba(0, 0, 0, 0.4)' }}
               >
-                Multi-Chain Support: Solana & Base
+                Base Network • ETH Gaming
               </p>
             </motion.div>
 
