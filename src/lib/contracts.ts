@@ -3,12 +3,16 @@ import { Contract, BrowserProvider, parseEther } from 'ethers';
 import WarABI from '../../chain/artifacts/contracts/War.sol/War.json';
 import ChessABI from '../../chain/artifacts/contracts/Chess.sol/Chess.json';
 import Connect4ABI from '../../chain/artifacts/contracts/Connect4.sol/Connect4.json';
+import CoinFlipABI from '../../chain/artifacts/contracts/CoinFlip.sol/CoinFlip.json';
+import JackpotABI from '../../chain/artifacts/contracts/Jackpot.sol/Jackpot.json';
 
-// Deployed contract addresses on Base
+// Deployed contract addresses on Base - ADD ACTUAL DEPLOYED ADDRESSES
 export const CONTRACT_ADDRESSES = {
   War: '0xe6c00D7765D592A1D28A5AaB11ffeF37d7A726bC',
   Chess: '0x429e6BF43b9127A9Ee95FD17f17213a35252488b',
   Connect4: '0x76Ff072AE1230133e7e570aCE2a5bBc5172BE0e5',
+  CoinFlip: '0x0000000000000000000000000000000000000000', // TODO: Deploy and add address
+  Jackpot: '0x0000000000000000000000000000000000000000', // TODO: Deploy and add address
 } as const;
 
 export type GameType = keyof typeof CONTRACT_ADDRESSES;

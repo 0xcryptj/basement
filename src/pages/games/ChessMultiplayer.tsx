@@ -90,13 +90,13 @@ const ChessMultiplayer = () => {
       .fill(null)
       .map(() => Array(8).fill(null));
 
-    // Setup pawns
+    // Setup pawns - White on bottom (row 6-7), Black on top (row 0-1)
     for (let i = 0; i < 8; i++) {
-      newBoard[1][i] = { type: "pawn", color: "black" };
-      newBoard[6][i] = { type: "pawn", color: "white" };
+      newBoard[1][i] = { type: "pawn", color: "black" }; // Top row pawns
+      newBoard[6][i] = { type: "pawn", color: "white" }; // Bottom row pawns
     }
 
-    // Setup back row
+    // Setup back row - White pieces on bottom (row 7), Black pieces on top (row 0)
     const backRowSetup: PieceType[] = ["rook", "knight", "bishop", "queen", "king", "bishop", "knight", "rook"];
     for (let i = 0; i < 8; i++) {
       newBoard[0][i] = { type: backRowSetup[i], color: "black" };
