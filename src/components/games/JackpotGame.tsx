@@ -78,83 +78,156 @@ export const JackpotGame = () => {
       return;
     }
 
-    const newPlayer: Player = {
-      id: `${userId}-${Date.now()}`,
-      username: `Player_${userId?.slice(0, 6)}`,
-      wager: wagerAmount,
-      chance: 0,
-    };
-
-    // Animate new bet
-    setAnimatingBet(newPlayer.id);
-    setTimeout(() => setAnimatingBet(null), 1000);
-
-    const newPot = potSize + wagerAmount;
-    const updatedPlayers = [...players, newPlayer];
-    
-    // Recalculate all chances with animation
-    updatedPlayers.forEach(p => {
-      p.chance = (p.wager / newPot) * 100;
-    });
-
-    setPlayers(updatedPlayers);
-    setPotSize(newPot);
-
-    toast({
-      title: "Bet Placed! 🎰",
-      description: `You wagered ${wagerAmount} ETH`,
-    });
-
-    // Start countdown when 2 bets are placed
-    if (updatedPlayers.length === 2) {
-      setTimeLeft(60);
-    }
-
-    // Provably fair winner selection after countdown
-    if (updatedPlayers.length >= 2 && timeLeft === 0 && !lastWinner) {
-      setIsSpinning(true);
+    try {
+      // Import contract utilities
+      const { BrowserProvider } = await import('ethers');
+      const { parseEther } = await import('ethers');
       
-      setTimeout(() => {
-        const serverSeed = generateServerSeed();
-        const publicSeed = generatePublicSeed();
-        const gameId = `jackpot-${Date.now()}`;
-        
-        // Calculate max ticket value based on pot size in lamports/wei
-        const potInSmallestUnit = Math.floor(newPot * 1e9);
-        const result = generateJackpotTicket(serverSeed, publicSeed, gameId, potInSmallestUnit);
-        
-        // Find winner based on ticket ranges
-        let cumulativeTickets = 0;
-        let winner = updatedPlayers[0];
-        
-        for (const player of updatedPlayers) {
-          const playerTickets = Math.floor(player.wager * 1e9);
-          if (parseInt(result.ticket) < cumulativeTickets + playerTickets) {
-            winner = player;
-            break;
-          }
-          cumulativeTickets += playerTickets;
-        }
+      if (!window.ethereum) {
+        throw new Error('MetaMask not found');
+      }
 
-        // Calculate winner index
-        const winnerIndex = updatedPlayers.findIndex(p => p.id === winner.id);
-        setSelectedWinnerIndex(winnerIndex);
-        
-        setTimeout(() => {
-          setIsSpinning(false);
-          setLastWinner(winner);
-          celebrateWinner(winner.id);
-          
-          toast({
-            title: "🎉 WINNER! 🎉",
-            description: `${winner.username} won ${(potSize * 0.9).toFixed(4)} ${network === 'solana' ? 'SOL' : 'ETH'}!`,
-          });
-        }, 4000);
-      }, 500);
+      // Prompt wallet to sign transaction
+      toast({
+        title: "Sign Transaction",
+        description: "Please confirm the transaction in your wallet"
+      });
+
+      const provider = new BrowserProvider(window.ethereum);
+      const signer = await provider.getSigner();
+      const tx = await signer.sendTransaction({
+        to: '0x0000000000000000000000000000000000000000', // Replace with actual jackpot contract
+        value: parseEther(wagerAmount.toString())
+      });
+
+      toast({
+        title: "Transaction Pending",
+        description: "Waiting for confirmation..."
+      });
+
+      const receipt = await tx.wait();
+      console.log('Transaction confirmed:', receipt.hash);
+
+      const newPlayer: Player = {
+        id: `${userId}-${Date.now()}`,
+        username: `Player_${userId?.slice(0, 6)}`,
+        wager: wagerAmount,
+        chance: 0,
+      };
+
+      // Animate new bet
+      setAnimatingBet(newPlayer.id);
+      setTimeout(() => setAnimatingBet(null), 1000);
+
+      const newPot = potSize + wagerAmount;
+      const updatedPlayers = [...players, newPlayer];
+      
+      // Recalculate all chances with animation
+      updatedPlayers.forEach(p => {
+        p.chance = (p.wager / newPot) * 100;
+      });
+
+      setPlayers(updatedPlayers);
+      setPotSize(newPot);
+
+      toast({
+        title: "Bet Placed! 🎰",
+        description: `You wagered ${wagerAmount} ETH (TX: ${receipt.hash.slice(0, 10)}...)`,
+      });
+
+      // Start countdown when 2 bets are placed
+      if (updatedPlayers.length === 2) {
+        setTimeLeft(60);
+      }
+    } catch (error) {
+      console.error('Error placing bet:', error);
+      toast({
+        title: "Transaction Failed",
+        description: error instanceof Error ? error.message : "Failed to place bet",
+        variant: "destructive",
+      });
     }
   };
 
-  const usdValue = (potSize * 150).toFixed(2);
+  // Provably fair winner selection after countdown
+  useEffect(() => {
+    if (players.length >= 2 && timeLeft === 0 && !lastWinner && !isSpinning) {
+      setIsSpinning(true);
+      
+      // Dramatic spinning animation
+      const spinDuration = 3000; // 3 seconds of suspense
+      const startTime = Date.now();
+      let spinCount = 0;
+      
+      const spinInterval = setInterval(() => {
+        spinCount++;
+        // Cycle through players rapidly during spin
+        setSelectedWinnerIndex(spinCount % players.length);
+        
+        if (Date.now() - startTime >= spinDuration) {
+          clearInterval(spinInterval);
+          
+          // Select actual winner
+          const serverSeed = generateServerSeed();
+          const publicSeed = generatePublicSeed();
+          const gameId = `jackpot-${Date.now()}`;
+          
+          // Calculate max ticket value based on pot size
+          const potInSmallestUnit = Math.floor(potSize * 1e18); // ETH has 18 decimals
+          
+          try {
+            const result = generateJackpotTicket(serverSeed, publicSeed, gameId, potInSmallestUnit);
+            
+            // Find winner based on ticket ranges
+            let cumulativeTickets = 0;
+            let winner = players[0];
+            
+            for (const player of players) {
+              const playerTickets = Math.floor(player.wager * 1e18);
+              if (parseInt(result.ticket) < cumulativeTickets + playerTickets) {
+                winner = player;
+                break;
+              }
+              cumulativeTickets += playerTickets;
+            }
+
+            // Final winner reveal
+            const winnerIndex = players.findIndex(p => p.id === winner.id);
+            setSelectedWinnerIndex(winnerIndex);
+            
+            setTimeout(() => {
+              setIsSpinning(false);
+              setLastWinner(winner);
+              celebrateWinner(winner.id);
+              
+              toast({
+                title: "🎉 WINNER! 🎉",
+                description: `${winner.username} won ${(potSize * 0.9).toFixed(4)} ETH!`,
+              });
+            }, 1000);
+          } catch (error) {
+            console.error('Error selecting winner:', error);
+            setIsSpinning(false);
+          }
+        }
+      }, 50); // Update every 50ms for smooth spinning
+      
+      return () => clearInterval(spinInterval);
+    }
+  }, [players.length, timeLeft, lastWinner, isSpinning, potSize, players, celebrateWinner, toast]);
+
+  // Get USD value from currency utility
+  const [usdValue, setUsdValue] = useState("0.00");
+  
+  useEffect(() => {
+    const getUsdValue = async () => {
+      const { ethToUsd } = await import('@/lib/currency');
+      const usd = await ethToUsd(potSize);
+      setUsdValue(usd.toFixed(2));
+    };
+    getUsdValue();
+  }, [potSize]);
+
   const sortedPlayers = lastWinner 
     ? [lastWinner, ...players.filter(p => p.id !== lastWinner.id)]
     : players;
@@ -200,7 +273,7 @@ export const JackpotGame = () => {
               {potSize.toFixed(4)}
             </motion.div>
             <div className="font-mono text-xs text-secondary">
-              {network === 'solana' ? '◎ SOL' : '⟠ ETH'}
+              ⟠ ETH
             </div>
             <div className="font-mono text-[0.55rem] text-muted-foreground">
               ≈ ${usdValue} USD
@@ -362,7 +435,7 @@ export const JackpotGame = () => {
                               className="font-mono text-[0.6rem] text-muted-foreground"
                               animate={isAnimating ? { scale: [1, 1.15, 1] } : {}}
                             >
-                              {player.wager.toFixed(3)} {network === 'solana' ? 'SOL' : 'ETH'}
+                              {player.wager.toFixed(3)} ETH
                             </motion.div>
                             <motion.div 
                               className={`font-pixel text-xs ${isWinner ? "text-accent" : "text-primary"} mt-1`}
