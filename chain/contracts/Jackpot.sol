@@ -59,15 +59,13 @@ contract Jackpot {
             currentPot = 0;
             playerCount = 0;
             
-            games[activeGameId] = Game({
-                gameId: activeGameId,
-                players: new Player[](0),
-                winner: address(0),
-                pot: 0,
-                winnerPayout: 0,
-                isActive: true,
-                isComplete: false
-            });
+            Game storage newGame = games[activeGameId];
+            newGame.gameId = activeGameId;
+            newGame.winner = address(0);
+            newGame.pot = 0;
+            newGame.winnerPayout = 0;
+            newGame.isActive = true;
+            newGame.isComplete = false;
         }
 
         Game storage game = games[activeGameId];

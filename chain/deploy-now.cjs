@@ -1,10 +1,51 @@
-require('dotenv').config();
 const { ethers } = require('ethers');
 const fs = require('fs');
 const path = require('path');
+const { execSync } = require('child_process');
 
 const PRIVATE_KEY = process.env.PRIVATE_KEY || (() => { throw new Error('PRIVATE_KEY environment variable required'); })();
 const RPC_URL = 'https://mainnet.base.org';
+
+async function compileContract(contractName) {
+  console.log(`\n📦 Compiling ${contractName}...`);
+  
+  try {
+    // Use npx hardhat compile with specific config
+    const configPath = path.join(__dirname, 'hardhat.config.cjs');
+    const contractsPath = path.join(__dirname, 'contracts', `${contractName}.sol`);
+    
+    // Check if contract exists
+    if (!fs.existsSync(contractsPath)) {
+      throw new Error(`Contract file not found: ${contractsPath}`);
+    }
+    
+    // Run hardhat compile
+    execSync(`npx hardhat compile --config ${configPath}`, {
+      cwd: __dirname,
+      stdio: 'inherit'
+    });
+    
+    // Load artifact
+    const artifactPath = path.join(
+      __dirname,
+      'artifacts',
+      'contracts',
+      `${contractName}.sol`,
+      `${contractName}.json`
+    );
+    
+    if (!fs.existsSync(artifactPath)) {
+      throw new Error(`Artifact not found after compilation: ${artifactPath}`);
+    }
+    
+    const artifact = JSON.parse(fs.readFileSync(artifactPath, 'utf8'));
+    console.log(`✅ ${contractName} compiled successfully`);
+    return artifact;
+  } catch (error) {
+    console.error(`❌ Error compiling ${contractName}:`, error.message);
+    throw error;
+  }
+}
 
 async function deploy() {
   console.log('🚀 Starting deployment to Base Mainnet...');
@@ -24,68 +65,16 @@ async function deploy() {
       return;
     }
 
-    // Read contract source files
-    console.log('\n📄 Reading contract files...');
-    const coinFlipSource = fs.readFileSync(path.join(__dirname, 'contracts', 'CoinFlip.sol'), 'utf8');
-    const jackpotSource = fs.readFileSync(path.join(__dirname, 'contracts', 'Jackpot.sol'), 'utf8');
-    
-    console.log('✅ Contract files loaded');
-    
-    // Use solc to compile (or better, use hardhat compile first)
-    console.log('\n📦 Compiling contracts with Hardhat...');
-    
-    // Execute hardhat compile
-    const { exec } = require('child_process');
-    const { promisify } = require('util');
-    const execAsync = promisify(exec);
-    
-    try {
-      const { stdout } = await execAsync('npx hardhat compile', { cwd: __dirname });
-      console.log('✅ Compilation successful');
-    } catch (compileError) {
-      console.error('❌ Compilation failed:', compileError.message);
-      console.log('\n📋 Error details:');
-      console.log(compileError.stdout);
-      console.log(compileError.stderr);
-    }
-    
-    // Try to load compiled artifacts
-    let CoinFlipArtifact, JackpotArtifact;
-    
-    try {
-      CoinFlipArtifact = JSON.parse(
-        fs.readFileSync(
-          path.join(__dirname, 'artifacts', 'contracts', 'CoinFlip.sol', 'CoinFlip.json'),
-          'utf8'
-        )
-      );
-      console.log('✅ CoinFlip artifact loaded');
-    } catch (e) {
-      console.error('❌ Could not load CoinFlip artifact:', e.message);
-      return;
-    }
-    
-    try {
-      JackpotArtifact = JSON.parse(
-        fs.readFileSync(
-          path.join(__dirname, 'artifacts', 'contracts', 'Jackpot.sol', 'Jackpot.json'),
-          'utf8'
-        )
-      );
-      console.log('✅ Jackpot artifact loaded');
-    } catch (e) {
-      console.error('❌ Could not load Jackpot artifact:', e.message);
-      return;
-    }
-    
     const addresses = {};
     
-    // Deploy CoinFlip
+    // Compile and deploy CoinFlip
     console.log('\n🎮 Deploying CoinFlip contract...');
     try {
+      const coinFlipArtifact = await compileContract('CoinFlip');
+      
       const coinFlipFactory = new ethers.ContractFactory(
-        CoinFlipArtifact.abi,
-        CoinFlipArtifact.bytecode,
+        coinFlipArtifact.abi,
+        coinFlipArtifact.bytecode,
         wallet
       );
       
@@ -98,14 +87,17 @@ async function deploy() {
       console.log('🔗 View on BaseScan: https://basescan.org/address/' + coinFlipAddress);
     } catch (error) {
       console.error('❌ Error deploying CoinFlip:', error.message);
+      throw error;
     }
     
-    // Deploy Jackpot
+    // Compile and deploy Jackpot
     console.log('\n🎮 Deploying Jackpot contract...');
     try {
+      const jackpotArtifact = await compileContract('Jackpot');
+      
       const jackpotFactory = new ethers.ContractFactory(
-        JackpotArtifact.abi,
-        JackpotArtifact.bytecode,
+        jackpotArtifact.abi,
+        jackpotArtifact.bytecode,
         wallet
       );
       
@@ -118,12 +110,14 @@ async function deploy() {
       console.log('🔗 View on BaseScan: https://basescan.org/address/' + jackpotAddress);
     } catch (error) {
       console.error('❌ Error deploying Jackpot:', error.message);
+      throw error;
     }
     
     // Add existing addresses
-    addresses.War = '0xe6c00D7765D592A1D28A5AaB11ffeF37d7A726bC';
-    addresses.Chess = '0x429e6BF43b9127A9Ee95FD17f17213a35252488b';
-    addresses.Connect4 = '0x76Ff072AE1230133e7e570aCE2a5bBc5172BE0e5';
+    const existing = JSON.parse(fs.readFileSync(path.join(__dirname, 'deployed-addresses.json'), 'utf8'));
+    addresses.War = existing.War;
+    addresses.Chess = existing.Chess;
+    addresses.Connect4 = existing.Connect4;
     
     // Save addresses
     fs.writeFileSync(
@@ -143,17 +137,6 @@ async function deploy() {
   } catch (error) {
     console.error('❌ Deployment failed:', error);
     throw error;
-  } finally {
-    // CRITICAL: Delete .env file if it exists
-    try {
-      const envPath = path.join(__dirname, '.env');
-      if (fs.existsSync(envPath)) {
-        fs.unlinkSync(envPath);
-        console.log('\n🔒 ✅ Private key deleted from .env file');
-      }
-    } catch (e) {
-      console.error('Could not delete .env:', e);
-    }
   }
 }
 
