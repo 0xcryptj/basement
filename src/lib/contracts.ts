@@ -17,29 +17,37 @@ export type GameType = keyof typeof CONTRACT_ADDRESSES;
  * Get contract instance for a game
  */
 export async function getGameContract(gameType: GameType): Promise<Contract> {
-  const provider = new BrowserProvider(window.ethereum!);
+  if (!window.ethereum) {
+    throw new Error('MetaMask or other Ethereum provider not found. Please install a wallet.');
+  }
+  
+  const provider = new BrowserProvider(window.ethereum);
   const signer = await provider.getSigner();
   
-  let ABI: any;
+  let ABI: unknown[];
   let address: string;
   
-  switch (gameType) {
-    case 'War':
+  console.log('🔧 Getting contract for game type:', gameType);
+  
+  switch (gameType.toLowerCase()) {
+    case 'war':
       ABI = WarABI.abi;
       address = CONTRACT_ADDRESSES.War;
       break;
-    case 'Chess':
+    case 'chess':
       ABI = ChessABI.abi;
       address = CONTRACT_ADDRESSES.Chess;
       break;
-    case 'Connect4':
+    case 'connect4':
       ABI = Connect4ABI.abi;
       address = CONTRACT_ADDRESSES.Connect4;
       break;
     default:
-      throw new Error(`Unknown game type: ${gameType}`);
+      console.error('Unknown game type:', gameType);
+      throw new Error(`Unknown game type: ${gameType}. Supported types: war, chess, connect4`);
   }
   
+  console.log('✅ Contract address:', address);
   return new Contract(address, ABI, signer);
 }
 
@@ -47,19 +55,34 @@ export async function getGameContract(gameType: GameType): Promise<Contract> {
  * Create a new game on-chain
  */
 export async function createGame(gameType: GameType, wagerAmount: number) {
-  const contract = await getGameContract(gameType);
-  const tx = await contract.createGame({ value: parseEther(wagerAmount.toString()) });
-  const receipt = await tx.wait();
+  console.log('📝 Creating game on-chain:', gameType, wagerAmount);
   
+  try {
+    const contract = await getGameContract(gameType);
+    console.log('✅ Contract instance created');
+    
+    console.log('⏳ Sending transaction to create game...');
+    const tx = await contract.createGame({ value: parseEther(wagerAmount.toString()) });
+    console.log('✅ Transaction sent, waiting for confirmation...');
+    
+    const receipt = await tx.wait();
+    console.log('✅ Transaction confirmed:', receipt.hash);
+    
   // Extract game ID from event
-  const event = receipt.logs.find((log: any) => 
-    log.topics[0] === contract.interface.getEvent('GameCreated').topicHash
-  );
-  
-  if (!event) throw new Error('GameCreated event not found');
-  const gameId = BigInt(event.topics[1]).toString();
-  
-  return { gameId, txHash: receipt.hash };
+  const event = receipt.logs.find((log: unknown) => {
+    const logWithTopics = log as { topics: string[] };
+    return logWithTopics.topics[0] === contract.interface.getEvent('GameCreated').topicHash;
+  });
+    
+    if (!event) throw new Error('GameCreated event not found');
+    const gameId = BigInt(event.topics[1]).toString();
+    
+    console.log('🎮 Game created with ID:', gameId);
+    return { gameId, txHash: receipt.hash };
+  } catch (error) {
+    console.error('❌ Error creating game:', error);
+    throw error;
+  }
 }
 
 /**
@@ -81,17 +104,30 @@ export async function getGameState(gameType: GameType, gameId: number) {
   return game;
 }
 
+interface ChessMoveData {
+  fromX: number;
+  fromY: number;
+  toX: number;
+  toY: number;
+}
+
+interface Connect4MoveData {
+  col: number;
+}
+
 /**
  * Execute a game move (for Chess/Connect4)
  */
-export async function makeMove(gameType: 'Chess' | 'Connect4', gameId: number, moveData: any) {
+export async function makeMove(gameType: 'Chess' | 'Connect4', gameId: number, moveData: ChessMoveData | Connect4MoveData) {
   const contract = await getGameContract(gameType);
   
   if (gameType === 'Chess') {
-    const tx = await contract.makeMove(gameId, moveData.fromX, moveData.fromY, moveData.toX, moveData.toY);
+    const chessData = moveData as ChessMoveData;
+    const tx = await contract.makeMove(gameId, chessData.fromX, chessData.fromY, chessData.toX, chessData.toY);
     return await tx.wait();
   } else if (gameType === 'Connect4') {
-    const tx = await contract.makeMove(gameId, moveData.col);
+    const connect4Data = moveData as Connect4MoveData;
+    const tx = await contract.makeMove(gameId, connect4Data.col);
     return await tx.wait();
   }
 }
@@ -112,32 +148,32 @@ export async function listenToGameEvents(
   gameType: GameType,
   gameId: number,
   callbacks: {
-    onGameJoined?: (data: any) => void;
-    onMoveMade?: (data: any) => void;
-    onGameComplete?: (data: any) => void;
+  onGameJoined?: (data: { gameId: unknown; player: string }) => void;
+  onMoveMade?: (data: { gameId: unknown; [key: string]: unknown }) => void;
+  onGameComplete?: (data: { gameId: unknown; winner: string; payout: unknown }) => void;
   }
 ) {
   const contract = await getGameContract(gameType);
   
   if (callbacks.onGameJoined) {
-    contract.on(contract.getEvent('GameJoined'), (eventGameId, player) => {
-      if (eventGameId.toString() === gameId.toString()) {
+    contract.on(contract.getEvent('GameJoined'), (eventGameId: unknown, player: string) => {
+      if (eventGameId && eventGameId.toString() === gameId.toString()) {
         callbacks.onGameJoined?.({ gameId: eventGameId, player });
       }
     });
   }
   
   if (callbacks.onMoveMade) {
-    contract.on(contract.getEvent('MoveMade'), (eventGameId, ...args) => {
-      if (eventGameId.toString() === gameId.toString()) {
+    contract.on(contract.getEvent('MoveMade'), (eventGameId: unknown, ...args: unknown[]) => {
+      if (eventGameId && eventGameId.toString() === gameId.toString()) {
         callbacks.onMoveMade?.({ gameId: eventGameId, ...args });
       }
     });
   }
   
   if (callbacks.onGameComplete) {
-    contract.on(contract.getEvent('GameComplete'), (eventGameId, winner, payout) => {
-      if (eventGameId.toString() === gameId.toString()) {
+    contract.on(contract.getEvent('GameComplete'), (eventGameId: unknown, winner: string, payout: unknown) => {
+      if (eventGameId && eventGameId.toString() === gameId.toString()) {
         callbacks.onGameComplete?.({ gameId: eventGameId, winner, payout });
       }
     });

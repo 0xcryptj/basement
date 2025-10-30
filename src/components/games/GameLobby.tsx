@@ -169,7 +169,19 @@ export const GameLobby = ({
         description: "Please confirm the transaction in your wallet"
       });
       
-      const { gameId, txHash } = await createOnChainGame(gameType as 'War' | 'Chess' | 'Connect4', amount);
+      // Map game type to contract GameType (capitalized)
+      const gameTypeMap: Record<string, 'War' | 'Chess' | 'Connect4'> = {
+        'war': 'War',
+        'chess': 'Chess',
+        'connect4': 'Connect4'
+      };
+      
+      const contractGameType = gameTypeMap[gameType.toLowerCase()];
+      if (!contractGameType) {
+        throw new Error(`Unsupported game type: ${gameType}`);
+      }
+      
+      const { gameId, txHash } = await createOnChainGame(contractGameType, amount);
       
       // Store in database
       const { data, error } = await supabase
@@ -229,8 +241,20 @@ export const GameLobby = ({
         description: "Please confirm the transaction in your wallet"
       });
       
+      // Map game type for contract
+      const gameTypeMap: Record<string, 'War' | 'Chess' | 'Connect4'> = {
+        'war': 'War',
+        'chess': 'Chess',
+        'connect4': 'Connect4'
+      };
+      
+      const contractGameType = gameTypeMap[gameType.toLowerCase()];
+      if (!contractGameType) {
+        throw new Error(`Unsupported game type: ${gameType}`);
+      }
+      
       // Join game on-chain
-      const { txHash } = await joinOnChainGame(gameType as 'War' | 'Chess' | 'Connect4', parseInt(match.onchain_game_id || '0'), match.wager_amount);
+      const { txHash } = await joinOnChainGame(contractGameType, parseInt(match.onchain_game_id || '0'), match.wager_amount);
       
       // Update database
       const { error } = await supabase

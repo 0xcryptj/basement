@@ -229,7 +229,7 @@ export const JackpotGame = () => {
               <BettingInput
                 value={wagerAmount}
                 onChange={setWagerAmount}
-                currency={network === 'solana' ? 'SOL' : 'ETH'}
+                currency="ETH"
                 balance={balance}
                 min={0.01}
                 max={balance}
@@ -256,7 +256,7 @@ export const JackpotGame = () => {
                     className="font-mono text-sm text-primary"
                     animate={userWager > 0 ? { scale: [1, 1.1, 1] } : {}}
                   >
-                    {userWager.toFixed(4)} {network === 'solana' ? 'SOL' : 'ETH'}
+                    {userWager.toFixed(4)} ETH
                   </motion.div>
                 </div>
                 <div>

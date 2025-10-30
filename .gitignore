@@ -38,3 +38,4 @@ run-migration*.mjs
 *-secure.ps1
 *.credentials
 *.secrets
+.vercel

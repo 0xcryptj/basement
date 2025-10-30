@@ -147,7 +147,7 @@ export const CoinflipGame = () => {
             <BettingInput
               value={wagerAmount}
               onChange={setWagerAmount}
-              currency={network === 'solana' ? 'SOL' : 'ETH'}
+              currency="ETH"
               balance={balance}
               min={0.01}
               max={balance}
@@ -175,7 +175,7 @@ export const CoinflipGame = () => {
             <div className="bg-background/30 border border-secondary/20 p-3 text-center rounded">
               <div className="font-pixel text-[0.5rem] text-muted-foreground mb-1">POTENTIAL WIN</div>
               <div className="font-mono text-base text-secondary">
-                {(wagerAmount * 1.9).toFixed(4)} {network === 'solana' ? 'SOL' : 'ETH'}
+                {(wagerAmount * 1.9).toFixed(4)} ETH
               </div>
               <div className="font-mono text-[0.6rem] text-muted-foreground mt-0.5">
                 (10% house fee)
