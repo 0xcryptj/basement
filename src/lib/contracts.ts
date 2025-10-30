@@ -3,8 +3,25 @@ import { Contract, BrowserProvider, parseEther } from 'ethers';
 import WarABI from '../../chain/artifacts/contracts/War.sol/War.json';
 import ChessABI from '../../chain/artifacts/contracts/Chess.sol/Chess.json';
 import Connect4ABI from '../../chain/artifacts/contracts/Connect4.sol/Connect4.json';
-import CoinFlipABI from '../../chain/artifacts/contracts/CoinFlip.sol/CoinFlip.json';
-import JackpotABI from '../../chain/artifacts/contracts/Jackpot.sol/Jackpot.json';
+
+// CoinFlip and Jackpot ABIs - will be available after compilation
+// @ts-ignore - These files don't exist yet, will be available after deployment
+let CoinFlipABI: unknown;
+let JackpotABI: unknown;
+
+try {
+  // @ts-ignore
+  CoinFlipABI = require('../../chain/artifacts/contracts/CoinFlip.sol/CoinFlip.json');
+} catch (e) {
+  console.warn('CoinFlip ABI not found - contract not deployed yet');
+}
+
+try {
+  // @ts-ignore
+  JackpotABI = require('../../chain/artifacts/contracts/Jackpot.sol/Jackpot.json');
+} catch (e) {
+  console.warn('Jackpot ABI not found - contract not deployed yet');
+}
 
 // Deployed contract addresses on Base - ADD ACTUAL DEPLOYED ADDRESSES
 export const CONTRACT_ADDRESSES = {
@@ -45,6 +62,24 @@ export async function getGameContract(gameType: GameType): Promise<Contract> {
     case 'connect4':
       ABI = Connect4ABI.abi;
       address = CONTRACT_ADDRESSES.Connect4;
+      break;
+    case 'coinflip':
+      // @ts-ignore
+      if (!CoinFlipABI || CONTRACT_ADDRESSES.CoinFlip === '0x0000000000000000000000000000000000000000') {
+        throw new Error('CoinFlip contract not deployed yet. Please deploy the contract first.');
+      }
+      // @ts-ignore
+      ABI = CoinFlipABI.abi;
+      address = CONTRACT_ADDRESSES.CoinFlip;
+      break;
+    case 'jackpot':
+      // @ts-ignore
+      if (!JackpotABI || CONTRACT_ADDRESSES.Jackpot === '0x0000000000000000000000000000000000000000') {
+        throw new Error('Jackpot contract not deployed yet. Please deploy the contract first.');
+      }
+      // @ts-ignore
+      ABI = JackpotABI.abi;
+      address = CONTRACT_ADDRESSES.Jackpot;
       break;
     default:
       console.error('Unknown game type:', gameType);
