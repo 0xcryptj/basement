@@ -107,13 +107,8 @@ export const JackpotGame = () => {
         description: "Please confirm the transaction in your wallet"
       });
 
-      // Import contract utilities (properly handle default exports)
-      const contractsModule = await import('@/lib/contracts');
-      const joinJackpot = contractsModule.joinJackpot || (contractsModule.default && contractsModule.default.joinJackpot);
-      
-      if (!joinJackpot) {
-        throw new Error('Failed to import joinJackpot function');
-      }
+      // Import contract utilities
+      const { joinJackpot } = await import('@/lib/contracts');
       
       // Call the contract to join jackpot (this prompts wallet to sign)
       const { gameId, txHash } = await joinJackpot(wagerAmount);

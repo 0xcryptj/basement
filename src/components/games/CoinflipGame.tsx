@@ -37,13 +37,8 @@ export const CoinflipGame = () => {
         description: "Please confirm the transaction in your wallet"
       });
 
-      // Import contract utilities (properly handle default exports)
-      const contractsModule = await import('@/lib/contracts');
-      const createGame = contractsModule.createGame || (contractsModule.default && contractsModule.default.createGame);
-      
-      if (!createGame) {
-        throw new Error('Failed to import createGame function');
-      }
+      // Import contract utilities
+      const { createGame } = await import('@/lib/contracts');
       
       // Create CoinFlip game with chosen side (0 = heads, 1 = tails)
       const chosenSide = selectedSide === 'heads' ? 0 : 1;
