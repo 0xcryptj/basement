@@ -13,6 +13,7 @@ import { WinnerSparkles } from "@/components/animations/WinnerSparkles";
 import { useWinnerAnimation } from "@/hooks/useWinnerAnimation";
 import { motion, AnimatePresence } from "framer-motion";
 import { generateJackpotTicket, generateServerSeed, generatePublicSeed } from "@/lib/provablyFair";
+import { ethers } from "ethers";
 
 interface Player {
   id: string;
@@ -24,14 +25,14 @@ interface Player {
 
 export const JackpotGame = () => {
   const { toast } = useToast();
-  const { isConnected, userId } = useWallet();
+  const { isConnected, userId, address } = useWallet();
   const [potSize, setPotSize] = useState(0);
   const [wagerAmount, setWagerAmount] = useState(0.1);
   const [players, setPlayers] = useState<Player[]>([]);
   const [timeLeft, setTimeLeft] = useState(120);
   const [userChance, setUserChance] = useState(0);
   const [userWager, setUserWager] = useState(0);
-  const [balance] = useState(10.5);
+  const [balance, setBalance] = useState(0);
   const [lastWinner, setLastWinner] = useState<Player | null>(null);
   const [animatingBet, setAnimatingBet] = useState<string | null>(null);
   const [isSpinning, setIsSpinning] = useState(false);
@@ -39,6 +40,27 @@ export const JackpotGame = () => {
   const carouselRef = useRef<HTMLDivElement>(null);
   
   const { winnerId, showConfetti, showSparkles, celebrateWinner } = useWinnerAnimation();
+
+  // Fetch wallet balance
+  useEffect(() => {
+    if (!address) return;
+    
+    const fetchBalance = async () => {
+      try {
+        const { BrowserProvider } = await import('ethers');
+        const provider = new BrowserProvider(window.ethereum!);
+        const weiBalance = await provider.getBalance(address);
+        const eth = parseFloat(ethers.formatEther(weiBalance));
+        setBalance(eth);
+      } catch (error) {
+        console.error('Error fetching balance:', error);
+      }
+    };
+    
+    fetchBalance();
+    const interval = setInterval(fetchBalance, 15000);
+    return () => clearInterval(interval);
+  }, [address]);
 
   useEffect(() => {
     if (!isConnected) return;
@@ -85,8 +107,13 @@ export const JackpotGame = () => {
         description: "Please confirm the transaction in your wallet"
       });
 
-      // Import contract utilities
-      const { joinJackpot } = await import('@/lib/contracts');
+      // Import contract utilities (properly handle default exports)
+      const contractsModule = await import('@/lib/contracts');
+      const joinJackpot = contractsModule.joinJackpot || (contractsModule.default && contractsModule.default.joinJackpot);
+      
+      if (!joinJackpot) {
+        throw new Error('Failed to import joinJackpot function');
+      }
       
       // Call the contract to join jackpot (this prompts wallet to sign)
       const { gameId, txHash } = await joinJackpot(wagerAmount);
@@ -139,17 +166,27 @@ export const JackpotGame = () => {
     if (players.length >= 2 && timeLeft === 0 && !lastWinner && !isSpinning) {
       setIsSpinning(true);
       
-      // Dramatic spinning animation
-      const spinDuration = 3000; // 3 seconds of suspense
+      // Dramatic spinning animation - Slower and more suspenseful
+      const spinDuration = 8000; // 8 seconds of suspense
+      const totalCycles = 20; // Number of rotations through all players
       const startTime = Date.now();
-      let spinCount = 0;
+      let frameCount = 0;
       
       const spinInterval = setInterval(() => {
-        spinCount++;
-        // Cycle through players rapidly during spin
-        setSelectedWinnerIndex(spinCount % players.length);
+        frameCount++;
+        const elapsed = Date.now() - startTime;
+        const progress = Math.min(elapsed / spinDuration, 1);
         
-        if (Date.now() - startTime >= spinDuration) {
+        // Ease out function for slowing down
+        const easedProgress = 1 - Math.pow(1 - progress, 3);
+        
+        // Calculate cycles - slow down at the end
+        const cycles = totalCycles * easedProgress;
+        const targetIndex = Math.floor((cycles * players.length) % players.length);
+        
+        setSelectedWinnerIndex(targetIndex);
+        
+        if (progress >= 1) {
           clearInterval(spinInterval);
           
           // Select actual winner
@@ -189,13 +226,13 @@ export const JackpotGame = () => {
                 title: "🎉 WINNER! 🎉",
                 description: `${winner.username} won ${(potSize * 0.9).toFixed(4)} ETH!`,
               });
-            }, 1000);
+            }, 500);
           } catch (error) {
             console.error('Error selecting winner:', error);
             setIsSpinning(false);
           }
         }
-      }, 50); // Update every 50ms for smooth spinning
+      }, 16); // Update at ~60fps for smooth animation
       
       return () => clearInterval(spinInterval);
     }
@@ -367,10 +404,10 @@ export const JackpotGame = () => {
                   
                   <div 
                     ref={carouselRef}
-                    className="flex gap-4 px-4 jackpot-carousel"
+                    className="flex gap-4 px-4"
                     style={{
-                      animation: isSpinning ? `spinCarousel 4s cubic-bezier(0.32, 0.72, 0, 1) forwards` : 'none',
-                      transform: isSpinning ? 'none' : `translateX(calc(50% - 60px - ${selectedWinnerIndex * 120}px))`
+                      transform: `translateX(calc(50% - 60px - ${selectedWinnerIndex * (sortedPlayers.length > 0 ? 144 : 120)}px))`,
+                      transition: isSpinning ? 'transform 8s cubic-bezier(0.25, 0.46, 0.45, 0.94)' : 'transform 0.5s ease-out'
                     }}
                   >
                     {/* Repeat players for continuous effect */}
