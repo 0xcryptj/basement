@@ -86,7 +86,7 @@ const Games = () => {
                   username: "LuckyDegen",
                   amount: 12.5678,
                   chance: 0.87,
-                  currency: "SOL",
+                  currency: "ETH",
                   game: "Jackpot",
                 }}
               />
@@ -102,7 +102,7 @@ const Games = () => {
               <div className="space-y-2">
                 <div className="text-primary font-pixel text-lg">01</div>
                 <div className="text-foreground">Connect Wallet</div>
-                <div>Connect your Phantom or MetaMask wallet to get started</div>
+                <div>Connect your MetaMask or Coinbase Wallet to get started</div>
               </div>
               <div className="space-y-2">
                 <div className="text-secondary font-pixel text-lg">02</div>
