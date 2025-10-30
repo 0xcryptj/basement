@@ -8,14 +8,18 @@ import Connect4ABI from '../../chain/artifacts/contracts/Connect4.sol/Connect4.j
 let CoinFlipABI: { abi: unknown[] } | null = null;
 let JackpotABI: { abi: unknown[] } | null = null;
 
-// Dynamically load ABIs if they exist
+// Dynamically load ABIs - placeholder files exist for build, will be replaced after compilation
 async function loadCoinFlipABI(): Promise<{ abi: unknown[] } | null> {
   if (CoinFlipABI) return CoinFlipABI;
   
   try {
-    // @ts-expect-error - ABI file may not exist until contracts are compiled
     const module = await import('../../chain/artifacts/contracts/CoinFlip.sol/CoinFlip.json');
     CoinFlipABI = module.default || module;
+    // Check if this is a placeholder (empty ABI) - will be replaced after contract compilation
+    if (!CoinFlipABI || !CoinFlipABI.abi || CoinFlipABI.abi.length === 0) {
+      console.warn('CoinFlip ABI is placeholder - contract may not be compiled yet');
+      return null;
+    }
     return CoinFlipABI;
   } catch {
     console.warn('CoinFlip ABI not found - contract may not be compiled yet');
@@ -27,9 +31,13 @@ async function loadJackpotABI(): Promise<{ abi: unknown[] } | null> {
   if (JackpotABI) return JackpotABI;
   
   try {
-    // @ts-expect-error - ABI file may not exist until contracts are compiled
     const module = await import('../../chain/artifacts/contracts/Jackpot.sol/Jackpot.json');
     JackpotABI = module.default || module;
+    // Check if this is a placeholder (empty ABI) - will be replaced after contract compilation
+    if (!JackpotABI || !JackpotABI.abi || JackpotABI.abi.length === 0) {
+      console.warn('Jackpot ABI is placeholder - contract may not be compiled yet');
+      return null;
+    }
     return JackpotABI;
   } catch {
     console.warn('Jackpot ABI not found - contract may not be compiled yet');
