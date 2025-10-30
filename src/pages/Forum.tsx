@@ -65,12 +65,52 @@ const Forum = () => {
 
   useEffect(() => {
     loadThreads();
+    
+    // Subscribe to real-time thread updates
+    const channel = supabase
+      .channel('forum-threads')
+      .on(
+        'postgres_changes',
+        {
+          event: '*',
+          schema: 'public',
+          table: 'Thread',
+          filter: `boardId=eq.${selectedBoard}`,
+        },
+        () => loadThreads()
+      )
+      .subscribe();
+    
+    return () => {
+      supabase.removeChannel(channel);
+    };
   }, [selectedBoard]);
 
   useEffect(() => {
     if (selectedThread) {
       loadPosts(selectedThread.id);
       incrementViews(selectedThread.id);
+      
+      // Subscribe to real-time post updates
+      const channel = supabase
+        .channel('forum-posts')
+        .on(
+          'postgres_changes',
+          {
+            event: '*',
+            schema: 'public',
+            table: 'Post',
+            filter: `threadId=eq.${selectedThread.id}`,
+          },
+          (payload) => {
+            loadPosts(selectedThread.id);
+          }
+        )
+        .subscribe();
+      
+      return () => {
+        supabase.removeChannel(channel);
+      };
     }
   }, [selectedThread]);
 
