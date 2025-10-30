@@ -4,6 +4,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
+import { ethToUsd } from "@/lib/currency";
 
 interface GameCreationModalProps {
   open: boolean;
@@ -76,7 +77,7 @@ export const GameCreationModal = ({
           {/* Wager Amount */}
           <div className="space-y-2">
             <Label className="font-mono text-sm text-muted-foreground">
-              Bet Amount ~${(wagerAmount * 192).toFixed(2)}
+              Bet Amount ~${ethToUsd(wagerAmount).toFixed(2)}
             </Label>
             <div className="flex items-center gap-2">
               <div className="flex items-center gap-2 bg-background/50 border border-primary/20 rounded-lg px-3 py-2 flex-1">

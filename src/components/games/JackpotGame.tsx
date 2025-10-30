@@ -24,7 +24,7 @@ interface Player {
 
 export const JackpotGame = () => {
   const { toast } = useToast();
-  const { isConnected, userId, network } = useWallet();
+  const { isConnected, userId } = useWallet();
   const [potSize, setPotSize] = useState(0);
   const [wagerAmount, setWagerAmount] = useState(0.1);
   const [players, setPlayers] = useState<Player[]>([]);
@@ -79,34 +79,19 @@ export const JackpotGame = () => {
     }
 
     try {
-      // Import contract utilities
-      const { BrowserProvider } = await import('ethers');
-      const { parseEther } = await import('ethers');
-      
-      if (!window.ethereum) {
-        throw new Error('MetaMask not found');
-      }
-
       // Prompt wallet to sign transaction
       toast({
         title: "Sign Transaction",
         description: "Please confirm the transaction in your wallet"
       });
 
-      const provider = new BrowserProvider(window.ethereum);
-      const signer = await provider.getSigner();
-      const tx = await signer.sendTransaction({
-        to: '0x0000000000000000000000000000000000000000', // Replace with actual jackpot contract
-        value: parseEther(wagerAmount.toString())
-      });
+      // Import contract utilities
+      const { joinJackpot } = await import('@/lib/contracts');
+      
+      // Call the contract to join jackpot (this prompts wallet to sign)
+      const { gameId, txHash } = await joinJackpot(wagerAmount);
 
-      toast({
-        title: "Transaction Pending",
-        description: "Waiting for confirmation..."
-      });
-
-      const receipt = await tx.wait();
-      console.log('Transaction confirmed:', receipt.hash);
+      console.log('Transaction confirmed:', txHash);
 
       const newPlayer: Player = {
         id: `${userId}-${Date.now()}`,
@@ -132,7 +117,7 @@ export const JackpotGame = () => {
 
       toast({
         title: "Bet Placed! 🎰",
-        description: `You wagered ${wagerAmount} ETH (TX: ${receipt.hash.slice(0, 10)}...)`,
+        description: `You wagered ${wagerAmount} ETH (TX: ${txHash.slice(0, 10)}...)`,
       });
 
       // Start countdown when 2 bets are placed

@@ -10,7 +10,7 @@ import { motion, AnimatePresence } from "framer-motion";
 
 export const CoinflipGame = () => {
   const { toast } = useToast();
-  const { isConnected, network } = useWallet();
+  const { isConnected } = useWallet();
   const [wagerAmount, setWagerAmount] = useState(0.1);
   const [selectedSide, setSelectedSide] = useState<"heads" | "tails">("heads");
   const [isFlipping, setIsFlipping] = useState(false);
@@ -30,8 +30,25 @@ export const CoinflipGame = () => {
     setIsFlipping(true);
     setResult(null);
 
-    // Simulate flip after 2 seconds
-    setTimeout(() => {
+    try {
+      // Prompt wallet to sign transaction
+      toast({
+        title: "Sign Transaction",
+        description: "Please confirm the transaction in your wallet"
+      });
+
+      // Import contract utilities
+      const { createGame } = await import('@/lib/contracts');
+      
+      // Create CoinFlip game with chosen side (0 = heads, 1 = tails)
+      const chosenSide = selectedSide === 'heads' ? 0 : 1;
+      const { txHash } = await createGame('CoinFlip', wagerAmount, chosenSide);
+
+      console.log('Transaction confirmed:', txHash);
+
+      // Note: The coin flip result is determined on-chain
+      // For now, we'll show a placeholder result
+      // In production, you'd need to read the game result from the contract
       const flipResult = Math.random() > 0.5 ? "heads" : "tails";
       setResult(flipResult);
       setIsFlipping(false);
@@ -48,7 +65,15 @@ export const CoinflipGame = () => {
           variant: "destructive",
         });
       }
-    }, 2000);
+    } catch (error) {
+      console.error('Error flipping coin:', error);
+      setIsFlipping(false);
+      toast({
+        title: "Transaction Failed",
+        description: error instanceof Error ? error.message : "Failed to flip coin",
+        variant: "destructive",
+      });
+    }
   };
 
   return (
