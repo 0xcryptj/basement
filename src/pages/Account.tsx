@@ -109,11 +109,12 @@ const Account = () => {
 
       toast({ title: "Success", description: "Profile picture updated!" });
       queryClient.invalidateQueries({ queryKey: ['user', userId] });
-    } catch (error: any) {
+    } catch (error: unknown) {
       console.error('Avatar upload error:', error);
+      const errorMessage = error instanceof Error ? error.message : "Failed to upload image";
       toast({
         title: "Upload failed",
-        description: error.message || "Failed to upload image",
+        description: errorMessage,
         variant: "destructive",
       });
     } finally {
@@ -134,11 +135,7 @@ const Account = () => {
             <Card className="bg-card border-2 border-primary/20 p-6">
               <Label className="font-pixel text-sm text-primary mb-4 block">Profile Picture</Label>
               <div className="flex items-center gap-6">
-                <Avatar className={`w-24 h-24 rounded-lg border-2 ${
-                  network === 'solana' 
-                    ? 'border-[#14F195]' 
-                    : 'border-[#0052FF]'
-                }`}>
+                <Avatar className="w-24 h-24 rounded-lg border-2 border-[#0052FF]">
                   <AvatarImage src={userData?.avatarUrl || undefined} />
                   <AvatarFallback className="bg-primary/20 text-primary font-pixel text-2xl rounded-lg">
                     {userData?.username?.[0]?.toUpperCase() || '?'}
@@ -223,10 +220,8 @@ const Account = () => {
                 <p className="font-mono text-sm text-foreground break-all">
                   {address}
                 </p>
-                <p className={`font-mono text-xs mt-2 ${
-                  network === 'solana' ? 'text-[#14F195]' : 'text-[#0052FF]'
-                }`}>
-                  {network === 'solana' ? '◎ Solana Network' : '⟠ Base Network'}
+                <p className="font-mono text-xs mt-2 text-[#0052FF]">
+                  ⟠ Base Network
                 </p>
               </div>
             </Card>

@@ -13,7 +13,6 @@ export const Navbar = () => {
   const [stats, setStats] = useState({
     total_wagers_placed: 0,
     total_volume: 0,
-    solana_online: 0,
     base_online: 0,
   });
 
