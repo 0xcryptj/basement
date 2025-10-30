@@ -74,6 +74,71 @@ export const GameLobby = ({
     }
   }, [isConnected, gameType, network]);
 
+  // Timeout checker - checks games every 5 seconds
+  useEffect(() => {
+    const checkTimeouts = async () => {
+      for (const match of matches) {
+        // Only check games waiting for an opponent
+        if (match.status === 'waiting' && match.onchain_game_id && match.created_at) {
+          const now = Date.now();
+          const gameCreatedAt = new Date(match.created_at).getTime();
+          const elapsedSeconds = (now - gameCreatedAt) / 1000;
+          
+          // If 60 seconds have passed, process refund
+          if (elapsedSeconds >= 60) {
+            try {
+              console.log('⏰ Processing timeout refund for game:', match.id);
+              
+              // Import timeout utilities
+              const { checkAndProcessTimeout } = await import('@/lib/contracts');
+              
+              // Map game type
+              const gameTypeMap: Record<string, 'War' | 'Chess' | 'Connect4'> = {
+                'war': 'War',
+                'chess': 'Chess',
+                'connect4': 'Connect4'
+              };
+              
+              const contractGameType = gameTypeMap[gameType.toLowerCase()];
+              
+              if (contractGameType && match.onchain_game_id) {
+                const processed = await checkAndProcessTimeout(
+                  contractGameType,
+                  parseInt(match.onchain_game_id),
+                  match.created_at
+                );
+                
+                if (processed) {
+                  // Update database status
+                  await supabase
+                    .from('matches')
+                    .update({ status: 'cancelled' })
+                    .eq('id', match.id);
+                  
+                  toast({
+                    title: "Game Cancelled",
+                    description: `Opponent timed out. Refund of ${(match.wager_amount * 0.96).toFixed(4)} ETH processed (4% house fee).`,
+                    variant: "default"
+                  });
+                  
+                  // Reload matches
+                  loadMatches();
+                }
+              }
+            } catch (error) {
+              console.error('Error processing timeout:', error);
+            }
+          }
+        }
+      }
+    };
+    
+    // Check timeouts every 5 seconds
+    const interval = setInterval(checkTimeouts, 5000);
+    
+    return () => clearInterval(interval);
+  }, [matches, gameType, toast]);
+
   const loadMatches = async () => {
     setLoading(true);
     const { data, error } = await supabase

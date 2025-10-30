@@ -133,12 +133,52 @@ export async function makeMove(gameType: 'Chess' | 'Connect4', gameId: number, m
 }
 
 /**
- * Cancel/Refund game (if timeout mechanism exists)
+ * Cancel/Refund game for timeout - refund 96% to player
  */
 export async function cancelGame(gameType: GameType, gameId: number) {
   const contract = await getGameContract(gameType);
-  const tx = await contract.cancelGame(gameId);
-  return await tx.wait();
+  
+  try {
+    // Check if the contract has a cancelGame function
+    if (contract.cancelGame) {
+      const tx = await contract.cancelGame(gameId);
+      return await tx.wait();
+    } else {
+      // If no cancelGame function exists, we need to implement manual refund
+      // This would require the contracts to be updated
+      throw new Error('Cancel game function not available in contract');
+    }
+  } catch (error) {
+    console.error('Error canceling game:', error);
+    throw error;
+  }
+}
+
+/**
+ * Check game timeout and refund if needed
+ * This should be called periodically by the frontend
+ */
+export async function checkAndProcessTimeout(
+  gameType: GameType,
+  gameId: number,
+  createdAt: string
+): Promise<boolean> {
+  const now = Date.now();
+  const gameCreatedAt = new Date(createdAt).getTime();
+  const elapsed = (now - gameCreatedAt) / 1000; // seconds
+  
+  // 60 second timeout
+  if (elapsed >= 60) {
+    try {
+      await cancelGame(gameType, gameId);
+      return true; // Refund processed
+    } catch (error) {
+      console.error('Failed to process timeout refund:', error);
+      return false;
+    }
+  }
+  
+  return false; // Not timed out yet
 }
 
 /**
