@@ -29,8 +29,8 @@ export const GameCreationModal = ({
     switch (gameType) {
       case "chess":
         return [
-          { value: "white", label: "White ♔" },
-          { value: "black", label: "Black ♚" }
+          { value: "white", label: "White ♚" },
+          { value: "black", label: "Black ♔" }
         ];
       case "connect4":
         return [
