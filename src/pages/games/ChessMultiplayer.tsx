@@ -4,7 +4,6 @@ import { Footer } from "@/components/Footer";
 import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import bk3Image from "@/assets/bk3.png";
-import { Input } from "@/components/ui/input";
 import { useWallet } from "@/contexts/WalletContext";
 import { useMatchmaking } from "@/hooks/useMatchmaking";
 import { useToast } from "@/hooks/use-toast";
@@ -36,7 +35,6 @@ const ChessMultiplayer = () => {
   const { matchId, opponentId, isSearching, findMatch, cancelSearch, updateGameState, endMatch } =
     useMatchmaking("chess");
 
-  const [wagerAmount, setWagerAmount] = useState("0.01");
   const [board, setBoard] = useState<(ChessPiece | null)[][]>([]);
   const [selectedPiece, setSelectedPiece] = useState<Position | null>(null);
   const [currentTurn, setCurrentTurn] = useState<PieceColor>("white");
@@ -275,22 +273,8 @@ const ChessMultiplayer = () => {
                 <Crown className="w-16 h-16 text-primary animate-glow-pulse" />
               </div>
 
-              <div>
-                <label className="font-pixel text-xs text-primary block mb-2">
-                  WAGER AMOUNT (ETH)
-                </label>
-                <Input
-                  type="number"
-                  step="0.001"
-                  value={wagerAmount}
-                  onChange={(e) => setWagerAmount(e.target.value)}
-                  className="font-mono text-center text-lg border-primary focus:shadow-glow-cyan"
-                  disabled={isSearching}
-                />
-              </div>
-
               <Button
-                onClick={() => findMatch(parseFloat(wagerAmount))}
+                onClick={() => findMatch(0)}
                 disabled={isSearching || !userId}
                 className="w-full font-pixel text-sm bg-primary hover:bg-primary/80 shadow-glow-cyan"
               >
@@ -322,8 +306,8 @@ const ChessMultiplayer = () => {
             </div>
           </Card>
         ) : (
-          <div className="max-w-2xl mx-auto space-y-6">
-            <div className="flex justify-between items-center">
+          <div className="max-w-2xl mx-auto space-y-6 flex flex-col items-center">
+            <div className="flex justify-between items-center w-full max-w-[350px] sm:max-w-xl">
               <div className="font-pixel text-xs text-muted-foreground">
                 Your Color: {playerColor?.toUpperCase()}
               </div>
@@ -332,19 +316,24 @@ const ChessMultiplayer = () => {
               </div>
             </div>
 
-            {/* Chess Board - Fixed size on mobile */}
-            <div className="w-full max-w-[350px] sm:max-w-xl mx-auto bg-card/80 backdrop-blur-sm border-2 border-primary p-2 shadow-glow-cyan">
+            {/* Chess Board - Centered and fixed size */}
+            <div className="w-full max-w-[350px] sm:max-w-xl bg-card/80 backdrop-blur-sm border-2 border-primary p-2 shadow-glow-cyan">
               <div className="grid grid-cols-8 gap-0 aspect-square">
                 {board.map((row, rowIndex) =>
                   row.map((piece, colIndex) => {
-                    const isLight = (rowIndex + colIndex) % 2 === 0;
+                    // For black player, flip the board
+                    const displayRow = playerColor === 'black' ? 7 - rowIndex : rowIndex;
+                    const displayCol = playerColor === 'black' ? 7 - colIndex : colIndex;
+                    const actualRowIndex = displayRow;
+                    const actualColIndex = displayCol;
+                    const isLight = (actualRowIndex + actualColIndex) % 2 === 0;
                     const isSelected =
-                      selectedPiece?.row === rowIndex && selectedPiece?.col === colIndex;
+                      selectedPiece?.row === actualRowIndex && selectedPiece?.col === actualColIndex;
 
                     return (
                       <button
                         key={`${rowIndex}-${colIndex}`}
-                        onClick={() => handleSquareClick(rowIndex, colIndex)}
+                        onClick={() => handleSquareClick(actualRowIndex, actualColIndex)}
                         className={`aspect-square flex items-center justify-center text-2xl sm:text-3xl md:text-4xl lg:text-5xl transition-all ${
                           isLight ? "bg-[#f0d9b5]" : "bg-[#b58863]"
                         } ${

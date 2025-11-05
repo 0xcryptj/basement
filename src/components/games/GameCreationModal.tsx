@@ -4,26 +4,20 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
-import { ethToUsd } from "@/lib/currency";
 
 interface GameCreationModalProps {
   open: boolean;
   onClose: () => void;
   gameType: "chess" | "connect4" | "cointoss" | "war";
-  onCreateGame: (wagerAmount: number, selectedChoice: string) => Promise<void>;
-  balance: number;
-  network: string;
+  onCreateGame: (selectedChoice: string) => Promise<void>;
 }
 
 export const GameCreationModal = ({
   open,
   onClose,
   gameType,
-  onCreateGame,
-  balance,
-  network
+  onCreateGame
 }: GameCreationModalProps) => {
-  const [wagerAmount, setWagerAmount] = useState(0.001);
   const [selectedChoice, setSelectedChoice] = useState<string>("");
 
   const getChoiceOptions = () => {
@@ -50,13 +44,9 @@ export const GameCreationModal = ({
 
   const handleCreate = async () => {
     try {
-      // The transaction signing happens in onCreateGame
-      // Don't close modal yet, let the parent handle the flow
-      await onCreateGame(wagerAmount, selectedChoice);
-      // Only close after successful creation
+      await onCreateGame(selectedChoice);
       onClose();
     } catch (error) {
-      // Error handled by parent, keep modal open
       console.error('Error in create game:', error);
     }
   };
@@ -74,36 +64,6 @@ export const GameCreationModal = ({
         </DialogHeader>
 
         <div className="space-y-6 py-4">
-          {/* Wager Amount */}
-          <div className="space-y-2">
-            <Label className="font-mono text-sm text-muted-foreground">
-              Bet Amount ~${ethToUsd(wagerAmount).toFixed(2)}
-            </Label>
-            <div className="flex items-center gap-2">
-              <div className="flex items-center gap-2 bg-background/50 border border-primary/20 rounded-lg px-3 py-2 flex-1">
-                <span className="font-mono text-sm">≡</span>
-                <Input
-                  type="number"
-                  value={wagerAmount}
-                  onChange={(e) => setWagerAmount(parseFloat(e.target.value) || 0)}
-                  step="0.001"
-                  min="0.001"
-                  className="border-0 bg-transparent font-mono text-lg p-0 h-auto focus-visible:ring-0"
-                />
-              </div>
-              <Button
-                variant="outline"
-                className="font-mono text-xs bg-background/50 border-primary/20"
-              >
-ETH
-              </Button>
-            </div>
-            <div className="flex items-center gap-2 text-xs font-mono text-muted-foreground">
-              <span>Balance:</span>
-              <span className="text-foreground">{balance.toFixed(8)}</span>
-            </div>
-          </div>
-
           {/* Choice Selection */}
           {needsChoice && (
             <div className="space-y-3">
@@ -142,7 +102,7 @@ ETH
             </Button>
             <Button
               onClick={handleCreate}
-              disabled={wagerAmount <= 0 || (needsChoice && !selectedChoice)}
+              disabled={needsChoice && !selectedChoice}
               className="flex-1 font-pixel text-sm bg-primary hover:bg-primary/90 text-primary-foreground shadow-glow-cyan"
             >
               Create Game

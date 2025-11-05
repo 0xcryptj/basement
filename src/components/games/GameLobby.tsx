@@ -57,8 +57,6 @@ export const GameLobby = ({
   const { toast } = useToast();
   const [matches, setMatches] = useState<GameMatch[]>([]);
   const [loading, setLoading] = useState(true);
-  const [wagerAmount, setWagerAmount] = useState(0.001);
-  const [balance] = useState(0.00095);
   const [creating, setCreating] = useState(false);
   const [waitingForMatch, setWaitingForMatch] = useState(false);
   const [sortBy, setSortBy] = useState<"high" | "low">("high");
@@ -182,20 +180,11 @@ export const GameLobby = ({
     return channel;
   };
 
-  const createGame = async (amount: number, selectedChoice: string) => {
+  const createGame = async (selectedChoice: string) => {
     if (!userId || !network) {
       toast({
         title: "Connect Wallet",
         description: "Please connect your wallet first",
-        variant: "destructive"
-      });
-      return;
-    }
-
-    if (amount <= 0) {
-      toast({
-        title: "Invalid Wager",
-        description: "Please enter a valid wager amount",
         variant: "destructive"
       });
       return;
@@ -214,7 +203,7 @@ export const GameLobby = ({
         .insert([{
           player1_id: userId,
           game_type: gameType as 'war' | 'chess' | 'connect4' | 'cointoss' | 'luckyblock',
-          wager_amount: amount,
+          wager_amount: 0,
           network: network as 'base' | 'solana',
           status: 'waiting',
           game_state: { creatorChoice: selectedChoice }
@@ -392,8 +381,8 @@ export const GameLobby = ({
 
   const sortedMatches = [...matches].sort((a, b) => 
     sortBy === "high" 
-      ? b.wager_amount - a.wager_amount 
-      : a.wager_amount - b.wager_amount
+      ? new Date(b.created_at).getTime() - new Date(a.created_at).getTime()
+      : new Date(a.created_at).getTime() - new Date(b.created_at).getTime()
   );
 
   return (
@@ -403,8 +392,6 @@ export const GameLobby = ({
         onClose={() => setShowCreationModal(false)}
         gameType={gameType as "cointoss" | "war" | "connect4" | "chess"}
         onCreateGame={createGame}
-        balance={balance}
-        network={network}
       />
       
       <div className="w-full space-y-6">
@@ -450,75 +437,21 @@ export const GameLobby = ({
 
         {/* Create Game Section */}
         <Card className="bg-[hsl(220,30%,10%)]/80 backdrop-blur-sm border border-primary/20 p-4 sm:p-6">
-          <div className="space-y-4">
-            <div>
-              <p className="font-mono text-xs text-muted-foreground mb-2">
-                Bet Amount ~${(wagerAmount * 192).toFixed(2)}
-              </p>
-              <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-3">
-                <div className="flex items-center gap-2 bg-background/50 border border-primary/20 rounded-lg px-3 py-2 flex-1">
-                  <span className="font-mono text-sm">≡</span>
-                  <input
-                    type="number"
-                    value={wagerAmount}
-                    onChange={(e) => setWagerAmount(parseFloat(e.target.value) || 0)}
-                    step="0.001"
-                    min="0.001"
-                    className="w-full bg-transparent font-mono text-lg text-foreground outline-none"
-                    placeholder="0"
-                  />
-                </div>
-                <Button
-                  variant="outline"
-                  className="font-mono text-xs bg-background/50 border-primary/20 hover:bg-background whitespace-nowrap"
-                >
-                  ETH
-                </Button>
-                <div className="flex gap-2">
-                  <Button
-                    onClick={() => setWagerAmount(prev => prev + 0.01)}
-                    variant="outline"
-                    size="sm"
-                    className="font-mono text-xs bg-background/50 border-primary/20 hover:bg-primary/10"
-                  >
-                    +0.01
-                  </Button>
-                  <Button
-                    onClick={() => setWagerAmount(prev => prev + 1)}
-                    variant="outline"
-                    size="sm"
-                    className="font-mono text-xs bg-background/50 border-primary/20 hover:bg-primary/10"
-                  >
-                    +1
-                  </Button>
-                </div>
-              </div>
-            </div>
-
-            <div className="flex flex-col sm:flex-row items-stretch sm:items-center justify-between gap-3">
-              <div className="flex items-center gap-2">
-                <span className="font-mono text-xs text-muted-foreground">Balance:</span>
-                <div className="flex items-center gap-1">
-                  <span className="font-mono text-xs">≡</span>
-                  <span className="font-mono text-sm text-foreground">{balance.toFixed(8)}</span>
-                </div>
-              </div>
-
-              <Button
-                onClick={() => setShowCreationModal(true)}
-                disabled={!isConnected || creating}
-                className="font-pixel text-sm px-6 py-5 bg-primary hover:bg-primary/90 text-primary-foreground shadow-glow-cyan transition-all duration-200 hover:scale-105"
-              >
-                {creating ? (
-                  <>
-                    <Loader2 className="w-4 h-4 mr-2 animate-spin" />
-                    Creating...
-                  </>
-                ) : (
-                  'Create'
-                )}
-              </Button>
-            </div>
+          <div className="flex flex-col sm:flex-row items-stretch sm:items-center justify-between gap-3">
+            <Button
+              onClick={() => setShowCreationModal(true)}
+              disabled={!isConnected || creating}
+              className="font-pixel text-sm px-6 py-5 bg-primary hover:bg-primary/90 text-primary-foreground shadow-glow-cyan transition-all duration-200 hover:scale-105"
+            >
+              {creating ? (
+                <>
+                  <Loader2 className="w-4 h-4 mr-2 animate-spin" />
+                  Creating...
+                </>
+              ) : (
+                'Create Game'
+              )}
+            </Button>
           </div>
         </Card>
       </div>
@@ -633,21 +566,13 @@ export const GameLobby = ({
                     )}
                   </div>
 
-                  {/* Wager & Actions */}
+                  {/* Actions */}
                     <div className="flex items-center gap-3 w-full sm:w-auto justify-between sm:justify-end">
-                      <div className="flex flex-col items-end">
-                        <div className="flex items-center gap-1">
-                          <span className="font-mono text-xs text-primary">≡</span>
-                          <span className="font-mono text-sm sm:text-base text-foreground font-bold">
-                            {match.wager_amount.toFixed(3)}
-                          </span>
+                      {match.game_state?.creatorChoice && (
+                        <div className="font-mono text-xs text-muted-foreground">
+                          {match.game_state.creatorChoice}
                         </div>
-                        {match.game_state?.creatorChoice && (
-                          <div className="font-mono text-[0.6rem] text-muted-foreground">
-                            {match.game_state.creatorChoice}
-                          </div>
-                        )}
-                      </div>
+                      )}
 
                     <div className="flex items-center gap-2">
                       {match.status === 'waiting' && match.player1_id !== userId && (
