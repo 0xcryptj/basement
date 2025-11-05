@@ -26,7 +26,7 @@ export const useMatchmaking = (gameType: GameType) => {
           table: 'matches',
           filter: `player1_id=eq.${userId}`,
         },
-        (payload: any) => {
+        (payload: { new: { id: string; player2_id: string | null; status: string } }) => {
           if (payload.new.player2_id && payload.new.status === 'active') {
             setMatchId(payload.new.id);
             setOpponentId(payload.new.player2_id);
@@ -46,7 +46,7 @@ export const useMatchmaking = (gameType: GameType) => {
           table: 'matches',
           filter: `player2_id=eq.${userId}`,
         },
-        (payload: any) => {
+        (payload: { new: { id: string; player1_id: string; status: string } }) => {
           if (payload.new.status === 'active') {
             setMatchId(payload.new.id);
             setOpponentId(payload.new.player1_id);
@@ -78,23 +78,26 @@ export const useMatchmaking = (gameType: GameType) => {
 
     try {
       // Add to waiting players for visibility
-      const { data: waitingEntry } = await supabase
+      const { error: waitingError } = await supabase
         .from('waiting_players')
         .insert({
           user_id: userId,
-          game_type: gameType,
-          network: network,
+          game_type: gameType as string,
+          network: network as string,
           wager_amount: wagerAmount,
-        })
-        .select()
-        .single();
+        });
+
+      if (waitingError) {
+        console.warn('Warning: Could not add to waiting players:', waitingError);
+        // Continue anyway - this is not critical
+      }
 
       // Check for existing matches waiting for player 2
       const { data: existingMatches } = await supabase
         .from('matches')
         .select('*')
-        .eq('game_type', gameType)
-        .eq('network', network)
+        .eq('game_type', gameType as 'war' | 'chess' | 'connect4' | 'cointoss' | 'luckyblock')
+        .eq('network', network as 'base' | 'solana')
         .eq('status', 'waiting')
         .eq('wager_amount', wagerAmount)
         .is('player2_id', null)
@@ -121,7 +124,7 @@ export const useMatchmaking = (gameType: GameType) => {
           .from('waiting_players')
           .delete()
           .in('user_id', [userId, match.player1_id])
-          .eq('game_type', gameType);
+          .eq('game_type', gameType as string);
 
         setMatchId(match.id);
         setOpponentId(match.player1_id);
@@ -176,7 +179,7 @@ export const useMatchmaking = (gameType: GameType) => {
           .from('waiting_players')
           .delete()
           .eq('user_id', userId)
-          .eq('game_type', gameType);
+          .eq('game_type', gameType as string);
       }
 
       setMatchId(null);
@@ -187,7 +190,7 @@ export const useMatchmaking = (gameType: GameType) => {
     }
   };
 
-  const updateGameState = async (newState: any) => {
+  const updateGameState = async (newState: Record<string, unknown>) => {
     if (!matchId) return;
 
     try {
