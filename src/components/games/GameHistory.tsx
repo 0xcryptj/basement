@@ -3,7 +3,6 @@ import { Card } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Trophy, Flame } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
-import solanaLogo from "@/assets/solana-logo.svg";
 import baseLogo from "@/assets/base-logo.svg";
 
 interface GameHistoryProps {
@@ -104,7 +103,7 @@ export const GameHistory = ({ gameType }: GameHistoryProps) => {
                       </Badge>
                     )}
                     <div className="flex items-center gap-1">
-                      <img src={game.network === 'solana' ? solanaLogo : baseLogo} alt={game.network} className="w-3 h-3" />
+                      <img src={baseLogo} alt={game.network || 'base'} className="w-3 h-3" />
                       <span className="font-mono text-xs text-primary font-bold">{game.wager_amount.toFixed(2)}</span>
                     </div>
                   </div>
