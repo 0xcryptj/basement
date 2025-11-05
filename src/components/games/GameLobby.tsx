@@ -84,47 +84,25 @@ export const GameLobby = ({
           const gameCreatedAt = new Date(match.created_at).getTime();
           const elapsedSeconds = (now - gameCreatedAt) / 1000;
           
-          // If 60 seconds have passed, process refund
+          // If 60 seconds have passed, process refund (DEMO MODE: just update status)
           if (elapsedSeconds >= 60) {
             try {
-              console.log('⏰ Processing timeout refund for game:', match.id);
+              console.log('⏰ Processing timeout for game (Demo Mode):', match.id);
               
-              // Import timeout utilities
-              const { checkAndProcessTimeout } = await import('@/lib/contracts');
+              // DEMO MODE: Just update status to canceled instead of calling smart contract
+              await supabase
+                .from('matches')
+                .update({ status: 'cancelled' })
+                .eq('id', match.id);
               
-              // Map game type
-              const gameTypeMap: Record<string, 'War' | 'Chess' | 'Connect4'> = {
-                'war': 'War',
-                'chess': 'Chess',
-                'connect4': 'Connect4'
-              };
+              toast({
+                title: "Game Cancelled (Demo Mode)",
+                description: `Opponent timed out. Game cancelled.`,
+                variant: "default"
+              });
               
-              const contractGameType = gameTypeMap[gameType.toLowerCase()];
-              
-              if (contractGameType && match.onchain_game_id) {
-                const processed = await checkAndProcessTimeout(
-                  contractGameType,
-                  parseInt(match.onchain_game_id),
-                  match.created_at
-                );
-                
-                if (processed) {
-                  // Update database status
-                  await supabase
-                    .from('matches')
-                    .update({ status: 'cancelled' })
-                    .eq('id', match.id);
-                  
-                  toast({
-                    title: "Game Cancelled",
-                    description: `Opponent timed out. Refund of ${(match.wager_amount * 0.96).toFixed(4)} ETH processed (4% house fee).`,
-                    variant: "default"
-                  });
-                  
-                  // Reload matches
-                  loadMatches();
-                }
-              }
+              // Reload matches
+              loadMatches();
             } catch (error) {
               console.error('Error processing timeout:', error);
             }
@@ -225,38 +203,11 @@ export const GameLobby = ({
     setCreating(true);
     
     try {
-      // Import contract utilities
-      const { createGame: createOnChainGame } = await import('@/lib/contracts');
+      // DEMO MODE: Generate demo game ID instead of calling smart contract
+      const demoGameId = Math.floor(Math.random() * 1000000).toString();
+      const demoTxHash = `0x${Math.random().toString(16).substring(2, 66)}`;
       
-      // Create game on-chain (this will prompt user to sign transaction)
-      toast({
-        title: "Sign Transaction",
-        description: "Please confirm the transaction in your wallet"
-      });
-      
-      // Map game type to contract GameType (capitalized)
-      const gameTypeMap: Record<string, 'War' | 'Chess' | 'Connect4' | 'CoinFlip'> = {
-        'war': 'War',
-        'chess': 'Chess',
-        'connect4': 'Connect4',
-        'cointoss': 'CoinFlip', // Map cointoss to CoinFlip
-        'coinflip': 'CoinFlip'
-      };
-      
-      const contractGameType = gameTypeMap[gameType.toLowerCase()];
-      if (!contractGameType) {
-        throw new Error(`Unsupported game type: ${gameType}. Supported: war, chess, connect4, cointoss, coinflip`);
-      }
-      
-      // Map coin toss choice to CoinFlip format (0 = heads, 1 = tails)
-      let mappedChoice = selectedChoice;
-      if (gameType.toLowerCase() === 'cointoss' || gameType.toLowerCase() === 'coinflip') {
-        mappedChoice = selectedChoice === 'heads' ? '0' : '1';
-      }
-      
-      const { gameId, txHash } = await createOnChainGame(contractGameType, amount, mappedChoice ? parseInt(mappedChoice) : undefined);
-      
-      // Store in database
+      // Store in database (demo mode)
       const { data, error } = await supabase
         .from('matches')
         .insert([{
@@ -265,8 +216,8 @@ export const GameLobby = ({
           wager_amount: amount,
           network: network,
           status: 'waiting',
-          onchain_game_id: gameId,
-          contract_tx_hash: txHash,
+          onchain_game_id: demoGameId,
+          contract_tx_hash: demoTxHash,
           game_state: { creatorChoice: selectedChoice }
         }])
         .select()
@@ -283,8 +234,8 @@ export const GameLobby = ({
       } else {
         setWaitingForMatch(true);
         toast({
-          title: "Game Created!",
-          description: `Waiting for opponent to join... (TX: ${txHash.slice(0, 10)}...)`
+          title: "Game Created! (Demo Mode)",
+          description: `Waiting for opponent to join...`
         });
       }
     } catch (error: unknown) {
@@ -292,7 +243,7 @@ export const GameLobby = ({
       console.error('Error creating game:', error);
       const errorMessage = error instanceof Error ? error.message : "Failed to create game";
       toast({
-        title: "Transaction Failed",
+        title: "Error",
         description: errorMessage,
         variant: "destructive"
       });
@@ -303,33 +254,11 @@ export const GameLobby = ({
     if (!userId) return;
 
     try {
-      const { joinGame: joinOnChainGame } = await import('@/lib/contracts');
-      
       // Get game details
       const match = matches.find(m => m.id === matchId);
       if (!match) return;
       
-      toast({
-        title: "Sign Transaction",
-        description: "Please confirm the transaction in your wallet"
-      });
-      
-      // Map game type for contract
-      const gameTypeMap: Record<string, 'War' | 'Chess' | 'Connect4'> = {
-        'war': 'War',
-        'chess': 'Chess',
-        'connect4': 'Connect4'
-      };
-      
-      const contractGameType = gameTypeMap[gameType.toLowerCase()];
-      if (!contractGameType) {
-        throw new Error(`Unsupported game type: ${gameType}`);
-      }
-      
-      // Join game on-chain
-      const { txHash } = await joinOnChainGame(contractGameType, parseInt(match.onchain_game_id || '0'), match.wager_amount);
-      
-      // Update database
+      // DEMO MODE: Skip smart contract call, just update database
       const { error } = await supabase
         .from('matches')
         .update({ 
@@ -342,8 +271,8 @@ export const GameLobby = ({
       if (!error) {
         onJoinGame(matchId);
         toast({
-          title: "Game Joined!",
-          description: `Transaction confirmed (${txHash.slice(0, 10)}...)`
+          title: "Game Joined! (Demo Mode)",
+          description: `Game is now active`
         });
       } else {
         toast({
@@ -356,7 +285,7 @@ export const GameLobby = ({
       console.error('Error joining game:', error);
       const errorMessage = error instanceof Error ? error.message : "Failed to join game";
       toast({
-        title: "Transaction Failed",
+        title: "Error",
         description: errorMessage,
         variant: "destructive"
       });

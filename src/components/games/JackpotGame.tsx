@@ -101,19 +101,8 @@ export const JackpotGame = () => {
     }
 
     try {
-      // Prompt wallet to sign transaction
-      toast({
-        title: "Sign Transaction",
-        description: "Please confirm the transaction in your wallet"
-      });
-
-      // Import contract utilities
-      const { joinJackpot } = await import('@/lib/contracts');
-      
-      // Call the contract to join jackpot (this prompts wallet to sign)
-      const { gameId, txHash } = await joinJackpot(wagerAmount);
-
-      console.log('Transaction confirmed:', txHash);
+      // DEMO MODE: Simulate bet placement without smart contract
+      await new Promise(resolve => setTimeout(resolve, 500)); // Simulate delay
 
       const newPlayer: Player = {
         id: `${userId}-${Date.now()}`,
@@ -138,8 +127,8 @@ export const JackpotGame = () => {
       setPotSize(newPot);
 
       toast({
-        title: "Bet Placed! 🎰",
-        description: `You wagered ${wagerAmount} ETH (TX: ${txHash.slice(0, 10)}...)`,
+        title: "Bet Placed! 🎰 (Demo Mode)",
+        description: `You wagered ${wagerAmount} ETH`,
       });
 
       // Start countdown when 2 bets are placed
@@ -149,7 +138,7 @@ export const JackpotGame = () => {
     } catch (error) {
       console.error('Error placing bet:', error);
       toast({
-        title: "Transaction Failed",
+        title: "Error",
         description: error instanceof Error ? error.message : "Failed to place bet",
         variant: "destructive",
       });

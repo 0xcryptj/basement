@@ -31,36 +31,21 @@ export const CoinflipGame = () => {
     setResult(null);
 
     try {
-      // Prompt wallet to sign transaction
-      toast({
-        title: "Sign Transaction",
-        description: "Please confirm the transaction in your wallet"
-      });
+      // DEMO MODE: Simulate coin flip without smart contract
+      await new Promise(resolve => setTimeout(resolve, 1500)); // Simulate delay
 
-      // Import contract utilities
-      const { createGame } = await import('@/lib/contracts');
-      
-      // Create CoinFlip game with chosen side (0 = heads, 1 = tails)
-      const chosenSide = selectedSide === 'heads' ? 0 : 1;
-      const { txHash } = await createGame('CoinFlip', wagerAmount, chosenSide);
-
-      console.log('Transaction confirmed:', txHash);
-
-      // Note: The coin flip result is determined on-chain
-      // For now, we'll show a placeholder result
-      // In production, you'd need to read the game result from the contract
       const flipResult = Math.random() > 0.5 ? "heads" : "tails";
       setResult(flipResult);
       setIsFlipping(false);
 
       if (flipResult === selectedSide) {
         toast({
-          title: "🎉 YOU WIN! 🎉",
+          title: "🎉 YOU WIN! 🎉 (Demo Mode)",
           description: `Won ${(wagerAmount * 1.9).toFixed(4)} ETH`,
         });
       } else {
         toast({
-          title: "You Lost",
+          title: "You Lost (Demo Mode)",
           description: `Better luck next time!`,
           variant: "destructive",
         });
@@ -69,7 +54,7 @@ export const CoinflipGame = () => {
       console.error('Error flipping coin:', error);
       setIsFlipping(false);
       toast({
-        title: "Transaction Failed",
+        title: "Error",
         description: error instanceof Error ? error.message : "Failed to flip coin",
         variant: "destructive",
       });

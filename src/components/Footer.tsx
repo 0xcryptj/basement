@@ -28,16 +28,6 @@ export const Footer = () => {
                   ⟠ 0xfd73...bc7b
                 </a>
               </div>
-              <div>
-                <a
-                  href="https://dexscreener.com/solana/D4MXRKhzSMapDZ5bLEA1bmjrUPLZhHZRhSkS6wrBpump"
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  className="block font-mono text-[0.6rem] text-secondary hover:text-secondary/80 transition-colors break-all"
-                >
-                  ◎ D4MX...pump
-                </a>
-              </div>
             </div>
           </div>
 
@@ -62,15 +52,6 @@ export const Footer = () => {
                 aria-label="X (Twitter)"
               >
                 <img src={xIcon} alt="X (Twitter)" className="w-4 h-4" />
-              </a>
-              <a
-                href="https://pump.fun/0xbasement"
-                target="_blank"
-                rel="noopener noreferrer"
-                className="text-accent hover:text-accent/80 transition-all hover:scale-110"
-                aria-label="Pump.fun"
-              >
-                <span className="font-pixel text-xs">PUMP</span>
               </a>
             </div>
           </div>
