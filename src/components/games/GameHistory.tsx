@@ -35,7 +35,7 @@ export const GameHistory = ({ gameType }: GameHistoryProps) => {
         player1:User!matches_player1_id_fkey(username, avatarUrl),
         player2:User!matches_player2_id_fkey(username, avatarUrl)
       `)
-      .eq('game_type', gameType as GameType)
+      .eq('game_type', gameType as 'war' | 'chess' | 'connect4' | 'cointoss' | 'luckyblock')
       .eq('status', 'completed')
       .not('winner_id', 'is', null)
       .order('completed_at', { ascending: false })

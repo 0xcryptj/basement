@@ -126,8 +126,8 @@ export const GameLobby = ({
         player1:User!matches_player1_id_fkey(username, avatarUrl),
         player2:User!matches_player2_id_fkey(username, avatarUrl)
       `)
-      .eq('game_type', gameType)
-      .eq('network', network)
+      .eq('game_type', gameType as 'war' | 'chess' | 'connect4' | 'cointoss' | 'luckyblock')
+      .eq('network', network as 'base' | 'solana')
       .in('status', ['waiting', 'active'])
       .order('created_at', { ascending: false })
       .limit(20);
@@ -212,12 +212,10 @@ export const GameLobby = ({
         .from('matches')
         .insert([{
           player1_id: userId,
-          game_type: gameType,
+          game_type: gameType as 'war' | 'chess' | 'connect4' | 'cointoss' | 'luckyblock',
           wager_amount: amount,
-          network: network,
+          network: network as 'base' | 'solana',
           status: 'waiting',
-          onchain_game_id: demoGameId,
-          contract_tx_hash: demoTxHash,
           game_state: { creatorChoice: selectedChoice }
         }])
         .select()
@@ -226,9 +224,10 @@ export const GameLobby = ({
       setCreating(false);
 
       if (error) {
+        console.error('Error creating game:', error);
         toast({
           title: "Error",
-          description: "Failed to save game to database",
+          description: error.message || "Failed to save game to database",
           variant: "destructive"
         });
       } else {

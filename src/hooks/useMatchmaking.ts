@@ -131,8 +131,8 @@ export const useMatchmaking = (gameType: GameType) => {
         const { data: newMatch, error } = await supabase
           .from('matches')
           .insert({
-            game_type: gameType,
-            network,
+            game_type: gameType as 'war' | 'chess' | 'connect4' | 'cointoss' | 'luckyblock',
+            network: network as 'base' | 'solana',
             player1_id: userId,
             wager_amount: wagerAmount,
             status: 'waiting',
