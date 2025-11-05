@@ -1,27 +1,32 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useCallback } from "react";
 import { Card } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Trophy, Flame } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import baseLogo from "@/assets/base-logo.svg";
+import type { Database } from "@/integrations/supabase/types";
+
+type GameType = Database["public"]["Enums"]["game_type"];
+
+interface Player {
+  username: string;
+  avatarUrl: string | null;
+}
+
+type GameHistoryMatch = Database["public"]["Tables"]["matches"]["Row"] & {
+  player1: Player | null;
+  player2: Player | null;
+};
 
 interface GameHistoryProps {
   gameType: string;
 }
 
 export const GameHistory = ({ gameType }: GameHistoryProps) => {
-  const [recentGames, setRecentGames] = useState<any[]>([]);
+  const [recentGames, setRecentGames] = useState<GameHistoryMatch[]>([]);
   const [loading, setLoading] = useState(true);
 
-  useEffect(() => {
-    loadRecentGames();
-    const channel = subscribeToGames();
-    return () => {
-      supabase.removeChannel(channel);
-    };
-  }, [gameType]);
-
-  const loadRecentGames = async () => {
+  const loadRecentGames = useCallback(async () => {
     setLoading(true);
     const { data, error } = await supabase
       .from('matches')
@@ -30,19 +35,19 @@ export const GameHistory = ({ gameType }: GameHistoryProps) => {
         player1:User!matches_player1_id_fkey(username, avatarUrl),
         player2:User!matches_player2_id_fkey(username, avatarUrl)
       `)
-      .eq('game_type', gameType as any)
+      .eq('game_type', gameType as GameType)
       .eq('status', 'completed')
       .not('winner_id', 'is', null)
       .order('completed_at', { ascending: false })
       .limit(10);
 
     if (!error && data) {
-      setRecentGames(data as any);
+      setRecentGames(data as unknown as GameHistoryMatch[]);
     }
     setLoading(false);
-  };
+  }, [gameType]);
 
-  const subscribeToGames = () => {
+  const subscribeToGames = useCallback(() => {
     const channel = supabase
       .channel(`${gameType}-game-history`)
       .on(
@@ -58,7 +63,15 @@ export const GameHistory = ({ gameType }: GameHistoryProps) => {
       .subscribe();
 
     return channel;
-  };
+  }, [gameType, loadRecentGames]);
+
+  useEffect(() => {
+    loadRecentGames();
+    const channel = subscribeToGames();
+    return () => {
+      supabase.removeChannel(channel);
+    };
+  }, [gameType, loadRecentGames, subscribeToGames]);
 
   const getWinStreak = (playerId: string) => {
     let streak = 0;
