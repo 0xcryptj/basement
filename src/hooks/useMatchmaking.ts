@@ -2,6 +2,9 @@ import { useState, useEffect } from 'react';
 import { supabase } from '@/integrations/supabase/client';
 import { useWallet } from '@/contexts/WalletContext';
 import { useToast } from '@/hooks/use-toast';
+import type { Database } from '@/integrations/supabase/types';
+
+type Json = Database['public']['Tables']['matches']['Row']['game_state'];
 
 type GameType = 'war' | 'chess' | 'connect4' | 'cointoss';
 
@@ -190,7 +193,7 @@ export const useMatchmaking = (gameType: GameType) => {
     }
   };
 
-  const updateGameState = async (newState: Record<string, unknown>) => {
+  const updateGameState = async (newState: Json) => {
     if (!matchId) return;
 
     try {
