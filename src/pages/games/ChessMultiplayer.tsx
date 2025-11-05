@@ -12,6 +12,10 @@ import { Crown, Loader2 } from "lucide-react";
 import { ChatSidebar } from "@/components/ChatSidebar";
 import { ChainIndicator } from "@/components/ChainIndicator";
 import { supabase } from "@/integrations/supabase/client";
+import { checkAndProcessBotTurn } from "@/lib/botService";
+import type { Database } from "@/integrations/supabase/types";
+
+type Json = Database['public']['Tables']['matches']['Row']['game_state'];
 
 type PieceType = "pawn" | "rook" | "knight" | "bishop" | "queen" | "king";
 type PieceColor = "white" | "black";
@@ -59,11 +63,20 @@ const ChessMultiplayer = () => {
           table: "matches",
           filter: `id=eq.${matchId}`,
         },
-        (payload: any) => {
+        (payload: { new: { game_state: { board?: (ChessPiece | null)[][]; currentTurn?: string; lastMoveBy?: string; isBot?: boolean } | null; status: string; winner_id: string | null } }) => {
           const gameState = payload.new.game_state;
           if (gameState?.board) {
             setBoard(gameState.board);
-            setCurrentTurn(gameState.currentTurn);
+            if (gameState.currentTurn) {
+              setCurrentTurn(gameState.currentTurn as PieceColor);
+            }
+            
+            // Check if it's bot's turn and process bot move
+            if (gameState.isBot || gameState.lastMoveBy !== 'bot') {
+              setTimeout(() => {
+                checkAndProcessBotTurn(matchId);
+              }, 1000);
+            }
           }
           if (payload.new.status === "completed") {
             setGameOver(true);
@@ -78,6 +91,11 @@ const ChessMultiplayer = () => {
       setPlayerColor("white"); // First player is white
     } else {
       setPlayerColor("black"); // Second player is black
+    }
+
+    // Check if it's a bot game and process bot's first move if needed
+    if (matchId) {
+      checkAndProcessBotTurn(matchId);
     }
 
     return () => {
@@ -126,7 +144,7 @@ const ChessMultiplayer = () => {
 
     // Basic movement validation (simplified)
     switch (piece.type) {
-      case "pawn":
+      case "pawn": {
         const direction = piece.color === "white" ? -1 : 1;
         const startRow = piece.color === "white" ? 6 : 1;
         if (colDiff === 0) {
@@ -135,6 +153,7 @@ const ChessMultiplayer = () => {
         }
         if (colDiff === 1 && to.row === from.row + direction && targetPiece) return true;
         return false;
+      }
 
       case "rook":
         return (rowDiff === 0 || colDiff === 0) && isPathClear(from, to);
@@ -204,7 +223,13 @@ const ChessMultiplayer = () => {
             board: newBoard,
             currentTurn: nextTurn,
             lastMove: { from, to },
-          });
+            lastMoveBy: 'player'
+          } as unknown as Json);
+          
+          // Check if opponent is bot and trigger bot move
+          setTimeout(() => {
+            checkAndProcessBotTurn(matchId);
+          }, 1000);
         }
       }
 
@@ -252,7 +277,7 @@ const ChessMultiplayer = () => {
 
               <div>
                 <label className="font-pixel text-xs text-primary block mb-2">
-                  WAGER AMOUNT ({network === "solana" ? "SOL" : "ETH"})
+                  WAGER AMOUNT (ETH)
                 </label>
                 <Input
                   type="number"

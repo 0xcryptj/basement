@@ -8,6 +8,8 @@ import { useToast } from "@/hooks/use-toast";
 import { useWallet } from "@/contexts/WalletContext";
 import { useMatchmaking } from "@/hooks/useMatchmaking";
 import { useGameState } from "@/hooks/useGameState";
+import { checkAndProcessBotTurn } from "@/lib/botService";
+import { supabase } from "@/integrations/supabase/client";
 
 interface WarGameState {
   player1Card: number | null;
@@ -31,33 +33,76 @@ const WarMultiplayer = () => {
   const [opponentCard, setOpponentCard] = useState<number | null>(null);
 
   useEffect(() => {
-    if (!matchId || !gameState.played) return;
+    if (!matchId) return;
 
-    const isPlayer1 = userId === opponentId ? false : true;
-    const player1Card = gameState.player1Card;
-    const player2Card = gameState.player2Card;
+    // Subscribe to game updates
+    const channel = supabase
+      .channel(`war-game-${matchId}`)
+      .on(
+        'postgres_changes',
+        {
+          event: 'UPDATE',
+          schema: 'public',
+          table: 'matches',
+          filter: `id=eq.${matchId}`,
+        },
+        (payload: { new: { game_state: WarGameState | null; status: string; winner_id: string | null } }) => {
+          const updatedState = payload.new.game_state;
+          if (updatedState) {
+            setGameState(updatedState);
+          }
+          if (payload.new.status === 'completed') {
+            const isPlayer1 = userId !== opponentId;
+            const player1Card = updatedState?.player1Card;
+            const player2Card = updatedState?.player2Card;
+            
+            if (player1Card && player2Card) {
+              setMyCard(isPlayer1 ? player1Card : player2Card);
+              setOpponentCard(isPlayer1 ? player2Card : player1Card);
 
-    if (player1Card && player2Card) {
-      setMyCard(isPlayer1 ? player1Card : player2Card);
-      setOpponentCard(isPlayer1 ? player2Card : player1Card);
-
-      // Determine winner
-      setTimeout(() => {
-        let winnerId = null;
-        if (player1Card > player2Card) {
-          winnerId = isPlayer1 ? userId : opponentId;
-          toast({ title: player1Card > player2Card && isPlayer1 ? "Victory!" : "Defeat", description: isPlayer1 ? "You won!" : "Opponent won" });
-        } else if (player2Card > player1Card) {
-          winnerId = !isPlayer1 ? userId : opponentId;
-          toast({ title: player2Card > player1Card && !isPlayer1 ? "Victory!" : "Defeat", description: !isPlayer1 ? "You won!" : "Opponent won" });
-        } else {
-          toast({ title: "Draw", description: "It's a tie!" });
+              setTimeout(() => {
+                let winnerId = null;
+                if (player1Card > player2Card) {
+                  winnerId = isPlayer1 ? userId : opponentId;
+                  toast({ title: isPlayer1 ? "Victory!" : "Defeat", description: isPlayer1 ? "You won!" : "Opponent won" });
+                } else if (player2Card > player1Card) {
+                  winnerId = !isPlayer1 ? userId : opponentId;
+                  toast({ title: !isPlayer1 ? "Victory!" : "Defeat", description: !isPlayer1 ? "You won!" : "Opponent won" });
+                } else {
+                  toast({ title: "Draw", description: "It's a tie!" });
+                }
+                endMatch(winnerId);
+              }, 2000);
+            }
+          }
         }
+      )
+      .subscribe();
 
-        endMatch(winnerId);
-      }, 2000);
+    // Check if bot needs to play
+    if (matchId && gameState && !gameState.played) {
+      const botIds = [
+        'bot-easy-00000000-0000-0000-0000-000000000000',
+        'bot-medium-00000000-0000-0000-0000-000000000000',
+        'bot-hard-00000000-0000-0000-0000-000000000000'
+      ];
+      const isBotOpponent = opponentId && botIds.includes(opponentId);
+      
+      // If it's a bot game and player hasn't played yet, bot should play automatically
+      if (isBotOpponent && !gameState.player1Card && !gameState.player2Card) {
+        // Bot will play automatically when player plays
+      } else if (isBotOpponent && gameState.player1Card && !gameState.player2Card) {
+        // Player played, bot should respond
+        setTimeout(() => {
+          checkAndProcessBotTurn(matchId);
+        }, 1000);
+      }
     }
-  }, [gameState, matchId, userId, opponentId, endMatch, toast]);
+
+    return () => {
+      supabase.removeChannel(channel);
+    };
+  }, [matchId, gameState, userId, opponentId, endMatch, toast, setGameState]);
 
   const playCard = async () => {
     if (!matchId || !userId) return;

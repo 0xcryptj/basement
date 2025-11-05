@@ -9,6 +9,7 @@ import { useWallet } from "@/contexts/WalletContext";
 import { useToast } from "@/hooks/use-toast";
 import { cn } from "@/lib/utils";
 import { GameCreationModal } from "./GameCreationModal";
+import { getBotPlayer, getRandomBotDifficulty, type BotDifficulty } from "@/lib/bots";
 
 interface GameMatch {
   id: string;
@@ -236,6 +237,29 @@ export const GameLobby = ({
           title: "Game Created! (Demo Mode)",
           description: `Waiting for opponent to join...`
         });
+        
+        // Auto-add bot after 3 seconds if no human opponent joins (or immediately for cointoss)
+        const botDelay = gameType === 'cointoss' ? 500 : 3000;
+        setTimeout(async () => {
+          // Check if game is still waiting
+          const { data: checkGame } = await supabase
+            .from('matches')
+            .select('status, player2_id')
+            .eq('id', data.id)
+            .single();
+            
+          if (checkGame && checkGame.status === 'waiting' && !checkGame.player2_id) {
+            await addBotToGame(data.id);
+            
+            // For cointoss, immediately process bot result
+            if (gameType === 'cointoss') {
+              setTimeout(async () => {
+                const { checkAndProcessBotTurn } = await import('@/lib/botService');
+                await checkAndProcessBotTurn(data.id);
+              }, 1000);
+            }
+          }
+        }, botDelay);
       }
     } catch (error: unknown) {
       setCreating(false);
@@ -292,6 +316,79 @@ export const GameLobby = ({
   };
 
   const getUserLevel = () => Math.floor(Math.random() * 100) + 1;
+
+  // Add bot to game
+  const addBotToGame = async (matchId: string) => {
+    try {
+      const difficulty: BotDifficulty = getRandomBotDifficulty();
+      const bot = getBotPlayer(difficulty);
+      
+      // First, ensure bot user exists in database
+      await ensureBotUserExists(bot);
+      
+      // Update match to add bot as player2
+      const { error } = await supabase
+        .from('matches')
+        .update({
+          player2_id: bot.id,
+          status: 'active',
+          started_at: new Date().toISOString(),
+          game_state: {
+            botDifficulty: difficulty,
+            isBot: true
+          }
+        })
+        .eq('id', matchId)
+        .eq('status', 'waiting');
+
+      if (!error) {
+        setWaitingForMatch(false);
+        toast({
+          title: "Bot Joined!",
+          description: `Playing against ${bot.username}`,
+        });
+        
+        // Reload matches to show updated game
+        loadMatches();
+        
+        // Auto-join the game for the user
+        setTimeout(() => {
+          onJoinGame(matchId);
+        }, 500);
+      }
+    } catch (error) {
+      console.error('Error adding bot to game:', error);
+    }
+  };
+
+  // Ensure bot user exists in database
+  const ensureBotUserExists = async (bot: { id: string; username: string }) => {
+    try {
+      // Check if bot user exists
+      const { data: existingUser } = await supabase
+        .from('User')
+        .select('id')
+        .eq('id', bot.id)
+        .single();
+
+      if (!existingUser) {
+        // Create bot user
+        await supabase
+          .from('User')
+          .insert({
+            id: bot.id,
+            username: bot.username,
+            avatarUrl: null,
+            walletAddress: `bot-${bot.id}`,
+            createdAt: new Date().toISOString(),
+            updatedAt: new Date().toISOString()
+          });
+      }
+    } catch (error) {
+      console.error('Error ensuring bot user exists:', error);
+      // Continue anyway - bot might already exist
+    }
+  };
 
   const sortedMatches = [...matches].sort((a, b) => 
     sortBy === "high" 
